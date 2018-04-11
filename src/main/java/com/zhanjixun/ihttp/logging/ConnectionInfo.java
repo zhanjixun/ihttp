@@ -25,7 +25,7 @@ public class ConnectionInfo {
     private Map<String, String> params = Maps.newHashMap();
     private Map<String, File> files = Maps.newHashMap();
 
-    private Map<String, String> requestHeaders = Maps.newHashMap();
+    private Map<String, String> requestHeaders = Maps.newHashMap();//@bug 当头的key相同value不相同的时候就不能保留多个了！
     private Map<String, String> responseHeaders = Maps.newHashMap();
 
     private long startTime;

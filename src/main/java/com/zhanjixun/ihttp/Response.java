@@ -1,5 +1,8 @@
 package com.zhanjixun.ihttp;
 
+import com.alibaba.fastjson.JSON;
+import com.alibaba.fastjson.JSONArray;
+import com.alibaba.fastjson.JSONObject;
 import com.google.common.collect.Maps;
 import lombok.Getter;
 import lombok.Setter;
@@ -24,7 +27,7 @@ public class Response {
     @Setter
     private int status;
     @Getter
-    private Map<String, String> headers = Maps.newHashMap();
+    private Map<String, String> headers = Maps.newHashMap();//@bug 当头的key相同value不相同的时候就不能保留多个了！
     @Getter
     @Setter
     private byte[] body;
@@ -50,6 +53,10 @@ public class Response {
 
     public boolean isRedirect() {
         return status == 302;
+    }
+
+    public boolean isNotFound() {
+        return status == 404;
     }
 
     public String getText() {
@@ -80,4 +87,13 @@ public class Response {
         }
         return image;
     }
+
+    public JSONObject toJSONObject() {
+        return JSON.parseObject(getText());
+    }
+
+    public JSONArray toJSONArray() {
+        return JSON.parseArray(getText());
+    }
+
 }
