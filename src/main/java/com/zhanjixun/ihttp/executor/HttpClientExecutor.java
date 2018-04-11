@@ -2,7 +2,6 @@ package com.zhanjixun.ihttp.executor;
 
 import com.zhanjixun.ihttp.Request;
 import com.zhanjixun.ihttp.Response;
-import com.zhanjixun.ihttp.constant.HttpMethod;
 import com.zhanjixun.ihttp.constant.Config;
 import com.zhanjixun.ihttp.logging.ConnectionInfo;
 import com.zhanjixun.ihttp.logging.Log;
@@ -10,8 +9,11 @@ import lombok.extern.log4j.Log4j;
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.httpclient.Header;
 import org.apache.commons.httpclient.HttpClient;
+import org.apache.commons.httpclient.HttpMethodBase;
+import org.apache.commons.httpclient.URIException;
 import org.apache.commons.httpclient.methods.GetMethod;
 import org.apache.commons.httpclient.methods.PostMethod;
+import org.apache.commons.httpclient.methods.RequestEntity;
 import org.apache.commons.httpclient.methods.StringRequestEntity;
 import org.apache.commons.httpclient.methods.multipart.FilePart;
 import org.apache.commons.httpclient.methods.multipart.MultipartRequestEntity;
@@ -75,44 +77,7 @@ public class HttpClientExecutor extends BaseExecutor {
         }
         request.getHeaders().forEach(method::addRequestHeader);
 
-        try {
-            ConnectionInfo state = new ConnectionInfo();
-            state.setStartTime(System.currentTimeMillis());
-
-            int status = client.executeMethod(method);
-
-            state.setEndTime(System.currentTimeMillis());
-            state.setUrl(method.getURI().getURI());
-            state.setMethod(HttpMethod.GET.getName());
-            state.setStatusCode(status);
-            state.setStatusLine(method.getStatusLine().toString());
-            state.setStatusText(method.getStatusText());
-
-            if (method.getQueryString() != null) {
-                Stream.of(method.getQueryString().split("&"))
-                        .forEach(s -> state.getParams().put(s.split("=")[0], s.split("=")[1]));
-            }
-            Stream.of(method.getRequestHeaders()).forEach(h -> state.getRequestHeaders().put(h.getName(), h.getValue()));
-            Stream.of(method.getResponseHeaders()).forEach(h -> state.getResponseHeaders().put(h.getName(), h.getValue()));
-
-
-            Response response = new Response();
-            response.setStatus(status);
-            response.setBody(method.getResponseBody());
-            response.setCharset(Optional.ofNullable(request.getResponseCharset()).orElse(method.getResponseCharSet()));
-            Stream.of(method.getResponseHeaders()).forEach(header -> response.getHeaders().put(header.getName(), header.getValue()));
-
-            // 释放连接
-            method.releaseConnection();
-
-            if (logger != null) {
-                log.info(logger.toLogString(state));
-            }
-            return response;
-        } catch (IOException e) {
-            e.printStackTrace();
-            throw new RuntimeException("HTTP请求失败");
-        }
+        return executeMethod(method, request.getResponseCharset());
     }
 
     @Override
@@ -151,42 +116,66 @@ public class HttpClientExecutor extends BaseExecutor {
             }
         }
 
+        return executeMethod(method, request.getResponseCharset());
+    }
+
+    private Response executeMethod(HttpMethodBase httpMethod, String customizedResponseCharset) {
         try {
-            ConnectionInfo state = new ConnectionInfo();
-            state.setStartTime(System.currentTimeMillis());
-
-            int status = client.executeMethod(method);
-
-            state.setEndTime(System.currentTimeMillis());
-            state.setUrl(method.getURI().getURI());
-            state.setMethod(HttpMethod.POST.getName());
-            state.setStatusCode(status);
-            state.setStatusLine(method.getStatusLine().toString());
-            state.setStatusText(method.getStatusText());
-            state.setStringBody(request.getBody());
-
-            Stream.of(method.getParameters()).forEach(h -> state.getParams().put(h.getName(), h.getValue()));
-            Stream.of(method.getRequestHeaders()).forEach(h -> state.getRequestHeaders().put(h.getName(), h.getValue()));
-            Stream.of(method.getResponseHeaders()).forEach(h -> state.getResponseHeaders().put(h.getName(), h.getValue()));
-
+            long startTime = System.currentTimeMillis();
+            int status = client.executeMethod(httpMethod);
+            ConnectionInfo connectionInfo = buildConnectionInfo(startTime, System.currentTimeMillis(), status, httpMethod);
 
             Response response = new Response();
             response.setStatus(status);
-            response.setBody(method.getResponseBody());
-            response.setCharset(Optional.ofNullable(request.getResponseCharset()).orElse(method.getResponseCharSet()));
-            Stream.of(method.getResponseHeaders()).forEach(header -> response.getHeaders().put(header.getName(), header.getValue()));
-
-            // 释放连接
-            method.releaseConnection();
+            response.setBody(httpMethod.getResponseBody());
+            response.setCharset(Optional.ofNullable(customizedResponseCharset).orElse(httpMethod.getResponseCharSet()));
+            Stream.of(httpMethod.getResponseHeaders()).forEach(header -> response.getHeaders().put(header.getName(), header.getValue()));
 
             if (logger != null) {
-                log.info(logger.toLogString(state));
+                log.info(logger.toLogString(connectionInfo));
             }
             return response;
         } catch (IOException e) {
             throw new RuntimeException("HTTP请求失败", e);
+        } finally {
+            // 释放连接
+            httpMethod.releaseConnection();
         }
+    }
 
+    private ConnectionInfo buildConnectionInfo(long startTime, long endTime, int status, HttpMethodBase httpMethod) {
+        try {
+            ConnectionInfo connectionInfo = new ConnectionInfo();
+            connectionInfo.setStartTime(startTime);
+            connectionInfo.setEndTime(endTime);
+            connectionInfo.setUrl(httpMethod.getURI().getURI());
+            connectionInfo.setStatusCode(status);
+            connectionInfo.setStatusLine(httpMethod.getStatusLine().toString());
+            connectionInfo.setStatusText(httpMethod.getStatusText());
+
+            Stream.of(httpMethod.getRequestHeaders()).forEach(h -> connectionInfo.getRequestHeaders().put(h.getName(), h.getValue()));
+            Stream.of(httpMethod.getResponseHeaders()).forEach(h -> connectionInfo.getResponseHeaders().put(h.getName(), h.getValue()));
+
+            if (httpMethod instanceof GetMethod) {
+                connectionInfo.setMethod("GET");
+                if (httpMethod.getQueryString() != null) {
+                    Stream.of(httpMethod.getQueryString().split("&")).forEach(s -> connectionInfo.getParams().put(s.split("=")[0], s.split("=")[1]));
+                }
+            }
+            if (httpMethod instanceof PostMethod) {
+                PostMethod postMethod = (PostMethod) httpMethod;
+                connectionInfo.setMethod("POST");
+                RequestEntity requestEntity = postMethod.getRequestEntity();
+                if (requestEntity != null && requestEntity instanceof StringRequestEntity) {
+                    connectionInfo.setStringBody(((StringRequestEntity) requestEntity).getContent());
+                }
+                Stream.of(postMethod.getParameters()).forEach(h -> connectionInfo.getParams().put(h.getName(), h.getValue()));
+            }
+            return connectionInfo;
+        } catch (URIException e) {
+            e.printStackTrace();
+        }
+        return null;
     }
 
 }

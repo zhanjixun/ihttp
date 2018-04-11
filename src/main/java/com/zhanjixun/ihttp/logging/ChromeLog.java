@@ -6,6 +6,10 @@ import org.apache.commons.httpclient.util.DateUtil;
 
 import java.util.Date;
 
+/**
+ * @author zhanjixun
+ * @date 2018年4月11日 23:48:03
+ */
 public class ChromeLog implements Log {
 
     @Override
