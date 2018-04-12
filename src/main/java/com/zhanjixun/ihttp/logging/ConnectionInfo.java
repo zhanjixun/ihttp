@@ -22,11 +22,11 @@ public class ConnectionInfo {
     private String statusText;
     private String statusLine;
 
-    private Map<String, String> params = Maps.newHashMap();
-    private Map<String, File> files = Maps.newHashMap();
+    private Map<String, String> params = Maps.newIdentityHashMap();
+    private Map<String, File> files = Maps.newIdentityHashMap();
 
-    private Map<String, String> requestHeaders = Maps.newHashMap();
-    private Map<String, String> responseHeaders = Maps.newHashMap();
+    private Map<String, String> requestHeaders = Maps.newIdentityHashMap();
+    private Map<String, String> responseHeaders = Maps.newIdentityHashMap();
 
     private long startTime;
     private long endTime;
