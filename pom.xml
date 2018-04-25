@@ -10,6 +10,26 @@
 
     <description>A http tool based on annotation.</description>
 
+    <licenses>
+        <license>
+            <name>The Apache License, Version 2.0</name>
+            <url>http://www.apache.org/licenses/LICENSE-2.0.txt</url>
+        </license>
+    </licenses>
+
+    <scm>
+        <url>https://github.com/zhanjixun/ihttp</url>
+        <connection>https://github.com/zhanjixun/ihttp.git</connection>
+        <developerConnection>https://github.com/zhanjixun/ihttp</developerConnection>
+    </scm>
+
+    <developers>
+        <developer>
+            <name>zhanjixun</name>
+            <email>zhanjixun@qq.com</email>
+        </developer>
+    </developers>
+
     <dependencies>
         <dependency>
             <groupId>commons-httpclient</groupId>
