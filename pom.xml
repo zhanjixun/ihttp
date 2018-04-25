@@ -6,8 +6,10 @@
     <version>1.0</version>
     <name>ihttp</name>
     <packaging>jar</packaging>
-    <url>https://git.oschina.net</url>
+    <url>https://github.com/zhanjixun/ihttp</url>
+
     <description>A http tool based on annotation.</description>
+
     <dependencies>
         <dependency>
             <groupId>commons-httpclient</groupId>
@@ -106,4 +108,5 @@
             </plugin>
         </plugins>
     </build>
+
 </project>
