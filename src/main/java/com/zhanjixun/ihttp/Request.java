@@ -53,7 +53,6 @@ public class Request {
         return headers.get(name);
     }
 
-
     public void addParam(String name, String value) {
         params.put(name, value);
     }

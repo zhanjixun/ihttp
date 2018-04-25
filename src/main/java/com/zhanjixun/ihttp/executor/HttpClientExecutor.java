@@ -153,13 +153,19 @@ public class HttpClientExecutor extends BaseExecutor {
             connectionInfo.setStatusLine(httpMethod.getStatusLine().toString());
             connectionInfo.setStatusText(httpMethod.getStatusText());
 
-            Stream.of(httpMethod.getRequestHeaders()).forEach(h -> connectionInfo.getRequestHeaders().put(h.getName(), h.getValue()));
-            Stream.of(httpMethod.getResponseHeaders()).forEach(h -> connectionInfo.getResponseHeaders().put(h.getName(), h.getValue()));
+            Stream.of(httpMethod.getRequestHeaders()).forEach(h ->
+                    connectionInfo.getRequestHeaders().put(new String(h.getName()), h.getValue())
+            );
+            Stream.of(httpMethod.getResponseHeaders()).forEach(h ->
+                    connectionInfo.getResponseHeaders().put(new String(h.getName()), h.getValue())
+            );
 
             if (httpMethod instanceof GetMethod) {
                 connectionInfo.setMethod("GET");
                 if (httpMethod.getQueryString() != null) {
-                    Stream.of(httpMethod.getQueryString().split("&")).forEach(s -> connectionInfo.getParams().put(s.split("=")[0], s.split("=")[1]));
+                    Stream.of(httpMethod.getQueryString().split("&")).forEach(s ->
+                            connectionInfo.getParams().put(new String(s.split("=")[0]), s.split("=")[1])
+                    );
                 }
             }
             if (httpMethod instanceof PostMethod) {
@@ -169,7 +175,9 @@ public class HttpClientExecutor extends BaseExecutor {
                 if (requestEntity != null && requestEntity instanceof StringRequestEntity) {
                     connectionInfo.setStringBody(((StringRequestEntity) requestEntity).getContent());
                 }
-                Stream.of(postMethod.getParameters()).forEach(h -> connectionInfo.getParams().put(h.getName(), h.getValue()));
+                Stream.of(postMethod.getParameters()).forEach(h ->
+                        connectionInfo.getParams().put(h.getName(), h.getValue())
+                );
             }
             return connectionInfo;
         } catch (URIException e) {
