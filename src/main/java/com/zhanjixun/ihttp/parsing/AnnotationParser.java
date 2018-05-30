@@ -142,13 +142,19 @@ public class AnnotationParser implements Parser {
             mapperMethod.getHeaders().putAll(parseHeader(method));
 
             //固定参数
-            if (method.getAnnotation(Params.class) != null) {
+            if (method.getAnnotation(Param.class) != null) {
+                Param p = method.getAnnotation(Param.class);
+                mapperMethod.getParams().put(p.name(), p.value());
+            } else if (method.getAnnotation(Params.class) != null) {
                 for (Param p : method.getAnnotation(Params.class).value()) {
                     mapperMethod.getParams().put(p.name(), p.value());
                 }
             }
 
-            if (method.getAnnotation(Multiparts.class) != null) {
+            if (method.getAnnotation(FilePart.class) != null) {
+                FilePart f = method.getAnnotation(FilePart.class);
+                mapperMethod.getFiles().put(f.name(), new File(f.value()));
+            } else if (method.getAnnotation(Multiparts.class) != null) {
                 for (FilePart f : method.getAnnotation(Multiparts.class).value()) {
                     mapperMethod.getFiles().put(f.name(), new File(f.value()));
                 }
