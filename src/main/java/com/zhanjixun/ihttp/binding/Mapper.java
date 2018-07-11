@@ -134,7 +134,7 @@ public class Mapper {
                 }
                 request.addFile(filePart.name(), file);
             } else if (annotationType == StringBody.class) {
-                request.setBody(((StringBody) annotation).value());
+                request.setBody((String) arg);
             } else {
                 for (Map.Entry<String, Class<? extends Annotation>> entry : HEADER_ANNOTATIONS.entrySet()) {
                     if (annotationType == entry.getValue()) {
