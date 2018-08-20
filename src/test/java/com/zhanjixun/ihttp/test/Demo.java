@@ -1,5 +1,6 @@
 package com.zhanjixun.ihttp.test;
 
+import com.google.common.collect.Maps;
 import com.zhanjixun.ihttp.Response;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -7,6 +8,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
+
+import java.util.Map;
 
 @RunWith(SpringJUnit4ClassRunner.class)
 @ContextConfiguration(locations = {"classpath:spring.xml"})
@@ -29,7 +32,10 @@ public class Demo {
         Response index = gitee.index();
         if (index.isOK()) {
             String token = index.getDocument().select("[name='authenticity_token']").get(0).val();
-            Response login = gitee.login(token, email, password);
+            Map<String, String> map = Maps.newHashMap();
+            map.put("user[login]", email);
+            map.put("user[password]", password);
+            Response login = gitee.login(token, map);
             if (login.isRedirect()) {
                 String href = login.getDocument().select("a").get(0).attr("href");
                 Response home = gitee.home(href);

@@ -137,9 +137,10 @@ public class Mapper {
                 request.setBody((String) arg);
             } else if (annotationType == ParamMap.class) {
                 if (arg instanceof Map) {
+                    ((Map<String, ? extends Object>) arg).forEach((k, v) -> request.addParam(k, String.valueOf(v)));
+                } else {
                     throw new IllegalArgumentException("在方法的参数中使用" + ParamMap.class.getName() + "时，被注解的参数类型必须为java.util.Map");
                 }
-                ((Map<String, Objects>) arg).forEach((k, v) -> request.addParam(k, String.valueOf(v)));
             } else {
                 for (Map.Entry<String, Class<? extends Annotation>> entry : HEADER_ANNOTATIONS.entrySet()) {
                     if (annotationType == entry.getValue()) {
