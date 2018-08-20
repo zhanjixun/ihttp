@@ -52,6 +52,7 @@ public class AnnotationParser implements Parser {
         PARAMETER_ANNOTATIONS.add(FilePart.class);
         PARAMETER_ANNOTATIONS.add(StringBody.class);
         PARAMETER_ANNOTATIONS.add(Header.class);
+        PARAMETER_ANNOTATIONS.add(ParamMap.class);
         PARAMETER_ANNOTATIONS.addAll(HEADER_ANNOTATIONS.values());
     }
 

@@ -101,7 +101,7 @@ public class Mapper {
 
     private void bindingParameter(Request request, Object... args) {
         ParamMapping parameterMapping = request.getParameterMapping();
-        if (null == parameterMapping) {
+        if (parameterMapping == null) {
             return;
         }
         for (int i = 0; i < parameterMapping.paramTypes().length; i++) {
@@ -135,6 +135,11 @@ public class Mapper {
                 request.addFile(filePart.name(), file);
             } else if (annotationType == StringBody.class) {
                 request.setBody((String) arg);
+            } else if (annotationType == ParamMap.class) {
+                if (arg instanceof Map) {
+                    throw new IllegalArgumentException("在方法的参数中使用" + ParamMap.class.getName() + "时，被注解的参数类型必须为java.util.Map");
+                }
+                ((Map<String, Objects>) arg).forEach((k, v) -> request.addParam(k, String.valueOf(v)));
             } else {
                 for (Map.Entry<String, Class<? extends Annotation>> entry : HEADER_ANNOTATIONS.entrySet()) {
                     if (annotationType == entry.getValue()) {
