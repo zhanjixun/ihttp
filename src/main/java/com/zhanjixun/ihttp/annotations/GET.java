@@ -12,4 +12,11 @@ import java.lang.annotation.Target;
 @Retention(RetentionPolicy.RUNTIME)
 public @interface GET {
 
+    /**
+     * 设置HTTP方法是否应自动遵循HTTP重定向
+     *
+     * @return
+     */
+    boolean followRedirects() default true;
+
 }
