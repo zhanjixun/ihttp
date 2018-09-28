@@ -34,17 +34,17 @@ public class ChromeLog implements Log {
         info.getResponseHeaders().forEach((k, v) -> builder.append(k).append(":").append(v).append("\n"));
         builder.append("\n");
 
-        if (HttpMethod.GET.getName().equalsIgnoreCase(info.getMethod()) && !info.getParams().isEmpty()) {
+        if (HttpMethod.GET.name().equalsIgnoreCase(info.getMethod()) && !info.getParams().isEmpty()) {
             builder.append("▼ Query String Parameters" + "\n");
             info.getParams().forEach((k, v) -> builder.append(k).append("=").append(v).append("\n"));
             builder.append("\n");
         }
-        if (HttpMethod.POST.getName().equalsIgnoreCase(info.getMethod()) && !info.getParams().isEmpty()) {
+        if (HttpMethod.POST.name().equalsIgnoreCase(info.getMethod()) && !info.getParams().isEmpty()) {
             builder.append("▼ Request Parameters" + "\n");
             info.getParams().forEach((k, v) -> builder.append(k).append("=").append(v).append("\n"));
             builder.append("\n");
         }
-        if (HttpMethod.POST.getName().equalsIgnoreCase(info.getMethod()) && info.getStringBody() != null) {
+        if (HttpMethod.POST.name().equalsIgnoreCase(info.getMethod()) && info.getStringBody() != null) {
             builder.append("▼ Request Payload" + "\n");
             builder.append(info.getStringBody()).append("\n");
             builder.append("\n");

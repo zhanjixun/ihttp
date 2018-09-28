@@ -1,5 +1,6 @@
 package com.zhanjixun.ihttp.executor;
 
+import com.zhanjixun.ihttp.ICookie;
 import com.zhanjixun.ihttp.Request;
 import com.zhanjixun.ihttp.Response;
 import com.zhanjixun.ihttp.constant.Config;
@@ -7,10 +8,7 @@ import com.zhanjixun.ihttp.logging.ConnectionInfo;
 import com.zhanjixun.ihttp.logging.Log;
 import lombok.extern.log4j.Log4j;
 import org.apache.commons.collections.CollectionUtils;
-import org.apache.commons.httpclient.Header;
-import org.apache.commons.httpclient.HttpClient;
-import org.apache.commons.httpclient.HttpMethodBase;
-import org.apache.commons.httpclient.URIException;
+import org.apache.commons.httpclient.*;
 import org.apache.commons.httpclient.methods.GetMethod;
 import org.apache.commons.httpclient.methods.PostMethod;
 import org.apache.commons.httpclient.methods.RequestEntity;
@@ -21,6 +19,7 @@ import org.apache.commons.httpclient.methods.multipart.Part;
 import org.apache.commons.httpclient.methods.multipart.StringPart;
 import org.apache.commons.httpclient.params.HttpMethodParams;
 import org.apache.commons.lang3.StringUtils;
+import org.springframework.beans.BeanUtils;
 
 import java.io.File;
 import java.io.FileNotFoundException;
@@ -186,4 +185,20 @@ public class HttpClientExecutor extends BaseExecutor {
         return null;
     }
 
+    @Override
+    public void addCookie(ICookie cookie) {
+
+    }
+
+    @Override
+    public ICookie[] getCookies() {
+        Cookie[] cookies = client.getState().getCookies();
+        ICookie[] iCookies = new ICookie[cookies.length];
+        for (int i = 0; i < cookies.length; i++) {
+            ICookie iCookie = new ICookie();
+            BeanUtils.copyProperties(cookies[i], iCookie);
+            iCookies[i] = iCookie;
+        }
+        return iCookies;
+    }
 }

@@ -1,7 +1,9 @@
 package com.zhanjixun.ihttp.test;
 
 import com.google.common.collect.Maps;
+import com.zhanjixun.ihttp.ICookie;
 import com.zhanjixun.ihttp.Response;
+import org.apache.commons.httpclient.Cookie;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -9,6 +11,7 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 
+import java.util.Arrays;
 import java.util.Map;
 
 @RunWith(SpringJUnit4ClassRunner.class)
@@ -40,9 +43,12 @@ public class Demo {
                 String href = login.getDocument().select("a").get(0).attr("href");
                 Response home = gitee.home(href);
                 System.out.println("欢迎您：" + home.getDocument().select(".git-user-name-link").get(0).text());
+
+                ICookie[] cookies = gitee.getCookies();
+                System.out.println(Arrays.toString(cookies));
             }
+
+
         }
-
     }
-
 }

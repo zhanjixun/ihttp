@@ -10,6 +10,7 @@ import com.zhanjixun.ihttp.Response;
  * @time 2018年3月13日 15:37:32
  */
 public interface Executor {
+
     /**
      * 执行http请求
      *

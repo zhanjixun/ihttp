@@ -1,7 +1,8 @@
 package com.zhanjixun.ihttp.binding;
 
+import com.zhanjixun.ihttp.CookiesManager;
 import com.zhanjixun.ihttp.Request;
-import com.zhanjixun.ihttp.executor.Executor;
+import com.zhanjixun.ihttp.executor.BaseExecutor;
 
 import java.lang.reflect.InvocationHandler;
 import java.lang.reflect.Method;
@@ -14,9 +15,9 @@ import java.lang.reflect.Method;
 public class MapperProxy implements InvocationHandler {
 
     private final Mapper mapper;
-    private final Executor executor;
+    private final BaseExecutor executor;
 
-    public MapperProxy(Mapper mapper, Executor executor) {
+    public MapperProxy(Mapper mapper, BaseExecutor executor) {
         this.mapper = mapper;
         this.executor = executor;
     }
@@ -29,6 +30,9 @@ public class MapperProxy implements InvocationHandler {
             } catch (Throwable t) {
                 t.printStackTrace();
             }
+        }
+        if (CookiesManager.class.equals(method.getDeclaringClass())) {
+            return method.invoke(executor, args);
         }
         Request request = mapper.getRequest(method.getName(), args);
         return executor.execute(request);

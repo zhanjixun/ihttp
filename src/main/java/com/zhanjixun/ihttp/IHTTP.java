@@ -13,7 +13,7 @@ import java.util.Objects;
  * @author zhanjixun
  */
 public class IHTTP {
-    
+
     @SuppressWarnings("unchecked")
     public static <T> T getMapper(Class<T> mapperInterface) {
         try {

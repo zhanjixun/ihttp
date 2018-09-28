@@ -7,16 +7,5 @@ package com.zhanjixun.ihttp.constant;
  */
 public enum HttpMethod {
 
-    GET("GET"), POST("POST"), DELETE("DELETE"), HEAD("HEAD"), PUT("PUT");
-
-    private String name;
-
-    HttpMethod(String name) {
-        this.name = name;
-    }
-
-    public String getName() {
-        return name;
-    }
-
+    GET, POST, DELETE, HEAD, PUT
 }
