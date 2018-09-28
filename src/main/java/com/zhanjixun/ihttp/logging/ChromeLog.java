@@ -7,6 +7,8 @@ import org.apache.commons.httpclient.util.DateUtil;
 import java.util.Date;
 
 /**
+ * Chrome风格的http日志
+ *
  * @author zhanjixun
  * @date 2018年4月11日 23:48:03
  */

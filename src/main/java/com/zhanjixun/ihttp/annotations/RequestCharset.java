@@ -7,13 +7,13 @@ import java.lang.annotation.Target;
 
 /**
  * 设置请求体的字符编码
- * 
- * @author zhanjixun
  *
+ * @author zhanjixun
  */
+@Deprecated
 @Retention(RetentionPolicy.RUNTIME)
-@Target({ ElementType.METHOD, ElementType.TYPE })
+@Target({ElementType.METHOD, ElementType.TYPE})
 public @interface RequestCharset {
 
-	String value() default "UTF-8";
+    String value() default "UTF-8";
 }

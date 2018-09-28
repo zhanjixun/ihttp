@@ -19,4 +19,10 @@ public @interface GET {
      */
     boolean followRedirects() default true;
 
+    /**
+     * 定义用于编码内容体的字符集
+     *
+     * @return
+     */
+    String charset() default "UTF-8";
 }
