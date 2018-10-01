@@ -55,39 +55,42 @@ public class Mapper {
 
     private Request cacheRequest(String id) {
         Request request = requestCache.get(id);
-        if (request == null) {
-            MapperMethod mapperMethod = methods.get(id);
-            Preconditions.checkArgument(Objects.nonNull(mapperMethod), String.format("没有找到id为%s的HTTP请求。", id));
+        if (request != null) {
+            return request;
+        }
+        MapperMethod mapperMethod = methods.get(id);
+        Preconditions.checkArgument(Objects.nonNull(mapperMethod), String.format("没有找到id为%s的HTTP请求。", id));
 
-            request = new Request();
-            request.setId(id);
-            //来自于类上面的注解配置
-            setGlobalAnnotation(request);
+        request = new Request();
+        request.setId(id);
+        //来自于类上面的注解配置
+        setGlobalAnnotation(request);
 
-            //来自于方法上面的注解配置
-            if (StringUtils.isNotEmpty(request.getUrl()) & !StringUtils.startsWith(mapperMethod.getUrl(), "http")) {
-                request.setUrl(request.getUrl() + mapperMethod.getUrl());
-            } else {
-                request.setUrl(mapperMethod.getUrl());
-            }
-            request.setMethod(mapperMethod.getMethod());
-            request.setBody(mapperMethod.getBody());
-            if (StringUtils.isNotEmpty(mapperMethod.getRequestCharset())) {
-                request.setCharset(mapperMethod.getRequestCharset());
-            }
-            if (StringUtils.isNotEmpty(mapperMethod.getResponseCharset())) {
-                request.setResponseCharset(mapperMethod.getResponseCharset());
-            }
-            request.setParameterMapping(mapperMethod.getParamMapping());
-            for (Map.Entry<String, String> entry : mapperMethod.getHeaders().entrySet()) {
-                request.addHeader(entry.getKey(), entry.getValue());
-            }
-            for (Map.Entry<String, String> entry : mapperMethod.getParams().entrySet()) {
-                request.addParam(entry.getKey(), entry.getValue());
-            }
-            for (Map.Entry<String, File> entry : mapperMethod.getFiles().entrySet()) {
-                request.addFile(entry.getKey(), entry.getValue());
-            }
+        //来自于方法上面的注解配置
+        if (StringUtils.isNotEmpty(request.getUrl()) & !StringUtils.startsWith(mapperMethod.getUrl(), "http")) {
+            request.setUrl(request.getUrl() + mapperMethod.getUrl());
+        } else {
+            request.setUrl(mapperMethod.getUrl());
+        }
+        request.setMethod(mapperMethod.getMethod());
+        request.setFollowRedirects(mapperMethod.isFollowRedirects());
+
+        request.setBody(mapperMethod.getBody());
+        if (StringUtils.isNotEmpty(mapperMethod.getRequestCharset())) {
+            request.setCharset(mapperMethod.getRequestCharset());
+        }
+        if (StringUtils.isNotEmpty(mapperMethod.getResponseCharset())) {
+            request.setResponseCharset(mapperMethod.getResponseCharset());
+        }
+        request.setParameterMapping(mapperMethod.getParamMapping());
+        for (Map.Entry<String, String> entry : mapperMethod.getHeaders().entrySet()) {
+            request.addHeader(entry.getKey(), entry.getValue());
+        }
+        for (Map.Entry<String, String> entry : mapperMethod.getParams().entrySet()) {
+            request.addParam(entry.getKey(), entry.getValue());
+        }
+        for (Map.Entry<String, File> entry : mapperMethod.getFiles().entrySet()) {
+            request.addFile(entry.getKey(), entry.getValue());
         }
         return request;
     }
