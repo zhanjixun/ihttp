@@ -2,9 +2,8 @@ package com.zhanjixun.ihttp;
 
 import com.google.common.collect.Maps;
 import com.zhanjixun.ihttp.binding.ParamMapping;
+import lombok.Data;
 import lombok.EqualsAndHashCode;
-import lombok.Getter;
-import lombok.Setter;
 
 import java.io.File;
 import java.util.Map;
@@ -15,33 +14,21 @@ import java.util.Map;
  * @author zhanjixun
  */
 @EqualsAndHashCode
+@Data
 public class Request {
-    @Getter
-    @Setter
+
     private String id;
-    @Getter
-    @Setter
     private String url;
-    @Getter
-    @Setter
     private String method;
-    @Getter
-    @Setter
     private String body;
-    @Getter
-    @Setter
     private String charset;
-    @Getter
-    @Setter
     private String responseCharset;
-    @Getter
+    private boolean followRedirects = true;
+
     private Map<String, String> headers = Maps.newHashMap();
-    @Getter
     private Map<String, String> params = Maps.newHashMap();
-    @Getter
     private Map<String, File> files = Maps.newHashMap();
-    @Getter
-    @Setter
+
     private ParamMapping parameterMapping;
 
 
@@ -68,6 +55,5 @@ public class Request {
     public File getFile(String name) {
         return files.get(name);
     }
-
 
 }

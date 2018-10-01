@@ -29,7 +29,7 @@ public class AnnotationParser implements Parser {
 
     private Class<?> target;
     public static final Map<String, Class<? extends Annotation>> HEADER_ANNOTATIONS = Maps.newHashMap();
-    public static final Map<String, Class<? extends Annotation>> HTTP_METHOD_ANNOTATIONS = Maps.newHashMap();
+    public static final List<Class<? extends Annotation>> HTTP_METHOD_ANNOTATIONS = Lists.newArrayList();
     public static final List<Class<? extends Annotation>> PARAMETER_ANNOTATIONS = Lists.newArrayList();
 
     static {
@@ -41,11 +41,11 @@ public class AnnotationParser implements Parser {
         HEADER_ANNOTATIONS.put("Referer", Referer.class);
         HEADER_ANNOTATIONS.put("User-Agent", UserAgent.class);
 
-        HTTP_METHOD_ANNOTATIONS.put("GET", GET.class);
-        HTTP_METHOD_ANNOTATIONS.put("POST", POST.class);
-        HTTP_METHOD_ANNOTATIONS.put("DELETE", DELETE.class);
-        HTTP_METHOD_ANNOTATIONS.put("HEAD", HEAD.class);
-        HTTP_METHOD_ANNOTATIONS.put("PUT", PUT.class);
+        HTTP_METHOD_ANNOTATIONS.add(GET.class);
+        HTTP_METHOD_ANNOTATIONS.add(POST.class);
+        HTTP_METHOD_ANNOTATIONS.add(DELETE.class);
+        HTTP_METHOD_ANNOTATIONS.add(HEAD.class);
+        HTTP_METHOD_ANNOTATIONS.add(PUT.class);
 
         PARAMETER_ANNOTATIONS.add(URL.class);
         PARAMETER_ANNOTATIONS.add(Param.class);
@@ -111,17 +111,26 @@ public class AnnotationParser implements Parser {
                 mapperMethod.setUrl(method.getAnnotation(URL.class).value());
             }
 
-            //http 方法
-            List<Map.Entry<String, Class<? extends Annotation>>> httpMethod = HTTP_METHOD_ANNOTATIONS.entrySet().stream()
-                    .filter(entry -> Objects.nonNull(method.getAnnotation(entry.getValue())))
+            //http方法
+            List<? extends Annotation> httpMethod = HTTP_METHOD_ANNOTATIONS.stream()
+                    .map(method::getAnnotation)
+                    .filter(Objects::nonNull)
                     .collect(Collectors.toList());
             if (CollectionUtils.isEmpty(httpMethod)) {
                 throw new RuntimeException(String.format("没有找到HTTP请求方法：%s", method.getName()));
             }
             if (httpMethod.size() > 1) {
-                throw new RuntimeException(String.format("%s重复设置HTTP请求方法。[%s]", target.getName() + "." + method.getName(), String.join(",", httpMethod.stream().map(d -> d.getValue().getSimpleName()).collect(Collectors.toList()))));
+                throw new RuntimeException(String.format("%s重复设置HTTP请求方法。[%s]", target.getName() + "." + method.getName(), String.join(",", httpMethod.stream().map(d -> d.annotationType().getSimpleName()).collect(Collectors.toList()))));
             }
-            mapperMethod.setMethod(httpMethod.get(0).getKey());
+            Annotation annotation = httpMethod.get(0);
+            mapperMethod.setMethod(annotation.annotationType().getSimpleName());
+            if (annotation instanceof GET) {
+                mapperMethod.setFollowRedirects(((GET) httpMethod.get(0)).followRedirects());
+                mapperMethod.setRequestCharset(((GET) httpMethod.get(0)).charset());
+            }
+            if (annotation instanceof POST) {
+                mapperMethod.setRequestCharset(((POST) httpMethod.get(0)).charset());
+            }
 
             //解析方法形参
             ParamMapping parameterMapping = new ParamMapping();
@@ -164,6 +173,7 @@ public class AnnotationParser implements Parser {
             mapperMethod.setRequestCharset(method.getAnnotation(RequestCharset.class) == null ? null : method.getAnnotation(RequestCharset.class).value());
             mapperMethod.setResponseCharset(method.getAnnotation(ResponseCharset.class) == null ? null : method.getAnnotation(ResponseCharset.class).value());
 
+            //直接请求体
             mapperMethod.setBody(method.getAnnotation(StringBody.class) == null ? null : method.getAnnotation(StringBody.class).value());
 
             mapper.addMethod(method.getName(), mapperMethod);

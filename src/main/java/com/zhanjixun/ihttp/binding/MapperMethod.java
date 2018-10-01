@@ -18,7 +18,8 @@ public class MapperMethod {
     private String requestCharset;
     private String responseCharset;
     private String body;
-
+    private boolean followRedirects;
+    
     private Map<String, String> headers = Maps.newHashMap();
     private Map<String, String> params = Maps.newHashMap();
     private Map<String, File> files = Maps.newHashMap();

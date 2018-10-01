@@ -3,6 +3,8 @@ package com.zhanjixun.ihttp.executor;
 import com.zhanjixun.ihttp.ICookie;
 import com.zhanjixun.ihttp.Request;
 import com.zhanjixun.ihttp.Response;
+import com.zhanjixun.ihttp.annotations.GET;
+import com.zhanjixun.ihttp.annotations.POST;
 import com.zhanjixun.ihttp.constant.Config;
 import com.zhanjixun.ihttp.logging.ConnectionInfo;
 import com.zhanjixun.ihttp.logging.Log;
@@ -40,13 +42,13 @@ import java.util.stream.Stream;
 @Log4j
 public class HttpClientExecutor extends BaseExecutor {
 
-    private final HttpClient client = new HttpClient();
+    private final HttpClient httpClient = new HttpClient();
     private Log logger;
 
     public HttpClientExecutor(Config config) {
         if (config != null) {
             if (config.getProxy() != null) {
-                client.getHostConfiguration().setProxy(config.getProxy().hostName(), config.getProxy().port());
+                httpClient.getHostConfiguration().setProxy(config.getProxy().hostName(), config.getProxy().port());
             }
             if (config.getLogger() != null) {
                 try {
@@ -59,8 +61,21 @@ public class HttpClientExecutor extends BaseExecutor {
     }
 
     @Override
-    protected Response doGetMethod(Request request) {
+    public Response execute(Request request) {
+        if (request.getMethod().equals(GET.class.getSimpleName())) {
+            return doGetMethod(request);
+        }
+        if (request.getMethod().equals(POST.class.getSimpleName())) {
+            return doPostMethod(request);
+        }
+        throw new RuntimeException("未能识别的http请求方法：" + request.getMethod());
+    }
+
+
+    private Response doGetMethod(Request request) {
         GetMethod method = new GetMethod(request.getUrl());
+        method.setFollowRedirects(request.isFollowRedirects());
+
         String charset = Optional.ofNullable(request.getCharset()).orElse("UTF-8");
         method.getParams().setParameter(HttpMethodParams.HTTP_CONTENT_CHARSET, charset);
 
@@ -79,8 +94,7 @@ public class HttpClientExecutor extends BaseExecutor {
         return executeMethod(method, request.getResponseCharset());
     }
 
-    @Override
-    public Response doPostMethod(Request request) {
+    private Response doPostMethod(Request request) {
         PostMethod method = new PostMethod(request.getUrl());
         String charset = Optional.ofNullable(request.getCharset()).orElse("UTF-8");
         method.getParams().setParameter(HttpMethodParams.HTTP_CONTENT_CHARSET, charset);
@@ -105,9 +119,7 @@ public class HttpClientExecutor extends BaseExecutor {
         }
 
         if (request.getBody() != null) {
-            String contentType = Optional.ofNullable(method.getRequestHeader("Content-Type"))
-                    .orElse(new Header("", "text/html"))
-                    .getValue();
+            String contentType = Optional.ofNullable(method.getRequestHeader("Content-Type")).orElse(new Header("", "text/html")).getValue();
             try {
                 method.setRequestEntity(new StringRequestEntity(request.getBody(), contentType, charset));
             } catch (UnsupportedEncodingException e) {
@@ -121,7 +133,7 @@ public class HttpClientExecutor extends BaseExecutor {
     private Response executeMethod(HttpMethodBase httpMethod, String customizedResponseCharset) {
         try {
             long startTime = System.currentTimeMillis();
-            int status = client.executeMethod(httpMethod);
+            int status = httpClient.executeMethod(httpMethod);
             ConnectionInfo connectionInfo = buildConnectionInfo(startTime, System.currentTimeMillis(), status, httpMethod);
 
             Response response = new Response();
@@ -152,19 +164,13 @@ public class HttpClientExecutor extends BaseExecutor {
             connectionInfo.setStatusLine(httpMethod.getStatusLine().toString());
             connectionInfo.setStatusText(httpMethod.getStatusText());
 
-            Stream.of(httpMethod.getRequestHeaders()).forEach(h ->
-                    connectionInfo.getRequestHeaders().put(new String(h.getName()), h.getValue())
-            );
-            Stream.of(httpMethod.getResponseHeaders()).forEach(h ->
-                    connectionInfo.getResponseHeaders().put(new String(h.getName()), h.getValue())
-            );
+            Stream.of(httpMethod.getRequestHeaders()).forEach(h -> connectionInfo.getRequestHeaders().put(new String(h.getName()), h.getValue()));
+            Stream.of(httpMethod.getResponseHeaders()).forEach(h -> connectionInfo.getResponseHeaders().put(new String(h.getName()), h.getValue()));
 
             if (httpMethod instanceof GetMethod) {
                 connectionInfo.setMethod("GET");
                 if (httpMethod.getQueryString() != null) {
-                    Stream.of(httpMethod.getQueryString().split("&")).forEach(s ->
-                            connectionInfo.getParams().put(new String(s.split("=")[0]), s.split("=")[1])
-                    );
+                    Stream.of(httpMethod.getQueryString().split("&")).forEach(s -> connectionInfo.getParams().put(new String(s.split("=")[0]), s.split("=")[1]));
                 }
             }
             if (httpMethod instanceof PostMethod) {
@@ -174,9 +180,7 @@ public class HttpClientExecutor extends BaseExecutor {
                 if (requestEntity != null && requestEntity instanceof StringRequestEntity) {
                     connectionInfo.setStringBody(((StringRequestEntity) requestEntity).getContent());
                 }
-                Stream.of(postMethod.getParameters()).forEach(h ->
-                        connectionInfo.getParams().put(h.getName(), h.getValue())
-                );
+                Stream.of(postMethod.getParameters()).forEach(h -> connectionInfo.getParams().put(h.getName(), h.getValue()));
             }
             return connectionInfo;
         } catch (URIException e) {
@@ -192,7 +196,7 @@ public class HttpClientExecutor extends BaseExecutor {
 
     @Override
     public ICookie[] getCookies() {
-        Cookie[] cookies = client.getState().getCookies();
+        Cookie[] cookies = httpClient.getState().getCookies();
         ICookie[] iCookies = new ICookie[cookies.length];
         for (int i = 0; i < cookies.length; i++) {
             ICookie iCookie = new ICookie();
@@ -201,4 +205,6 @@ public class HttpClientExecutor extends BaseExecutor {
         }
         return iCookies;
     }
+
+
 }

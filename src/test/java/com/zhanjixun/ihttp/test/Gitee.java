@@ -11,7 +11,7 @@ import java.util.Map;
 @UserAgent("zhanjixun@qq.com")
 public interface Gitee extends CookiesManager {
 
-    @GET(followRedirects = false, charset = "GBK")
+    @GET(followRedirects = false)
     @URL("/login")
     Response index();
 
