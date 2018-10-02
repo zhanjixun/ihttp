@@ -4,8 +4,7 @@ import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
 import com.google.common.collect.Maps;
-import lombok.Getter;
-import lombok.Setter;
+import lombok.Data;
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
 
@@ -15,24 +14,19 @@ import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
 import java.util.Map;
+import java.util.function.Consumer;
 
 /**
  * http请求结果
  *
  * @author zhanjixun
  */
+@Data
 public class Response {
 
-    @Getter
-    @Setter
     private int status;
-    @Getter
     private Map<String, String> headers = Maps.newHashMap();//@bug 当头的key相同value不相同的时候就不能保留多个了！
-    @Getter
-    @Setter
     private byte[] body;
-    @Getter
-    @Setter
     private String charset;
 
     private String text;
@@ -49,6 +43,20 @@ public class Response {
 
     public boolean isOK() {
         return status == 200;
+    }
+
+    public void ifOK(Consumer<Response> ok) {
+        if (isOK()) {
+            ok.accept(this);
+        }
+    }
+
+    public void ok(Consumer<Response> ok, Consumer<Response> no) {
+        if (isOK()) {
+            ok.accept(this);
+        } else {
+            no.accept(this);
+        }
     }
 
     public boolean isRedirect() {
