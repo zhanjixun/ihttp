@@ -21,4 +21,8 @@ public interface CookiesManager {
      */
     ICookie[] getCookies();
 
+    /**
+     * 清除所有cookie
+     */
+    void clearCookies();
 }

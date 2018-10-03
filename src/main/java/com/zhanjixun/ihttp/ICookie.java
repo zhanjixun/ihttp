@@ -11,13 +11,13 @@ import java.util.Date;
 @Data
 public class ICookie {
 
-    private String cookieComment;
+    private String comment;
 
-    private String cookieDomain;
+    private String domain;
 
-    private Date cookieExpiryDate;
+    private Date expiryDate;
 
-    private String cookiePath;
+    private String path;
 
     private boolean isSecure;
 
@@ -25,6 +25,6 @@ public class ICookie {
 
     private boolean hasDomainAttribute = false;
 
-    private int cookieVersion = 0;
+    private int version = 0;
 
 }

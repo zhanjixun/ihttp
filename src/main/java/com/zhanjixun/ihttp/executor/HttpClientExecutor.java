@@ -21,7 +21,6 @@ import org.apache.commons.httpclient.methods.multipart.Part;
 import org.apache.commons.httpclient.methods.multipart.StringPart;
 import org.apache.commons.httpclient.params.HttpMethodParams;
 import org.apache.commons.lang3.StringUtils;
-import org.springframework.beans.BeanUtils;
 
 import java.io.File;
 import java.io.FileNotFoundException;
@@ -191,7 +190,7 @@ public class HttpClientExecutor extends BaseExecutor {
 
     @Override
     public void addCookie(ICookie cookie) {
-
+       
     }
 
     @Override
@@ -200,11 +199,13 @@ public class HttpClientExecutor extends BaseExecutor {
         ICookie[] iCookies = new ICookie[cookies.length];
         for (int i = 0; i < cookies.length; i++) {
             ICookie iCookie = new ICookie();
-            BeanUtils.copyProperties(cookies[i], iCookie);
             iCookies[i] = iCookie;
         }
         return iCookies;
     }
 
-
+    @Override
+    public void clearCookies() {
+        httpClient.getState().clearCookies();
+    }
 }

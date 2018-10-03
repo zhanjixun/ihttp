@@ -1,4 +1,4 @@
-package com.zhanjixun.ihttp.test;
+package com.zhanjixun.ihttp.test.gitee;
 
 import com.zhanjixun.ihttp.CookiesManager;
 import com.zhanjixun.ihttp.Response;
@@ -6,12 +6,11 @@ import com.zhanjixun.ihttp.annotations.*;
 
 import java.util.Map;
 
-@Logger
 @URL("https://gitee.com")
 @UserAgent("zhanjixun@qq.com")
 public interface Gitee extends CookiesManager {
 
-    @GET(followRedirects = false)
+    @GET()
     @URL("/login")
     Response index();
 

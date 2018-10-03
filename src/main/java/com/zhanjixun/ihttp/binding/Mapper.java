@@ -5,8 +5,7 @@ import com.google.common.collect.Maps;
 import com.zhanjixun.ihttp.Request;
 import com.zhanjixun.ihttp.annotations.*;
 import com.zhanjixun.ihttp.constant.Config;
-import lombok.Getter;
-import lombok.Setter;
+import lombok.Data;
 import org.apache.commons.lang3.StringUtils;
 
 import java.io.File;
@@ -19,26 +18,17 @@ import static com.zhanjixun.ihttp.parsing.AnnotationParser.HEADER_ANNOTATIONS;
 /**
  * @author zhanjixun
  */
+@Data
 public class Mapper {
 
     private final Map<String, MapperMethod> methods = Maps.newHashMap();
     private final Map<String, Request> requestCache = Maps.newHashMap();
-    @Getter
-    @Setter
+
     private Class<?> mapperInterface;
-    @Getter
-    @Setter
     private Config config;
-    @Getter
-    @Setter
     private String url;
-    @Getter
-    @Setter
     private String requestCharset;
-    @Getter
-    @Setter
     private String responseCharset;
-    @Getter
     private Map<String, String> headers = Maps.newHashMap();
 
     public Mapper(Class<?> mapperInterface) {
@@ -146,7 +136,7 @@ public class Mapper {
                 }
             } else {
                 for (Map.Entry<String, Class<? extends Annotation>> entry : HEADER_ANNOTATIONS.entrySet()) {
-                    if (annotationType == entry.getValue()) {
+                    if (annotationType != entry.getValue()) {
                         try {
                             String value = (String) entry.getValue().getDeclaredMethod("value").invoke(annotation);
                             request.addHeader(entry.getKey(), value);

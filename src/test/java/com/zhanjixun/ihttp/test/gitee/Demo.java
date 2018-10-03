@@ -1,9 +1,8 @@
-package com.zhanjixun.ihttp.test;
+package com.zhanjixun.ihttp.test.gitee;
 
 import com.google.common.collect.Maps;
 import com.zhanjixun.ihttp.ICookie;
 import com.zhanjixun.ihttp.Response;
-import org.apache.commons.httpclient.Cookie;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -45,10 +44,8 @@ public class Demo {
                 System.out.println("欢迎您：" + home.getDocument().select(".git-user-name-link").get(0).text());
 
                 ICookie[] cookies = gitee.getCookies();
-                System.out.println(Arrays.toString(cookies));
+                Arrays.stream(cookies).forEach(System.out::println);
             }
-
-
         }
     }
 }
