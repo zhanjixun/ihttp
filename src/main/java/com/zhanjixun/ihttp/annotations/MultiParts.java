@@ -13,7 +13,7 @@ import java.lang.annotation.Target;
  */
 @Target(ElementType.METHOD)
 @Retention(RetentionPolicy.RUNTIME)
-public @interface Multiparts {
+public @interface MultiParts {
 
 	FilePart[] value() default {};
 

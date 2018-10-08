@@ -7,7 +7,6 @@ import com.zhanjixun.ihttp.annotations.GET;
 import com.zhanjixun.ihttp.annotations.POST;
 import com.zhanjixun.ihttp.constant.Config;
 import com.zhanjixun.ihttp.logging.ConnectionInfo;
-import com.zhanjixun.ihttp.logging.Log;
 import lombok.extern.log4j.Log4j;
 import okio.Okio;
 import org.apache.commons.collections.CollectionUtils;
@@ -21,12 +20,14 @@ import org.apache.commons.httpclient.methods.multipart.MultipartRequestEntity;
 import org.apache.commons.httpclient.methods.multipart.Part;
 import org.apache.commons.httpclient.methods.multipart.StringPart;
 import org.apache.commons.httpclient.params.HttpMethodParams;
+import org.apache.commons.httpclient.util.DateUtil;
 import org.apache.commons.lang3.StringUtils;
 
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
+import java.util.Date;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
@@ -43,19 +44,11 @@ import java.util.stream.Stream;
 public class HttpClientExecutor extends BaseExecutor {
 
     private final HttpClient httpClient = new HttpClient();
-    private Log logger;
 
     public HttpClientExecutor(Config config) {
         if (config != null) {
             if (config.getProxy() != null) {
                 httpClient.getHostConfiguration().setProxy(config.getProxy().hostName(), config.getProxy().port());
-            }
-            if (config.getLogger() != null) {
-                try {
-                    logger = config.getLogger().value().newInstance();
-                } catch (InstantiationException | IllegalAccessException e) {
-                    e.printStackTrace();
-                }
             }
         }
     }
@@ -142,9 +135,7 @@ public class HttpClientExecutor extends BaseExecutor {
             response.setCharset(Optional.ofNullable(customizedResponseCharset).orElse(httpMethod.getResponseCharSet()));
             Stream.of(httpMethod.getResponseHeaders()).forEach(header -> response.getHeaders().put(header.getName(), header.getValue()));
 
-            if (logger != null) {
-                log.info(logger.toLogString(connectionInfo));
-            }
+            log.info(chromeStyleLog(connectionInfo));
             return response;
         } catch (IOException e) {
             throw new RuntimeException("HTTP请求失败", e);
@@ -152,6 +143,45 @@ public class HttpClientExecutor extends BaseExecutor {
             // 释放连接
             httpMethod.releaseConnection();
         }
+    }
+
+    private static String chromeStyleLog(ConnectionInfo info) {
+        String dateFormatPattern = "yyyy-MM-dd HH:mm:ss.SSS";
+
+        StringBuilder builder = new StringBuilder();
+        builder.append("----------------------").append(DateUtil.formatDate(new Date(info.getStartTime()), dateFormatPattern)).append("\n");
+        builder.append("▼ General").append("\n");
+        builder.append("Request URL:").append(info.getUrl()).append("\n");
+        builder.append("Request Method:").append(info.getMethod()).append("\n");
+        builder.append("Status Code:").append(info.getStatusCode()).append(" ").append(info.getStatusText()).append("\n");
+        builder.append("\n");
+
+        builder.append("▼ Request Headers").append("\n");
+        info.getRequestHeaders().forEach((k, v) -> builder.append(k).append(":").append(v).append("\n"));
+        builder.append("\n");
+
+        builder.append("▼ Response Headers" + "\n");
+        info.getResponseHeaders().forEach((k, v) -> builder.append(k).append(":").append(v).append("\n"));
+        builder.append("\n");
+
+        if (GET.class.getSimpleName().equalsIgnoreCase(info.getMethod()) && !info.getParams().isEmpty()) {
+            builder.append("▼ Query String Parameters" + "\n");
+            info.getParams().forEach((k, v) -> builder.append(k).append("=").append(v).append("\n"));
+            builder.append("\n");
+        }
+        if (POST.class.getSimpleName().equalsIgnoreCase(info.getMethod()) && !info.getParams().isEmpty()) {
+            builder.append("▼ Request Parameters" + "\n");
+            info.getParams().forEach((k, v) -> builder.append(k).append("=").append(v).append("\n"));
+            builder.append("\n");
+        }
+        if (POST.class.getSimpleName().equalsIgnoreCase(info.getMethod()) && info.getStringBody() != null) {
+            builder.append("▼ Request Payload" + "\n");
+            builder.append(info.getStringBody()).append("\n");
+            builder.append("\n");
+        }
+
+        builder.append("----------------------").append(DateUtil.formatDate(new Date(info.getEndTime()), dateFormatPattern)).append(" 耗时：" + (info.getEndTime() - info.getStartTime()) + "ms").append("\n");
+        return builder.toString();
     }
 
     private ConnectionInfo buildConnectionInfo(long startTime, long endTime, int status, HttpMethodBase httpMethod) {
@@ -209,4 +239,6 @@ public class HttpClientExecutor extends BaseExecutor {
     public void clearCookies() {
         httpClient.getState().clearCookies();
     }
+
+
 }

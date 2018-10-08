@@ -88,14 +88,6 @@ public class AnnotationParser implements Parser {
                 }
                 config.setProxy(proxy);
                 mapper.setConfig(config);
-            } else if (annotationType == Logger.class) {
-                Logger logger = (Logger) annotation;
-                Config config = mapper.getConfig();
-                if (config == null) {
-                    config = new Config();
-                }
-                config.setLogger(logger);
-                mapper.setConfig(config);
             }
         }
         //解析请求头
@@ -164,8 +156,8 @@ public class AnnotationParser implements Parser {
             if (method.getAnnotation(FilePart.class) != null) {
                 FilePart f = method.getAnnotation(FilePart.class);
                 mapperMethod.getFiles().put(f.name(), new File(f.value()));
-            } else if (method.getAnnotation(Multiparts.class) != null) {
-                for (FilePart f : method.getAnnotation(Multiparts.class).value()) {
+            } else if (method.getAnnotation(MultiParts.class) != null) {
+                for (FilePart f : method.getAnnotation(MultiParts.class).value()) {
                     mapperMethod.getFiles().put(f.name(), new File(f.value()));
                 }
             }

@@ -1,6 +1,5 @@
 package com.zhanjixun.ihttp.constant;
 
-import com.zhanjixun.ihttp.annotations.Logger;
 import com.zhanjixun.ihttp.annotations.Proxy;
 import lombok.Data;
 
@@ -12,5 +11,4 @@ import lombok.Data;
 @Data
 public class Config {
     private Proxy proxy;
-    private Logger logger;
 }
