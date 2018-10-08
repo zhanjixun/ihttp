@@ -45,26 +45,42 @@ public class Response {
         return status == 200;
     }
 
-    public void ifOK(Consumer<Response> ok) {
-        if (isOK()) {
-            ok.accept(this);
-        }
-    }
-
-    public void ok(Consumer<Response> ok, Consumer<Response> no) {
-        if (isOK()) {
-            ok.accept(this);
-        } else {
-            no.accept(this);
-        }
-    }
-
     public boolean isRedirect() {
         return status == 302;
     }
 
     public boolean isNotFound() {
         return status == 404;
+    }
+
+    public void ifStatus(int status, Consumer<Response> success) {
+        if (this.status == status) {
+            success.accept(this);
+        }
+    }
+
+    public void ifStatus(int status, Consumer<Response> success, Consumer<Response> fail) {
+        if (this.status == status) {
+            success.accept(this);
+        } else {
+            fail.accept(this);
+        }
+    }
+
+    public void ok(Consumer<Response> success) {
+        ifStatus(200, success);
+    }
+
+    public void ok(Consumer<Response> success, Consumer<Response> fail) {
+        ifStatus(200, success, fail);
+    }
+
+    public void redirect(Consumer<Response> success) {
+        ifStatus(302, success);
+    }
+
+    public void redirect(Consumer<Response> success, Consumer<Response> fail) {
+        ifStatus(302, success, fail);
     }
 
     public String getText() {

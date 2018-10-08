@@ -21,7 +21,7 @@ public class Demo {
 
     @Test
     public void name() throws Exception {
-        hao6v.gvod().ifOK(response -> {
+        hao6v.gvod().ok(response -> {
             for (Element li : response.getDocument().select("ul.list li")) {
                 String span = li.select("span").text();
                 String name = li.select("a").text();

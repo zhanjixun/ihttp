@@ -9,6 +9,7 @@ import com.zhanjixun.ihttp.constant.Config;
 import com.zhanjixun.ihttp.logging.ConnectionInfo;
 import com.zhanjixun.ihttp.logging.Log;
 import lombok.extern.log4j.Log4j;
+import okio.Okio;
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.httpclient.*;
 import org.apache.commons.httpclient.methods.GetMethod;
@@ -137,7 +138,7 @@ public class HttpClientExecutor extends BaseExecutor {
 
             Response response = new Response();
             response.setStatus(status);
-            response.setBody(httpMethod.getResponseBody());
+            response.setBody(Okio.buffer(Okio.source(httpMethod.getResponseBodyAsStream())).readByteArray());
             response.setCharset(Optional.ofNullable(customizedResponseCharset).orElse(httpMethod.getResponseCharSet()));
             Stream.of(httpMethod.getResponseHeaders()).forEach(header -> response.getHeaders().put(header.getName(), header.getValue()));
 
@@ -190,7 +191,7 @@ public class HttpClientExecutor extends BaseExecutor {
 
     @Override
     public void addCookie(ICookie cookie) {
-       
+
     }
 
     @Override
