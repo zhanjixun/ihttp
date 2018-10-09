@@ -2,7 +2,7 @@ package com.zhanjixun.ihttp.binding;
 
 
 import com.google.common.collect.Maps;
-import com.zhanjixun.ihttp.executor.HttpClientExecutor;
+import com.zhanjixun.ihttp.executor.CommonsHttpClientExecutor;
 import com.zhanjixun.ihttp.parsing.AnnotationParser;
 import com.zhanjixun.ihttp.parsing.Parser;
 import lombok.Getter;
@@ -26,7 +26,7 @@ public class MapperProxyFactory<T> {
 
     public T newInstance() {
         Mapper mapper = cachedMapper(mapperInterface);
-        MapperProxy mapperProxy = new MapperProxy(mapper, new HttpClientExecutor(mapper.getConfig()));
+        MapperProxy mapperProxy = new MapperProxy(mapper, new CommonsHttpClientExecutor(mapper.getConfig()));
         return newInstance(mapperProxy);
     }
 
