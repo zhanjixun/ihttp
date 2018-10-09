@@ -49,7 +49,7 @@ public class Mapper {
             return request;
         }
         MapperMethod mapperMethod = methods.get(id);
-        Preconditions.checkArgument(Objects.nonNull(mapperMethod), String.format("没有找到id为%s的HTTP请求。", id));
+        Preconditions.checkArgument(Objects.nonNull(mapperMethod), String.format("没有找到id为%s的HTTP请求", id));
 
         request = new Request();
         request.setId(id);
@@ -57,11 +57,7 @@ public class Mapper {
         setGlobalAnnotation(request);
 
         //来自于方法上面的注解配置
-        if (StringUtils.isNotEmpty(request.getUrl()) & !StringUtils.startsWith(mapperMethod.getUrl(), "http")) {
-            request.setUrl(request.getUrl() + mapperMethod.getUrl());
-        } else {
-            request.setUrl(mapperMethod.getUrl());
-        }
+        request.setUrl(buildUrl(request.getUrl(), mapperMethod.getUrl()));
         request.setMethod(mapperMethod.getMethod());
         request.setFollowRedirects(mapperMethod.isFollowRedirects());
 
@@ -104,11 +100,7 @@ public class Mapper {
             Object arg = args[i];
             if (annotationType == URL.class) {
                 String url = (String) arg;
-                if (StringUtils.isNotEmpty(request.getUrl()) && !url.startsWith("http")) {
-                    request.setUrl(request.getUrl() + url);
-                } else {
-                    request.setUrl(url);
-                }
+                request.setUrl(buildUrl(request.getUrl(), url));
             } else if (annotationType == Header.class) {
                 Header header = (Header) annotation;
                 request.addHeader(header.name(), (String) arg);
@@ -159,6 +151,26 @@ public class Mapper {
 
     public String getHeader(String name) {
         return headers.get(name);
+    }
+
+    private String buildUrl(String a, String b) {
+        if (StringUtils.isBlank(a)) {
+            if (StringUtils.isNotBlank(b)) {
+                return b;
+            } else {
+                return null;
+            }
+        } else {
+            if (StringUtils.isBlank(b)) {
+                return a;
+            } else {
+                if (b.startsWith("http")) {
+                    return b;
+                } else {
+                    return a + b;
+                }
+            }
+        }
     }
 }
 
