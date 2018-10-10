@@ -46,7 +46,10 @@ public class Mapper {
         Request request = new Request();
         request.setId(id);
         //来自于类上面的注解配置
-        setCommonAnnotation(request);
+        request.getHeaders().putAll(commonHeaders);
+        request.setCharset(commonRequestCharset);
+        request.setResponseCharset(commonResponseCharset);
+        request.setUrl(commonUrl);
 
         //来自于方法上面的注解配置
         request.setUrl(buildUrl(request.getUrl(), mapperMethod.getUrl()));
@@ -72,13 +75,6 @@ public class Mapper {
 
     public void addMethod(String name, MapperMethod mapperMethod) {
         methods.put(name, mapperMethod);
-    }
-
-    private void setCommonAnnotation(Request request) {
-        request.getHeaders().putAll(commonHeaders);
-        request.setCharset(commonRequestCharset);
-        request.setResponseCharset(commonResponseCharset);
-        request.setUrl(commonUrl);
     }
 
     private void bindingParameter(Request request, Annotation[] parameterMapping, Object... args) {
