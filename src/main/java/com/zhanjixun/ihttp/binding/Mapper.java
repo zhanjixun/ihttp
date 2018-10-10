@@ -154,23 +154,10 @@ public class Mapper {
     }
 
     private String buildUrl(String a, String b) {
-        if (StringUtils.isBlank(a)) {
-            if (StringUtils.isNotBlank(b)) {
-                return b;
-            } else {
-                return null;
-            }
-        } else {
-            if (StringUtils.isBlank(b)) {
-                return a;
-            } else {
-                if (b.startsWith("http")) {
-                    return b;
-                } else {
-                    return a + b;
-                }
-            }
-        }
+        a = StringUtils.isEmpty(a) ? "" : a;
+        b = StringUtils.isEmpty(b) ? "" : b;
+
+        return b.startsWith("http") ? b : a + b;
     }
 }
 
