@@ -1,4 +1,4 @@
-package com.zhanjixun.ihttp;
+package com.zhanjixun.ihttp.domain;
 
 import lombok.Data;
 
@@ -9,7 +9,7 @@ import java.util.Date;
  * @date : 2018/9/28 10:13
  */
 @Data
-public class ICookie {
+public class Cookie {
 
     private String comment;
 

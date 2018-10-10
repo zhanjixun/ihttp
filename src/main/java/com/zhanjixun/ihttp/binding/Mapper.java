@@ -41,7 +41,7 @@ public class Mapper {
 
     public Request getRequest(String id, Object... args) {
         MapperMethod mapperMethod = methods.get(id);
-        Preconditions.checkArgument(Objects.nonNull(mapperMethod), String.format("没有找到id为%s的HTTP请求", id));
+        Preconditions.checkArgument(Objects.nonNull(mapperMethod), String.format("没有找到id为%s.%s的HTTP请求", mapperInterface.getName(), id));
 
         Request request = new Request();
         request.setId(id);
@@ -58,18 +58,17 @@ public class Mapper {
 
         request.setBody(mapperMethod.getBody());
 
-        if (StringUtils.isNotEmpty(mapperMethod.getRequestCharset())) {
-            request.setCharset(mapperMethod.getRequestCharset());
-        }
-        if (StringUtils.isNotEmpty(mapperMethod.getResponseCharset())) {
-            request.setResponseCharset(mapperMethod.getResponseCharset());
-        }
+        request.setCharset(chooseCharset(request.getCharset(), mapperMethod.getRequestCharset()));
+        request.setResponseCharset(chooseCharset(request.getResponseCharset(), mapperMethod.getResponseCharset()));
+
         request.getHeaders().putAll(mapperMethod.getHeaders());
         request.getParams().putAll(mapperMethod.getParams());
         request.getFiles().putAll(mapperMethod.getFiles());
 
         //绑定动态参数
         bindingParameter(request, mapperMethod.getParamMapping(), args);
+        Preconditions.checkArgument(StringUtils.isBlank(request.getUrl()), String.format("HTTP请求没有设置url %s.%s", mapperInterface.getName(), id));
+
         return request;
     }
 
@@ -100,15 +99,13 @@ public class Mapper {
             }
             if (annotationType == FilePart.class) {
                 FilePart filePart = (FilePart) annotation;
-                File file;
                 if (arg instanceof String) {
-                    file = new File((String) arg);
+                    request.addFile(filePart.name(), new File((String) arg));
                 } else if (arg instanceof File) {
-                    file = (File) arg;
+                    request.addFile(filePart.name(), (File) arg);
                 } else {
                     throw new IllegalArgumentException("在方法的参数中使用" + FilePart.class.getName() + "时，被注解的参数类型必须为java.lang.String或者java.io.File");
                 }
-                request.addFile(filePart.name(), file);
             }
             if (annotationType == StringBody.class) {
                 request.setBody((String) arg);
@@ -122,6 +119,16 @@ public class Mapper {
             }
             HEADER_ANNOTATIONS.entrySet().stream().filter(entry -> annotationType == entry.getValue()).forEach(entry -> request.addHeader(entry.getKey(), (String) arg));
         }
+    }
+
+    private String chooseCharset(String a, String b) {
+        if (StringUtils.isNotBlank(b)) {
+            return b;
+        }
+        if (StringUtils.isNotBlank(a)) {
+            return a;
+        }
+        return null;
     }
 
     private String buildUrl(String a, String b) {

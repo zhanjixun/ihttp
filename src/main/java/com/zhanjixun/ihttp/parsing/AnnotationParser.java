@@ -14,10 +14,7 @@ import java.lang.annotation.Annotation;
 import java.lang.reflect.AnnotatedElement;
 import java.lang.reflect.Method;
 import java.lang.reflect.Parameter;
-import java.util.Arrays;
-import java.util.List;
-import java.util.Map;
-import java.util.Objects;
+import java.util.*;
 import java.util.stream.Collectors;
 
 /**
@@ -83,10 +80,7 @@ public class AnnotationParser implements Parser {
             }
             if (annotationType == Proxy.class) {
                 Proxy proxy = (Proxy) annotation;
-                Config config = mapper.getConfig();
-                if (config == null) {
-                    config = new Config();
-                }
+                Config config = Optional.ofNullable(mapper.getConfig()).orElse(new Config());
                 config.setProxy(proxy);
                 mapper.setConfig(config);
             }
@@ -171,6 +165,7 @@ public class AnnotationParser implements Parser {
         }
     }
 
+    //TODO Map<String, String>传递Header都有可能覆盖相同key的Header
     private Map<String, String> parseHeader(AnnotatedElement element) {
         Map<String, String> result = Maps.newHashMap();
         if (element.getAnnotation(Header.class) != null) {

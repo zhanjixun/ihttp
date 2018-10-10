@@ -26,6 +26,6 @@ public class MapperMethod {
     private Map<String, String> headers = Maps.newHashMap();
     private Map<String, String> params = Maps.newHashMap();
     private Map<String, File> files = Maps.newHashMap();
-    
+
     private Annotation[] paramMapping;
 }

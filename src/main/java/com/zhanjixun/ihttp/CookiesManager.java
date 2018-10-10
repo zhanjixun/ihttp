@@ -1,5 +1,7 @@
 package com.zhanjixun.ihttp;
 
+import com.zhanjixun.ihttp.domain.Cookie;
+
 /**
  * cookie管理
  *
@@ -12,14 +14,14 @@ public interface CookiesManager {
      *
      * @param cookie 需要增加的cookie
      */
-    void addCookie(ICookie cookie);
+    void addCookie(Cookie cookie);
 
     /**
      * 获取所有cookie
      *
      * @return 所有cookie
      */
-    ICookie[] getCookies();
+    Cookie[] getCookies();
 
     /**
      * 清除所有cookie
