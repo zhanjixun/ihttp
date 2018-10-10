@@ -11,6 +11,8 @@ import java.lang.reflect.Proxy;
 import java.util.Map;
 
 /**
+ * Mapper代理工厂
+ *
  * @author zhanjixun
  */
 public class MapperProxyFactory<T> {
