@@ -31,7 +31,6 @@ public class Request {
 
     private ParamMapping parameterMapping;
 
-
     public void addHeader(String name, String value) {
         headers.put(name, value);
     }

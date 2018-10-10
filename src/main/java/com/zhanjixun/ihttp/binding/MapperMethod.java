@@ -7,6 +7,8 @@ import java.io.File;
 import java.util.Map;
 
 /**
+ * 对应一个Mapper中定义的方法
+ *
  * @author zhanjixun
  */
 @Data
@@ -26,11 +28,4 @@ public class MapperMethod {
 
     private ParamMapping paramMapping;
 
-    public void addHeader(String name, String value) {
-        headers.put(name, value);
-    }
-
-    public String getHeader(String name) {
-        return headers.get(name);
-    }
 }

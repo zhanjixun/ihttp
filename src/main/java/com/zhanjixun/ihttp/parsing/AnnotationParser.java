@@ -22,6 +22,8 @@ import java.util.Objects;
 import java.util.stream.Collectors;
 
 /**
+ * 解析注解方式Mapper
+ *
  * @author zhanjixun
  */
 @Log4j
@@ -72,15 +74,15 @@ public class AnnotationParser implements Parser {
         for (Annotation annotation : target.getAnnotations()) {
             Class<? extends Annotation> annotationType = annotation.annotationType();
             if (annotationType == URL.class) {
-                URL url = (URL) annotation;
-                mapper.setUrl(url.value());
-            } else if (annotationType == RequestCharset.class) {
-                RequestCharset requestCharset = (RequestCharset) annotation;
-                mapper.setRequestCharset(requestCharset.value());
-            } else if (annotationType == ResponseCharset.class) {
-                ResponseCharset responseCharset = (ResponseCharset) annotation;
-                mapper.setResponseCharset(responseCharset.value());
-            } else if (annotationType == Proxy.class) {
+                mapper.setCommonUrl(((URL) annotation).value());
+            }
+            if (annotationType == RequestCharset.class) {
+                mapper.setCommonRequestCharset(((RequestCharset) annotation).value());
+            }
+            if (annotationType == ResponseCharset.class) {
+                mapper.setCommonResponseCharset(((ResponseCharset) annotation).value());
+            }
+            if (annotationType == Proxy.class) {
                 Proxy proxy = (Proxy) annotation;
                 Config config = mapper.getConfig();
                 if (config == null) {
@@ -91,7 +93,7 @@ public class AnnotationParser implements Parser {
             }
         }
         //解析请求头
-        parseHeader(target).forEach(mapper::addHeader);
+        mapper.getCommonHeaders().putAll(parseHeader(target));
     }
 
     private void parseMethodAnnotation(Mapper mapper) {
@@ -174,16 +176,19 @@ public class AnnotationParser implements Parser {
 
     private Map<String, String> parseHeader(AnnotatedElement element) {
         Map<String, String> result = Maps.newHashMap();
-        if (Objects.nonNull(element.getAnnotation(Headers.class))) {
-            Arrays.stream(element.getAnnotation(Headers.class).value())
-                    .forEach(h -> result.put(h.name(), h.value()));
+        if (element.getAnnotation(Header.class) != null) {
+            Header header = element.getAnnotation(Header.class);
+            result.put(header.name(), header.value());
+        }
+        if (element.getAnnotation(Headers.class) != null) {
+            Arrays.stream(element.getAnnotation(Headers.class).value()).forEach(header -> result.put(header.name(), header.value()));
         }
         for (Map.Entry<String, Class<? extends Annotation>> entry : HEADER_ANNOTATIONS.entrySet()) {
-            Class<? extends Annotation> c = entry.getValue();
-            if (element.isAnnotationPresent(c)) {
-                Annotation annotation = element.getAnnotation(c);
+            Class<? extends Annotation> annotationClass = entry.getValue();
+            if (element.isAnnotationPresent(annotationClass)) {
+                Annotation annotation = element.getAnnotation(annotationClass);
                 try {
-                    String value = (String) c.getMethod("value").invoke(annotation);
+                    String value = (String) annotationClass.getMethod("value").invoke(annotation);
                     result.put(entry.getKey(), value);
                 } catch (Exception e) {
                     throw new RuntimeException("Could not find value method on Header annotation.  Cause: " + e, e);

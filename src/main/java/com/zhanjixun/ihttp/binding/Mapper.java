@@ -16,20 +16,25 @@ import java.util.Objects;
 import static com.zhanjixun.ihttp.parsing.AnnotationParser.HEADER_ANNOTATIONS;
 
 /**
+ * 对应一个定义的Mapper接口
+ *
  * @author zhanjixun
  */
 @Data
 public class Mapper {
 
+    //Mapper定义类
+    private Class<?> mapperInterface;
+    //存放所有方法
     private final Map<String, MapperMethod> methods = Maps.newHashMap();
+    //缓存已经使用过的方法
     private final Map<String, Request> requestCache = Maps.newHashMap();
 
-    private Class<?> mapperInterface;
     private Config config;
-    private String url;
-    private String requestCharset;
-    private String responseCharset;
-    private Map<String, String> headers = Maps.newHashMap();
+    private String commonUrl;
+    private String commonRequestCharset;
+    private String commonResponseCharset;
+    private Map<String, String> commonHeaders = Maps.newHashMap();
 
     public Mapper(Class<?> mapperInterface) {
         this.mapperInterface = mapperInterface;
@@ -38,11 +43,13 @@ public class Mapper {
     public Request getRequest(String id, Object... args) {
         Request request = cacheRequest(id);
         bindingParameter(request, args);
-        //出厂检验
-        Preconditions.checkArgument(StringUtils.isNotEmpty(request.getUrl()), String.format("请求的URL不能为空:%s", mapperInterface.getName() + "." + request.getId()));
         return request;
     }
 
+    public void addMethod(String name, MapperMethod mapperMethod) {
+        methods.put(name, mapperMethod);
+    }
+    
     private Request cacheRequest(String id) {
         Request request = requestCache.get(id);
         if (request != null) {
@@ -54,7 +61,7 @@ public class Mapper {
         request = new Request();
         request.setId(id);
         //来自于类上面的注解配置
-        setGlobalAnnotation(request);
+        setCommonAnnotation(request);
 
         //来自于方法上面的注解配置
         request.setUrl(buildUrl(request.getUrl(), mapperMethod.getUrl()));
@@ -62,30 +69,25 @@ public class Mapper {
         request.setFollowRedirects(mapperMethod.isFollowRedirects());
 
         request.setBody(mapperMethod.getBody());
+
         if (StringUtils.isNotEmpty(mapperMethod.getRequestCharset())) {
             request.setCharset(mapperMethod.getRequestCharset());
         }
         if (StringUtils.isNotEmpty(mapperMethod.getResponseCharset())) {
             request.setResponseCharset(mapperMethod.getResponseCharset());
         }
+        request.getHeaders().putAll(mapperMethod.getHeaders());
+        request.getParams().putAll(mapperMethod.getParams());
+        request.getFiles().putAll(mapperMethod.getFiles());
         request.setParameterMapping(mapperMethod.getParamMapping());
-        for (Map.Entry<String, String> entry : mapperMethod.getHeaders().entrySet()) {
-            request.addHeader(entry.getKey(), entry.getValue());
-        }
-        for (Map.Entry<String, String> entry : mapperMethod.getParams().entrySet()) {
-            request.addParam(entry.getKey(), entry.getValue());
-        }
-        for (Map.Entry<String, File> entry : mapperMethod.getFiles().entrySet()) {
-            request.addFile(entry.getKey(), entry.getValue());
-        }
         return request;
     }
 
-    private void setGlobalAnnotation(Request request) {
-        headers.forEach(request::addHeader);
-        request.setCharset(requestCharset);
-        request.setResponseCharset(responseCharset);
-        request.setUrl(url);
+    private void setCommonAnnotation(Request request) {
+        request.getHeaders().putAll(commonHeaders);
+        request.setCharset(commonRequestCharset);
+        request.setResponseCharset(commonResponseCharset);
+        request.setUrl(commonUrl);
     }
 
     private void bindingParameter(Request request, Object... args) {
@@ -139,18 +141,6 @@ public class Mapper {
                 }
             }
         }
-    }
-
-    public void addMethod(String name, MapperMethod mapperMethod) {
-        methods.put(name, mapperMethod);
-    }
-
-    public void addHeader(String name, String value) {
-        headers.put(name, value);
-    }
-
-    public String getHeader(String name) {
-        return headers.get(name);
     }
 
     private String buildUrl(String a, String b) {
