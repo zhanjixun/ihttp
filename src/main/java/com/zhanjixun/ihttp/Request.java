@@ -1,7 +1,6 @@
 package com.zhanjixun.ihttp;
 
 import com.google.common.collect.Maps;
-import com.zhanjixun.ihttp.binding.ParamMapping;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 
@@ -28,8 +27,6 @@ public class Request {
     private Map<String, String> headers = Maps.newHashMap();
     private Map<String, String> params = Maps.newHashMap();
     private Map<String, File> files = Maps.newHashMap();
-
-    private ParamMapping parameterMapping;
 
     public void addHeader(String name, String value) {
         headers.put(name, value);

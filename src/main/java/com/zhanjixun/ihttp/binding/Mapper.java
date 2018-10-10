@@ -6,6 +6,7 @@ import com.zhanjixun.ihttp.Request;
 import com.zhanjixun.ihttp.annotations.*;
 import com.zhanjixun.ihttp.constant.Config;
 import lombok.Data;
+import org.apache.commons.lang3.ArrayUtils;
 import org.apache.commons.lang3.StringUtils;
 
 import java.io.File;
@@ -27,8 +28,6 @@ public class Mapper {
     private Class<?> mapperInterface;
     //存放所有方法
     private final Map<String, MapperMethod> methods = Maps.newHashMap();
-    //缓存已经使用过的方法
-    private final Map<String, Request> requestCache = Maps.newHashMap();
 
     private Config config;
     private String commonUrl;
@@ -41,24 +40,10 @@ public class Mapper {
     }
 
     public Request getRequest(String id, Object... args) {
-        Request request = cacheRequest(id);
-        bindingParameter(request, args);
-        return request;
-    }
-
-    public void addMethod(String name, MapperMethod mapperMethod) {
-        methods.put(name, mapperMethod);
-    }
-    
-    private Request cacheRequest(String id) {
-        Request request = requestCache.get(id);
-        if (request != null) {
-            return request;
-        }
         MapperMethod mapperMethod = methods.get(id);
         Preconditions.checkArgument(Objects.nonNull(mapperMethod), String.format("没有找到id为%s的HTTP请求", id));
 
-        request = new Request();
+        Request request = new Request();
         request.setId(id);
         //来自于类上面的注解配置
         setCommonAnnotation(request);
@@ -79,8 +64,14 @@ public class Mapper {
         request.getHeaders().putAll(mapperMethod.getHeaders());
         request.getParams().putAll(mapperMethod.getParams());
         request.getFiles().putAll(mapperMethod.getFiles());
-        request.setParameterMapping(mapperMethod.getParamMapping());
+
+        //绑定动态参数
+        bindingParameter(request, mapperMethod.getParamMapping(), args);
         return request;
+    }
+
+    public void addMethod(String name, MapperMethod mapperMethod) {
+        methods.put(name, mapperMethod);
     }
 
     private void setCommonAnnotation(Request request) {
@@ -90,26 +81,28 @@ public class Mapper {
         request.setUrl(commonUrl);
     }
 
-    private void bindingParameter(Request request, Object... args) {
-        ParamMapping parameterMapping = request.getParameterMapping();
-        if (parameterMapping == null) {
+    private void bindingParameter(Request request, Annotation[] parameterMapping, Object... args) {
+        if (ArrayUtils.isEmpty(parameterMapping)) {
             return;
         }
-        for (int i = 0; i < parameterMapping.paramTypes().length; i++) {
-            Annotation annotation = parameterMapping.paramTypes()[i];
+        for (int i = 0; i < parameterMapping.length; i++) {
+            Annotation annotation = parameterMapping[i];
             Class<? extends Annotation> annotationType = annotation.annotationType();
 
             Object arg = args[i];
             if (annotationType == URL.class) {
                 String url = (String) arg;
                 request.setUrl(buildUrl(request.getUrl(), url));
-            } else if (annotationType == Header.class) {
+            }
+            if (annotationType == Header.class) {
                 Header header = (Header) annotation;
                 request.addHeader(header.name(), (String) arg);
-            } else if (annotationType == Param.class) {
+            }
+            if (annotationType == Param.class) {
                 Param param = (Param) annotation;
                 request.addParam(param.name(), (String) arg);
-            } else if (annotationType == FilePart.class) {
+            }
+            if (annotationType == FilePart.class) {
                 FilePart filePart = (FilePart) annotation;
                 File file;
                 if (arg instanceof String) {
@@ -120,26 +113,18 @@ public class Mapper {
                     throw new IllegalArgumentException("在方法的参数中使用" + FilePart.class.getName() + "时，被注解的参数类型必须为java.lang.String或者java.io.File");
                 }
                 request.addFile(filePart.name(), file);
-            } else if (annotationType == StringBody.class) {
+            }
+            if (annotationType == StringBody.class) {
                 request.setBody((String) arg);
-            } else if (annotationType == ParamMap.class) {
+            }
+            if (annotationType == ParamMap.class) {
                 if (arg instanceof Map) {
                     ((Map<String, ? extends Object>) arg).forEach((k, v) -> request.addParam(k, String.valueOf(v)));
                 } else {
                     throw new IllegalArgumentException("在方法的参数中使用" + ParamMap.class.getName() + "时，被注解的参数类型必须为java.util.Map");
                 }
-            } else {
-                for (Map.Entry<String, Class<? extends Annotation>> entry : HEADER_ANNOTATIONS.entrySet()) {
-                    if (annotationType != entry.getValue()) {
-                        try {
-                            String value = (String) entry.getValue().getDeclaredMethod("value").invoke(annotation);
-                            request.addHeader(entry.getKey(), value);
-                        } catch (Exception e) {
-                            throw new RuntimeException("Could not find value method on Header annotation.  Cause: " + e, e);
-                        }
-                    }
-                }
             }
+            HEADER_ANNOTATIONS.entrySet().stream().filter(entry -> annotationType == entry.getValue()).forEach(entry -> request.addHeader(entry.getKey(), (String) arg));
         }
     }
 

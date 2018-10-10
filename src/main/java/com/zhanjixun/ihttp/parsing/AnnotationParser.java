@@ -5,7 +5,6 @@ import com.google.common.collect.Maps;
 import com.zhanjixun.ihttp.annotations.*;
 import com.zhanjixun.ihttp.binding.Mapper;
 import com.zhanjixun.ihttp.binding.MapperMethod;
-import com.zhanjixun.ihttp.binding.ParamMapping;
 import com.zhanjixun.ihttp.constant.Config;
 import lombok.extern.log4j.Log4j;
 import org.apache.commons.collections.CollectionUtils;
@@ -127,8 +126,8 @@ public class AnnotationParser implements Parser {
             }
 
             //解析方法形参
-            ParamMapping parameterMapping = new ParamMapping();
             Parameter[] parameters = method.getParameters();
+            Annotation[] parameterAMapping = new Annotation[method.getParameterCount()];
             for (int i = 0; i < method.getParameterCount(); i++) {
                 List<Annotation> annotations = Arrays.stream(parameters[i].getAnnotations())
                         .filter(a -> PARAMETER_ANNOTATIONS.contains(a.annotationType()))
@@ -136,11 +135,9 @@ public class AnnotationParser implements Parser {
                 if (CollectionUtils.isEmpty(annotations)) {
                     continue;
                 }
-                parameterMapping.put(i, annotations.get(0));
+                parameterAMapping[i] = annotations.get(0);
             }
-            if (parameterMapping.size() != 0) {
-                mapperMethod.setParamMapping(parameterMapping);
-            }
+            mapperMethod.setParamMapping(parameterAMapping);
 
             //请求头
             mapperMethod.getHeaders().putAll(parseHeader(method));

@@ -4,6 +4,7 @@ import com.google.common.collect.Maps;
 import lombok.Data;
 
 import java.io.File;
+import java.lang.annotation.Annotation;
 import java.util.Map;
 
 /**
@@ -25,7 +26,6 @@ public class MapperMethod {
     private Map<String, String> headers = Maps.newHashMap();
     private Map<String, String> params = Maps.newHashMap();
     private Map<String, File> files = Maps.newHashMap();
-
-    private ParamMapping paramMapping;
-
+    
+    private Annotation[] paramMapping;
 }
