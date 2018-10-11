@@ -146,7 +146,8 @@ public class AnnotationParser implements Parser {
             if (method.getAnnotation(Param.class) != null) {
                 Param p = method.getAnnotation(Param.class);
                 mapperMethod.getParams().put(p.name(), p.value());
-            } else if (method.getAnnotation(Params.class) != null) {
+            }
+            if (method.getAnnotation(Params.class) != null) {
                 for (Param p : method.getAnnotation(Params.class).value()) {
                     mapperMethod.getParams().put(p.name(), p.value());
                 }
