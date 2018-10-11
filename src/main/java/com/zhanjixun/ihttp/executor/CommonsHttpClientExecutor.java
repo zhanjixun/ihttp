@@ -87,7 +87,7 @@ public class CommonsHttpClientExecutor extends BaseExecutor {
         }
         request.getHeaders().forEach(method::addRequestHeader);
 
-        return executeMethod(method, request.getResponseCharset());
+        return executeMethod(method, request);
     }
 
     private Response doPostMethod(Request request) {
@@ -123,19 +123,20 @@ public class CommonsHttpClientExecutor extends BaseExecutor {
             }
         }
 
-        return executeMethod(method, request.getResponseCharset());
+        return executeMethod(method, request);
     }
 
-    private Response executeMethod(HttpMethodBase httpMethod, String customizedResponseCharset) {
+    private Response executeMethod(HttpMethodBase httpMethod, Request request) {
         try {
             long startTime = System.currentTimeMillis();
             int status = httpClient.executeMethod(httpMethod);
             ConnectionInfo connectionInfo = buildConnectionInfo(startTime, System.currentTimeMillis(), status, httpMethod);
 
             Response response = new Response();
+            response.setRequest(request);
             response.setStatus(status);
             response.setBody(Okio.buffer(Okio.source(httpMethod.getResponseBodyAsStream())).readByteArray());
-            response.setCharset(Optional.ofNullable(customizedResponseCharset).orElse(httpMethod.getResponseCharSet()));
+            response.setCharset(Optional.ofNullable(request.getResponseCharset()).orElse(httpMethod.getResponseCharSet()));
             Stream.of(httpMethod.getResponseHeaders()).forEach(header -> response.getHeaders().put(header.getName(), header.getValue()));
 
             log.info(chromeStyleLog(connectionInfo));

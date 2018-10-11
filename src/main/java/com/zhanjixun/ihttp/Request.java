@@ -1,10 +1,14 @@
 package com.zhanjixun.ihttp;
 
+import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
+import com.zhanjixun.ihttp.domain.Header;
+import com.zhanjixun.ihttp.domain.Param;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 
 import java.io.File;
+import java.util.List;
 import java.util.Map;
 
 /**
@@ -23,6 +27,9 @@ public class Request {
     private String charset;
     private String responseCharset;
     private boolean followRedirects = true;
+
+    private List<Header> headerList = Lists.newArrayList();
+    private List<Param> paramList = Lists.newArrayList();
 
     private Map<String, String> headers = Maps.newHashMap();
     private Map<String, String> params = Maps.newHashMap();

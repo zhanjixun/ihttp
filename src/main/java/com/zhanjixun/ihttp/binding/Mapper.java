@@ -44,7 +44,7 @@ public class Mapper {
         Preconditions.checkArgument(Objects.nonNull(mapperMethod), String.format("没有找到id为%s.%s的HTTP请求", mapperInterface.getName(), id));
 
         Request request = new Request();
-        request.setId(id);
+        request.setId(mapperInterface.getName() + "." + id);
         //来自于类上面的注解配置
         request.getHeaders().putAll(commonHeaders);
         request.setCharset(commonRequestCharset);
@@ -67,7 +67,7 @@ public class Mapper {
 
         //绑定动态参数
         bindingParameter(request, mapperMethod.getParamMapping(), args);
-        Preconditions.checkArgument(StringUtils.isBlank(request.getUrl()), String.format("HTTP请求没有设置url %s.%s", mapperInterface.getName(), id));
+        Preconditions.checkArgument(StringUtils.isNotBlank(request.getUrl()), String.format("HTTP请求没有设置url %s.%s", mapperInterface.getName(), id));
 
         return request;
     }

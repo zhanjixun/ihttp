@@ -1,10 +1,10 @@
 package com.zhanjixun.ihttp.executor;
 
-import com.zhanjixun.ihttp.ICookie;
 import com.zhanjixun.ihttp.Request;
 import com.zhanjixun.ihttp.Response;
 import com.zhanjixun.ihttp.annotations.GET;
 import com.zhanjixun.ihttp.annotations.POST;
+import com.zhanjixun.ihttp.domain.Cookie;
 import lombok.extern.log4j.Log4j;
 import okio.Okio;
 
@@ -64,19 +64,19 @@ public class JavaExecutor extends BaseExecutor {
         return null;
     }
 
+
     @Override
-    public void addCookie(ICookie cookie) {
+    public void addCookie(Cookie cookie) {
 
     }
 
     @Override
-    public ICookie[] getCookies() {
-        return new ICookie[0];
+    public Cookie[] getCookies() {
+        return new Cookie[0];
     }
 
     @Override
     public void clearCookies() {
 
     }
-
 }

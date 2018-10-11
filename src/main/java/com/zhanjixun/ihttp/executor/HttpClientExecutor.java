@@ -1,8 +1,8 @@
 package com.zhanjixun.ihttp.executor;
 
-import com.zhanjixun.ihttp.ICookie;
 import com.zhanjixun.ihttp.Request;
 import com.zhanjixun.ihttp.Response;
+import com.zhanjixun.ihttp.domain.Cookie;
 import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.impl.client.HttpClients;
 
@@ -22,13 +22,13 @@ public class HttpClientExecutor extends BaseExecutor {
     }
 
     @Override
-    public void addCookie(ICookie cookie) {
+    public void addCookie(Cookie cookie) {
 
     }
 
     @Override
-    public ICookie[] getCookies() {
-        return new ICookie[0];
+    public Cookie[] getCookies() {
+        return new Cookie[0];
     }
 
     @Override
