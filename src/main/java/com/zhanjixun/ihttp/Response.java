@@ -4,8 +4,7 @@ import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
 import com.google.common.collect.Lists;
-import com.google.common.collect.Maps;
-import com.zhanjixun.ihttp.domain.Header;
+import com.zhanjixun.ihttp.domain.NameValuePair;
 import lombok.Data;
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
@@ -16,7 +15,6 @@ import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
 import java.util.List;
-import java.util.Map;
 import java.util.function.Consumer;
 
 /**
@@ -27,12 +25,10 @@ import java.util.function.Consumer;
 @Data
 public class Response {
 
-    //
     private Request request;
 
     private int status;
-    private Map<String, String> headers = Maps.newHashMap();//@bug 当头的key相同value不相同的时候就不能保留多个了！
-    private List<Header> headerList = Lists.newArrayList();
+    private List<NameValuePair> headers = Lists.newArrayList();
 
     private byte[] body;
     private String charset;
@@ -42,11 +38,7 @@ public class Response {
     private BufferedImage image;
 
     public void addHeader(String name, String value) {
-        headers.put(name, value);
-    }
-
-    public String getHeader(String name) {
-        return headers.get(name);
+        headers.add(new NameValuePair(name, value));
     }
 
     public boolean isOK() {

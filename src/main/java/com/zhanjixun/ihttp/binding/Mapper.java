@@ -1,16 +1,19 @@
 package com.zhanjixun.ihttp.binding;
 
 import com.google.common.base.Preconditions;
+import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import com.zhanjixun.ihttp.Request;
 import com.zhanjixun.ihttp.annotations.*;
 import com.zhanjixun.ihttp.constant.Config;
+import com.zhanjixun.ihttp.domain.NameValuePair;
 import lombok.Data;
 import org.apache.commons.lang3.ArrayUtils;
 import org.apache.commons.lang3.StringUtils;
 
 import java.io.File;
 import java.lang.annotation.Annotation;
+import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 
@@ -33,7 +36,7 @@ public class Mapper {
     private String commonUrl;
     private String commonRequestCharset;
     private String commonResponseCharset;
-    private Map<String, String> commonHeaders = Maps.newHashMap();
+    private List<NameValuePair> commonHeaders = Lists.newArrayList();
 
     public Mapper(Class<?> mapperInterface) {
         this.mapperInterface = mapperInterface;
@@ -46,7 +49,7 @@ public class Mapper {
         Request request = new Request();
         request.setId(mapperInterface.getName() + "." + id);
         //来自于类上面的注解配置
-        request.getHeaders().putAll(commonHeaders);
+        request.getHeaders().addAll(commonHeaders);
         request.setCharset(commonRequestCharset);
         request.setResponseCharset(commonResponseCharset);
         request.setUrl(commonUrl);
@@ -56,14 +59,14 @@ public class Mapper {
         request.setMethod(mapperMethod.getMethod());
         request.setFollowRedirects(mapperMethod.isFollowRedirects());
 
-        request.setBody(mapperMethod.getBody());
+        request.setBody(mapperMethod.getStringBody());
 
         request.setCharset(chooseCharset(request.getCharset(), mapperMethod.getRequestCharset()));
         request.setResponseCharset(chooseCharset(request.getResponseCharset(), mapperMethod.getResponseCharset()));
 
-        request.getHeaders().putAll(mapperMethod.getHeaders());
-        request.getParams().putAll(mapperMethod.getParams());
-        request.getFiles().putAll(mapperMethod.getFiles());
+        request.getHeaders().addAll(mapperMethod.getHeaders());
+        request.getParams().addAll(mapperMethod.getParams());
+        request.getMultiParts().addAll(mapperMethod.getMultiParts());
 
         //绑定动态参数
         bindingParameter(request, mapperMethod.getParamMapping(), args);

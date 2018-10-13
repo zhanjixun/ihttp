@@ -6,6 +6,7 @@ import com.zhanjixun.ihttp.annotations.*;
 import com.zhanjixun.ihttp.binding.Mapper;
 import com.zhanjixun.ihttp.binding.MapperMethod;
 import com.zhanjixun.ihttp.constant.Config;
+import com.zhanjixun.ihttp.domain.NameValuePair;
 import lombok.extern.log4j.Log4j;
 import org.apache.commons.collections.CollectionUtils;
 
@@ -52,6 +53,7 @@ public class AnnotationParser implements Parser {
         PARAMETER_ANNOTATIONS.add(Header.class);
         PARAMETER_ANNOTATIONS.add(ParamMap.class);
         PARAMETER_ANNOTATIONS.addAll(HEADER_ANNOTATIONS.values());
+        PARAMETER_ANNOTATIONS.add(Placeholder.class);
     }
 
     public AnnotationParser(Class<?> target) {
@@ -86,7 +88,7 @@ public class AnnotationParser implements Parser {
             }
         }
         //解析请求头
-        mapper.getCommonHeaders().putAll(parseHeader(target));
+        mapper.getCommonHeaders().addAll(parseHeader(target));
     }
 
     private void parseMethodAnnotation(Mapper mapper) {
@@ -100,9 +102,7 @@ public class AnnotationParser implements Parser {
 
             //http方法
             List<? extends Annotation> httpMethod = HTTP_METHOD_ANNOTATIONS.stream()
-                    .map(method::getAnnotation)
-                    .filter(Objects::nonNull)
-                    .collect(Collectors.toList());
+                    .map(method::getAnnotation).filter(Objects::nonNull).collect(Collectors.toList());
             if (CollectionUtils.isEmpty(httpMethod)) {
                 throw new RuntimeException(String.format("没有找到HTTP请求方法 %s", target.getName() + "." + method.getName()));
             }
@@ -134,25 +134,26 @@ public class AnnotationParser implements Parser {
             mapperMethod.setParamMapping(parameterAMapping);
 
             //请求头
-            mapperMethod.getHeaders().putAll(parseHeader(method));
+            mapperMethod.getHeaders().addAll(parseHeader(method));
 
             //固定参数
             if (method.getAnnotation(Param.class) != null) {
                 Param p = method.getAnnotation(Param.class);
-                mapperMethod.getParams().put(p.name(), p.value());
+                mapperMethod.getParams().add(new NameValuePair(p.name(), p.value()));
             }
             if (method.getAnnotation(Params.class) != null) {
                 for (Param p : method.getAnnotation(Params.class).value()) {
-                    mapperMethod.getParams().put(p.name(), p.value());
+                    mapperMethod.getParams().add(new NameValuePair(p.name(), p.value()));
                 }
             }
 
             if (method.getAnnotation(FilePart.class) != null) {
                 FilePart f = method.getAnnotation(FilePart.class);
-                mapperMethod.getFiles().put(f.name(), new File(f.value()));
-            } else if (method.getAnnotation(MultiParts.class) != null) {
+                mapperMethod.getMultiParts().add(new com.zhanjixun.ihttp.domain.MultiParts(f.name(), new File(f.value())));
+            }
+            if (method.getAnnotation(MultiParts.class) != null) {
                 for (FilePart f : method.getAnnotation(MultiParts.class).value()) {
-                    mapperMethod.getFiles().put(f.name(), new File(f.value()));
+                    mapperMethod.getMultiParts().add(new com.zhanjixun.ihttp.domain.MultiParts(f.name(), new File(f.value())));
                 }
             }
 
@@ -160,21 +161,22 @@ public class AnnotationParser implements Parser {
             mapperMethod.setResponseCharset(method.getAnnotation(ResponseCharset.class) == null ? null : method.getAnnotation(ResponseCharset.class).value());
 
             //直接请求体
-            mapperMethod.setBody(method.getAnnotation(StringBody.class) == null ? null : method.getAnnotation(StringBody.class).value());
+            mapperMethod.setStringBody(method.getAnnotation(StringBody.class) == null ? null : method.getAnnotation(StringBody.class).value());
 
             mapper.addMethod(method.getName(), mapperMethod);
         }
     }
 
-    //TODO Map<String, String>传递Header都有可能覆盖相同key的Header
-    private Map<String, String> parseHeader(AnnotatedElement element) {
-        Map<String, String> result = Maps.newHashMap();
+    private List<NameValuePair> parseHeader(AnnotatedElement element) {
+        List<NameValuePair> headers = Lists.newArrayList();
+
         if (element.getAnnotation(Header.class) != null) {
             Header header = element.getAnnotation(Header.class);
-            result.put(header.name(), header.value());
+            headers.add(new NameValuePair(header.name(), header.value()));
         }
         if (element.getAnnotation(Headers.class) != null) {
-            Arrays.stream(element.getAnnotation(Headers.class).value()).forEach(header -> result.put(header.name(), header.value()));
+            Arrays.stream(element.getAnnotation(Headers.class).value()).forEach(header ->
+                    headers.add(new NameValuePair(header.name(), header.value())));
         }
         for (Map.Entry<String, Class<? extends Annotation>> entry : HEADER_ANNOTATIONS.entrySet()) {
             Class<? extends Annotation> annotationClass = entry.getValue();
@@ -182,12 +184,12 @@ public class AnnotationParser implements Parser {
                 Annotation annotation = element.getAnnotation(annotationClass);
                 try {
                     String value = (String) annotationClass.getMethod("value").invoke(annotation);
-                    result.put(entry.getKey(), value);
+                    headers.add(new NameValuePair(entry.getKey(), value));
                 } catch (Exception e) {
                     throw new RuntimeException("Could not find value method on Header annotation.  Cause: " + e, e);
                 }
             }
         }
-        return result;
+        return headers;
     }
 }

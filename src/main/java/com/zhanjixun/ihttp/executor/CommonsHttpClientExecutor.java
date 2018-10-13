@@ -1,11 +1,13 @@
 package com.zhanjixun.ihttp.executor;
 
-import com.zhanjixun.ihttp.domain.Cookie;
 import com.zhanjixun.ihttp.Request;
 import com.zhanjixun.ihttp.Response;
 import com.zhanjixun.ihttp.annotations.GET;
 import com.zhanjixun.ihttp.annotations.POST;
 import com.zhanjixun.ihttp.constant.Config;
+import com.zhanjixun.ihttp.domain.Cookie;
+import com.zhanjixun.ihttp.domain.MultiParts;
+import com.zhanjixun.ihttp.domain.NameValuePair;
 import com.zhanjixun.ihttp.logging.ConnectionInfo;
 import lombok.extern.log4j.Log4j;
 import okio.Okio;
@@ -26,12 +28,10 @@ import org.apache.commons.httpclient.params.HttpMethodParams;
 import org.apache.commons.httpclient.util.DateUtil;
 import org.apache.commons.lang3.StringUtils;
 
-import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
 import java.util.Date;
-import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
@@ -75,8 +75,8 @@ public class CommonsHttpClientExecutor extends BaseExecutor {
         String charset = Optional.ofNullable(request.getCharset()).orElse("UTF-8");
         method.getParams().setParameter(HttpMethodParams.HTTP_CONTENT_CHARSET, charset);
 
-        Set<String> queryString = request.getParams().entrySet().stream()
-                .map(entry -> entry.getKey() + "=" + entry.getValue())
+        Set<String> queryString = request.getParams().stream()
+                .map(pair -> pair.getName() + "=" + pair.getValue())
                 .collect(Collectors.toSet());
 
         if (StringUtils.isNotEmpty(method.getQueryString())) {
@@ -85,7 +85,7 @@ public class CommonsHttpClientExecutor extends BaseExecutor {
         if (CollectionUtils.isNotEmpty(queryString)) {
             method.setQueryString(String.join("&", queryString));
         }
-        request.getHeaders().forEach(method::addRequestHeader);
+        request.getHeaders().forEach(h -> method.addRequestHeader(h.getName(), h.getValue()));
 
         return executeMethod(method, request);
     }
@@ -95,26 +95,26 @@ public class CommonsHttpClientExecutor extends BaseExecutor {
         String charset = Optional.ofNullable(request.getCharset()).orElse("UTF-8");
         method.getParams().setParameter(HttpMethodParams.HTTP_CONTENT_CHARSET, charset);
 
-        request.getHeaders().forEach(method::addRequestHeader);
-        request.getParams().forEach(method::addParameter);
+        request.getHeaders().forEach(h -> method.addRequestHeader(h.getName(), h.getValue()));
+        request.getParams().forEach(p -> method.addParameter(p.getName(), p.getValue()));
 
-        if (!request.getFiles().isEmpty()) {
-            Part[] parts = new Part[request.getFiles().size() + request.getParams().size()];
-            int i = 0;
-            for (Map.Entry<String, File> entry : request.getFiles().entrySet()) {
+        if (CollectionUtils.isNotEmpty(request.getMultiParts())) {
+            Part[] parts = new Part[request.getMultiParts().size() + request.getParams().size()];
+            int index = 0;
+            for (MultiParts multiParts : request.getMultiParts()) {
                 try {
-                    parts[i++] = new FilePart(entry.getKey(), entry.getValue());
+                    parts[index++] = new FilePart(multiParts.getName(), multiParts.getFilePart());
                 } catch (FileNotFoundException e) {
-                    e.printStackTrace();
+                    throw new RuntimeException(String.format("文件不存在：%s[%s]", multiParts.getName(), multiParts.getFilePart().getAbsolutePath()), e);
                 }
             }
-            for (Map.Entry<String, String> entry : request.getParams().entrySet()) {
-                parts[i++] = new StringPart(entry.getKey(), entry.getValue(), charset);
+            for (NameValuePair nameValuePair : request.getParams()) {
+                parts[index++] = new StringPart(nameValuePair.getName(), nameValuePair.getValue(), charset);
             }
             method.setRequestEntity(new MultipartRequestEntity(parts, method.getParams()));
         }
 
-        if (request.getBody() != null) {
+        if (StringUtils.isNotBlank(request.getBody())) {
             String contentType = Optional.ofNullable(method.getRequestHeader("Content-Type")).orElse(new Header("", "text/html")).getValue();
             try {
                 method.setRequestEntity(new StringRequestEntity(request.getBody(), contentType, charset));
@@ -130,21 +130,22 @@ public class CommonsHttpClientExecutor extends BaseExecutor {
         try {
             long startTime = System.currentTimeMillis();
             int status = httpClient.executeMethod(httpMethod);
-            ConnectionInfo connectionInfo = buildConnectionInfo(startTime, System.currentTimeMillis(), status, httpMethod);
+            long endTime = System.currentTimeMillis();
+
+            ConnectionInfo connectionInfo = buildConnectionInfo(startTime, endTime, status, httpMethod);
 
             Response response = new Response();
             response.setRequest(request);
             response.setStatus(status);
             response.setBody(Okio.buffer(Okio.source(httpMethod.getResponseBodyAsStream())).readByteArray());
             response.setCharset(Optional.ofNullable(request.getResponseCharset()).orElse(httpMethod.getResponseCharSet()));
-            Stream.of(httpMethod.getResponseHeaders()).forEach(header -> response.getHeaders().put(header.getName(), header.getValue()));
+            Stream.of(httpMethod.getResponseHeaders()).forEach(header -> response.getHeaders().add(new NameValuePair(header.getName(), header.getValue())));
 
             log.info(chromeStyleLog(connectionInfo));
             return response;
         } catch (IOException e) {
             throw new RuntimeException("HTTP请求失败", e);
         } finally {
-            // 释放连接
             httpMethod.releaseConnection();
         }
     }
@@ -203,7 +204,7 @@ public class CommonsHttpClientExecutor extends BaseExecutor {
 
             if (httpMethod instanceof GetMethod) {
                 connectionInfo.setMethod("GET");
-                if (httpMethod.getQueryString() != null) {
+                if (StringUtils.isNotBlank(httpMethod.getQueryString())) {
                     Stream.of(httpMethod.getQueryString().split("&")).forEach(s -> connectionInfo.getParams().put(new String(s.split("=")[0]), s.split("=")[1]));
                 }
             }

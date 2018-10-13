@@ -1,11 +1,12 @@
 package com.zhanjixun.ihttp.binding;
 
-import com.google.common.collect.Maps;
+import com.google.common.collect.Lists;
+import com.zhanjixun.ihttp.domain.MultiParts;
+import com.zhanjixun.ihttp.domain.NameValuePair;
 import lombok.Data;
 
-import java.io.File;
 import java.lang.annotation.Annotation;
-import java.util.Map;
+import java.util.List;
 
 /**
  * 对应一个Mapper中定义的方法
@@ -20,12 +21,12 @@ public class MapperMethod {
     private String method;
     private String requestCharset;
     private String responseCharset;
-    private String body;
+    private String stringBody;
     private boolean followRedirects = true;
 
-    private Map<String, String> headers = Maps.newHashMap();
-    private Map<String, String> params = Maps.newHashMap();
-    private Map<String, File> files = Maps.newHashMap();
+    private List<NameValuePair> headers = Lists.newArrayList();
+    private List<NameValuePair> params = Lists.newArrayList();
+    private List<MultiParts> multiParts = Lists.newArrayList();
 
     private Annotation[] paramMapping;
 }
