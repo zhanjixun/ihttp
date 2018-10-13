@@ -1,7 +1,6 @@
 package com.zhanjixun.ihttp.test.gitee;
 
 import com.google.common.collect.Maps;
-import com.zhanjixun.ihttp.ICookie;
 import com.zhanjixun.ihttp.Response;
 import lombok.extern.log4j.Log4j;
 import org.junit.Test;
@@ -43,8 +42,7 @@ public class Demo {
                 Response home = gitee.home(href);
                 System.out.println("欢迎您：" + home.getDocument().select(".git-user-name-link").get(0).text());
 
-                ICookie[] cookies = gitee.getCookies();
-                Arrays.stream(cookies).forEach(System.out::println);
+                Arrays.stream(gitee.getCookies()).forEach(System.out::println);
             });
         }, index -> log.warn("首页index状态码：" + index.getStatus()));
     }

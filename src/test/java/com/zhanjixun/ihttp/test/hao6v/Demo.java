@@ -1,6 +1,5 @@
 package com.zhanjixun.ihttp.test.hao6v;
 
-import com.zhanjixun.ihttp.Response;
 import org.jsoup.nodes.Element;
 import org.junit.Test;
 import org.junit.runner.RunWith;

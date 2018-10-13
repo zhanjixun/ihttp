@@ -13,6 +13,7 @@ import org.apache.commons.lang3.StringUtils;
 
 import java.io.File;
 import java.lang.annotation.Annotation;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
@@ -70,13 +71,42 @@ public class Mapper {
 
         //绑定动态参数
         bindingParameter(request, mapperMethod.getParamMapping(), args);
-        Preconditions.checkArgument(StringUtils.isNotBlank(request.getUrl()), String.format("HTTP请求没有设置url %s.%s", mapperInterface.getName(), id));
+        //替换占位符
+        replacePlaceholder(request, mapperMethod.getParamMapping(), args);
 
+        Preconditions.checkArgument(StringUtils.isNotBlank(request.getUrl()), String.format("HTTP请求没有设置url %s.%s", mapperInterface.getName(), id));
         return request;
     }
 
     public void addMethod(String name, MapperMethod mapperMethod) {
         methods.put(name, mapperMethod);
+    }
+
+    private void replacePlaceholder(Request request, Annotation[] parameterMapping, Object... args) {
+        if (Arrays.stream(parameterMapping).noneMatch(d -> d.annotationType() == Placeholder.class)) {
+            return;
+        }
+
+        for (int i = 0; i < parameterMapping.length; i++) {
+            Annotation annotation = parameterMapping[i];
+            Class<? extends Annotation> annotationType = annotation.annotationType();
+            Object arg = args[i];
+
+            if (annotationType != Placeholder.class) {
+                continue;
+            }
+            Placeholder placeholder = (Placeholder) annotation;
+            String key = placeholder.value();
+
+            request.setUrl(request.getUrl().replace("#{" + key + "}", (CharSequence) arg));
+            request.setBody(request.getBody().replace("#{" + key + "}", (CharSequence) arg));
+            for (NameValuePair nameValuePair : request.getHeaders()) {
+                nameValuePair.setValue(nameValuePair.getValue().replace("#{" + key + "}", (CharSequence) arg));
+            }
+            for (NameValuePair nameValuePair : request.getParams()) {
+                nameValuePair.setValue(nameValuePair.getValue().replace("#{" + key + "}", (CharSequence) arg));
+            }
+        }
     }
 
     private void bindingParameter(Request request, Annotation[] parameterMapping, Object... args) {
@@ -89,16 +119,13 @@ public class Mapper {
 
             Object arg = args[i];
             if (annotationType == URL.class) {
-                String url = (String) arg;
-                request.setUrl(buildUrl(request.getUrl(), url));
+                request.setUrl(buildUrl(request.getUrl(), (String) arg));
             }
             if (annotationType == Header.class) {
-                Header header = (Header) annotation;
-                request.addHeader(header.name(), (String) arg);
+                request.addHeader(((Header) annotation).name(), (String) arg);
             }
             if (annotationType == Param.class) {
-                Param param = (Param) annotation;
-                request.addParam(param.name(), (String) arg);
+                request.addParam(((Param) annotation).name(), (String) arg);
             }
             if (annotationType == FilePart.class) {
                 FilePart filePart = (FilePart) annotation;
@@ -140,5 +167,6 @@ public class Mapper {
 
         return b.startsWith("http") ? b : a + b;
     }
+
 }
 

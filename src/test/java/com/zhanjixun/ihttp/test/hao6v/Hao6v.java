@@ -1,14 +1,15 @@
 package com.zhanjixun.ihttp.test.hao6v;
 
 import com.zhanjixun.ihttp.Response;
-import com.zhanjixun.ihttp.annotations.GET;
-import com.zhanjixun.ihttp.annotations.ResponseCharset;
-import com.zhanjixun.ihttp.annotations.URL;
+import com.zhanjixun.ihttp.annotations.*;
 
 /**
  * @author :zhanjixun
  * @date : 2018/10/3 0:22
  */
+@UserAgent("zhanjixun@qq.com")
+@Header(name = "zhanjixun", value = "z")
+@Header(name = "zhanjixun", value = "z1")
 public interface Hao6v {
 
     @GET
