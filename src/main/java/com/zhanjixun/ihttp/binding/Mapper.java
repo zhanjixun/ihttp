@@ -95,16 +95,16 @@ public class Mapper {
             if (annotationType != Placeholder.class) {
                 continue;
             }
-            Placeholder placeholder = (Placeholder) annotation;
-            String key = placeholder.value();
+            String placeholder = ((Placeholder) annotation).value();
+            Preconditions.checkArgument(StringUtils.isNotBlank(placeholder), String.format("占位符为空 %s 参数索引 %d", request.getId(), i));
 
-            request.setUrl(request.getUrl().replace("#{" + key + "}", (CharSequence) arg));
-            request.setBody(request.getBody().replace("#{" + key + "}", (CharSequence) arg));
+            request.setUrl(request.getUrl().replace("#{" + placeholder + "}", (CharSequence) arg));
+            request.setBody(request.getBody().replace("#{" + placeholder + "}", (CharSequence) arg));
             for (NameValuePair nameValuePair : request.getHeaders()) {
-                nameValuePair.setValue(nameValuePair.getValue().replace("#{" + key + "}", (CharSequence) arg));
+                nameValuePair.setValue(nameValuePair.getValue().replace("#{" + placeholder + "}", (CharSequence) arg));
             }
             for (NameValuePair nameValuePair : request.getParams()) {
-                nameValuePair.setValue(nameValuePair.getValue().replace("#{" + key + "}", (CharSequence) arg));
+                nameValuePair.setValue(nameValuePair.getValue().replace("#{" + placeholder + "}", (CharSequence) arg));
             }
         }
     }
