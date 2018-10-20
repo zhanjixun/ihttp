@@ -99,7 +99,7 @@ public class Mapper {
             Preconditions.checkArgument(StringUtils.isNotBlank(placeholder), String.format("占位符为空 %s 参数索引 %d", request.getId(), i));
 
             request.setUrl(request.getUrl().replace("#{" + placeholder + "}", (CharSequence) arg));
-            request.setBody(request.getBody().replace("#{" + placeholder + "}", (CharSequence) arg));
+            request.setBody(StringUtils.replace(request.getBody(), "#{" + placeholder + "}", (String) arg));
             for (NameValuePair nameValuePair : request.getHeaders()) {
                 nameValuePair.setValue(nameValuePair.getValue().replace("#{" + placeholder + "}", (CharSequence) arg));
             }
