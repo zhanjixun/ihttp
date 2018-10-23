@@ -79,14 +79,14 @@ public class CommonsHttpClientExecutor extends BaseExecutor {
                 .map(pair -> pair.getName() + "=" + pair.getValue())
                 .collect(Collectors.toSet());
 
-        if (StringUtils.isNotEmpty(method.getQueryString())) {
-            queryString.add(method.getQueryString());
-        }
         if (CollectionUtils.isNotEmpty(queryString)) {
+            if (StringUtils.isNotEmpty(method.getQueryString())) {
+                queryString.add(method.getQueryString());
+            }
             method.setQueryString(String.join("&", queryString));
         }
-        request.getHeaders().forEach(h -> method.addRequestHeader(h.getName(), h.getValue()));
 
+        request.getHeaders().forEach(h -> method.addRequestHeader(h.getName(), h.getValue()));
         return executeMethod(method, request);
     }
 
@@ -232,11 +232,29 @@ public class CommonsHttpClientExecutor extends BaseExecutor {
 
     @Override
     public Cookie[] getCookies() {
-        return new Cookie[0];
+        org.apache.commons.httpclient.Cookie[] cookies = httpClient.getState().getCookies();
+        Cookie[] result = new Cookie[cookies.length];
+        for (int i = 0; i < cookies.length; i++) {
+            result[i] = new Cookie();
+            result[i].setName(cookies[i].getName());
+            result[i].setValue(cookies[i].getValue());
+
+            result[i].setComment(cookies[i].getComment());
+            result[i].setDomain(cookies[i].getDomain());
+            result[i].setExpiryDate(cookies[i].getExpiryDate());
+            result[i].setPath(cookies[i].getPath());
+            result[i].setSecure(cookies[i].getSecure());
+
+            result[i].setHasPathAttribute(cookies[i].isPathAttributeSpecified());
+            result[i].setHasDomainAttribute(cookies[i].isDomainAttributeSpecified());
+
+            result[i].setVersion(cookies[i].getVersion());
+        }
+        return result;
     }
 
     @Override
     public void clearCookies() {
-
+        httpClient.getState().clearCookies();
     }
 }

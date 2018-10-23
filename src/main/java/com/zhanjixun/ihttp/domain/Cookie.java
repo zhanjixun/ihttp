@@ -15,6 +15,10 @@ import java.util.Date;
 @AllArgsConstructor
 public class Cookie {
 
+    private String name;
+
+    private String value;
+
     private String comment;
 
     private String domain;
