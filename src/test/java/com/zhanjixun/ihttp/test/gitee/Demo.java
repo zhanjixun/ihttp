@@ -2,8 +2,6 @@ package com.zhanjixun.ihttp.test.gitee;
 
 import com.google.common.collect.Maps;
 import com.zhanjixun.ihttp.Response;
-import com.zhanjixun.ihttp.domain.Cookie;
-
 import lombok.extern.log4j.Log4j;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -12,7 +10,6 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 
-import java.util.Arrays;
 import java.util.Map;
 
 @Log4j
@@ -44,10 +41,10 @@ public class Demo {
                 Response home = gitee.home(href);
                 System.out.println("欢迎您：" + home.getDocument().select(".git-user-name-link").get(0).text());
 
-                Arrays.stream(gitee.getCookies()).forEach(System.out::println);
+                gitee.getCookies().forEach(System.out::println);
             });
         }, index -> log.warn("首页index状态码：" + index.getStatus()));
-        
-     
+
+
     }
 }

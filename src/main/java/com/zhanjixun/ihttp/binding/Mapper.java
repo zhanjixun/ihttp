@@ -1,11 +1,13 @@
 package com.zhanjixun.ihttp.binding;
 
+import com.alibaba.fastjson.JSON;
 import com.google.common.base.Preconditions;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import com.zhanjixun.ihttp.Request;
 import com.zhanjixun.ihttp.annotations.*;
 import com.zhanjixun.ihttp.domain.NameValuePair;
+import com.zhanjixun.ihttp.utils.ReflectUtils;
 import lombok.Data;
 import org.apache.commons.lang3.ArrayUtils;
 import org.apache.commons.lang3.StringUtils;
@@ -80,6 +82,13 @@ public class Mapper {
         methods.put(name, mapperMethod);
     }
 
+    /**
+     * 替换占位符
+     *
+     * @param request
+     * @param parameterMapping
+     * @param args
+     */
     private void replacePlaceholder(Request request, Annotation[] parameterMapping, Object... args) {
         if (Arrays.stream(parameterMapping).noneMatch(d -> d.annotationType() == Placeholder.class)) {
             return;
@@ -96,13 +105,28 @@ public class Mapper {
             String placeholder = ((Placeholder) annotation).value();
             Preconditions.checkArgument(StringUtils.isNotBlank(placeholder), String.format("占位符为空 %s 参数索引 %d", request.getId(), i));
 
-            request.setUrl(request.getUrl().replace("#{" + placeholder + "}", (CharSequence) arg));
-            request.setBody(StringUtils.replace(request.getBody(), "#{" + placeholder + "}", (String) arg));
-            for (NameValuePair nameValuePair : request.getHeaders()) {
-                nameValuePair.setValue(nameValuePair.getValue().replace("#{" + placeholder + "}", (CharSequence) arg));
+            String target = String.format("#{%s}", placeholder);
+            String value = null;
+            if (ReflectUtils.isPrimitive(arg)) {
+                value = arg.toString();
             }
+            if (arg instanceof String) {
+                value = (String) arg;
+            }
+            if (value == null) {
+                throw new RuntimeException(target + "的替换值为null");
+            }
+            //搜索URL
+            request.setUrl(request.getUrl().replace(target, value));
+            //搜索Body
+            request.setBody(StringUtils.replace(request.getBody(), target, value));
+            //搜索Header
+            for (NameValuePair nameValuePair : request.getHeaders()) {
+                nameValuePair.setValue(nameValuePair.getValue().replace(target, value));
+            }
+            //搜索Params
             for (NameValuePair nameValuePair : request.getParams()) {
-                nameValuePair.setValue(nameValuePair.getValue().replace("#{" + placeholder + "}", (CharSequence) arg));
+                nameValuePair.setValue(nameValuePair.getValue().replace(target, value));
             }
         }
     }
@@ -137,6 +161,9 @@ public class Mapper {
             }
             if (annotationType == StringBody.class) {
                 request.setBody((String) arg);
+            }
+            if (annotationType == StringBodyObject.class) {
+                request.setBody(JSON.toJSONString(arg));
             }
             if (annotationType == ParamMap.class) {
                 if (arg instanceof Map) {

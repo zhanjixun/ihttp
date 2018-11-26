@@ -8,6 +8,9 @@ import com.zhanjixun.ihttp.binding.MapperMethod;
 import com.zhanjixun.ihttp.domain.NameValuePair;
 import lombok.extern.log4j.Log4j;
 import org.apache.commons.collections.CollectionUtils;
+import org.apache.commons.collections.MapUtils;
+import org.apache.commons.lang3.RandomStringUtils;
+import org.apache.commons.lang3.StringUtils;
 
 import java.io.File;
 import java.lang.annotation.Annotation;
@@ -18,6 +21,7 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
+import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
 /**
@@ -52,10 +56,11 @@ public class AnnotationParser implements Parser {
         PARAMETER_ANNOTATIONS.add(Param.class);
         PARAMETER_ANNOTATIONS.add(FilePart.class);
         PARAMETER_ANNOTATIONS.add(StringBody.class);
+        PARAMETER_ANNOTATIONS.add(StringBodyObject.class);
         PARAMETER_ANNOTATIONS.add(Header.class);
         PARAMETER_ANNOTATIONS.add(ParamMap.class);
-        PARAMETER_ANNOTATIONS.addAll(HEADER_ANNOTATIONS.values());
         PARAMETER_ANNOTATIONS.add(Placeholder.class);
+        PARAMETER_ANNOTATIONS.addAll(HEADER_ANNOTATIONS.values());
     }
 
     public AnnotationParser(Class<?> target) {
@@ -97,8 +102,7 @@ public class AnnotationParser implements Parser {
             }
 
             //http方法
-            List<? extends Annotation> httpMethod = HTTP_METHOD_ANNOTATIONS.stream()
-                    .map(method::getAnnotation).filter(Objects::nonNull).collect(Collectors.toList());
+            List<? extends Annotation> httpMethod = HTTP_METHOD_ANNOTATIONS.stream().map(method::getAnnotation).filter(Objects::nonNull).collect(Collectors.toList());
             if (CollectionUtils.isEmpty(httpMethod)) {
                 throw new RuntimeException(String.format("没有找到HTTP请求方法 %s", target.getName() + "." + method.getName()));
             }
@@ -158,6 +162,34 @@ public class AnnotationParser implements Parser {
 
             //直接请求体
             mapperMethod.setStringBody(method.getAnnotation(StringBody.class) == null ? null : method.getAnnotation(StringBody.class).value());
+
+            //随机码占位符
+            Map<String, String> replacement = Maps.newHashMap();
+            RandomPlaceholder randomPlaceholder = method.getAnnotation(RandomPlaceholder.class);
+            if (randomPlaceholder != null) {
+                String target = String.format("#{%s}", randomPlaceholder.name());
+                String value = RandomStringUtils.random(randomPlaceholder.length(), randomPlaceholder.chars());
+                replacement.put(target, value);
+            }
+            //时间戳占位符
+            TimestampPlaceholder timestampPlaceholder = method.getAnnotation(TimestampPlaceholder.class);
+            if (timestampPlaceholder != null) {
+                String target = String.format("#{%s}", timestampPlaceholder.name());
+                String value = timestampPlaceholder.unit().convert(System.currentTimeMillis(), TimeUnit.MILLISECONDS) + "";
+                replacement.put(target, value);
+            }
+            if (MapUtils.isNotEmpty(replacement)) {
+                replacement.forEach((target, value) -> {
+                    mapperMethod.setUrl(StringUtils.replace(mapperMethod.getUrl(), target, value));
+                    mapperMethod.setStringBody(StringUtils.replace(mapperMethod.getStringBody(), target, value));
+                    for (NameValuePair nameValuePair : mapperMethod.getHeaders()) {
+                        nameValuePair.setValue(StringUtils.replace(nameValuePair.getValue(), target, value));
+                    }
+                    for (NameValuePair nameValuePair : mapperMethod.getParams()) {
+                        nameValuePair.setValue(StringUtils.replace(nameValuePair.getValue(), target, value));
+                    }
+                });
+            }
 
             mapper.addMethod(method.getName(), mapperMethod);
         }

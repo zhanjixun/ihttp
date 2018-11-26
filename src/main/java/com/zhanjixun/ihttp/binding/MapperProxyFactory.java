@@ -2,9 +2,10 @@ package com.zhanjixun.ihttp.binding;
 
 
 import com.google.common.collect.Maps;
+import com.zhanjixun.ihttp.annotations.HttpExecutor;
+import com.zhanjixun.ihttp.executor.BaseExecutor;
 import com.zhanjixun.ihttp.executor.CommonsHttpClientExecutor;
 import com.zhanjixun.ihttp.parsing.AnnotationParser;
-import com.zhanjixun.ihttp.parsing.Parser;
 import lombok.Getter;
 
 import java.lang.reflect.Proxy;
@@ -28,15 +29,21 @@ public class MapperProxyFactory<T> {
 
     public T newInstance() {
         Mapper mapper = cachedMapper(mapperInterface);
-        MapperProxy mapperProxy = new MapperProxy(mapper, new CommonsHttpClientExecutor());
-        return newInstance(mapperProxy);
+        HttpExecutor annotation = mapperInterface.getAnnotation(HttpExecutor.class);
+        Class<? extends BaseExecutor> executorClass = mapperInterface.getAnnotation(HttpExecutor.class) == null ? CommonsHttpClientExecutor.class : annotation.value();
+        try {
+            BaseExecutor baseExecutor = executorClass.newInstance();
+            MapperProxy mapperProxy = new MapperProxy(mapper, baseExecutor);
+            return newInstance(mapperProxy);
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        }
     }
 
     private Mapper cachedMapper(Class<T> mapperInterface) {
         Mapper mapper = mapperCache.get(mapperInterface);
         if (mapper == null) {
-            Parser parser = new AnnotationParser(mapperInterface);
-            mapper = parser.parse();
+            mapper = new AnnotationParser(mapperInterface).parse();
             mapperCache.put(mapperInterface, mapper);
         }
         return mapper;

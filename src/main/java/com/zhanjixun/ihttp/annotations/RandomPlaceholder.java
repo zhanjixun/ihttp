@@ -34,6 +34,6 @@ public @interface RandomPlaceholder {
      *
      * @return
      */
-    String chars();
+    String chars() default "abcdefghijklnmopqrstuvwxyzABCDEFGHIJKLNMOPQRSTUVWXYZ0123456789";
 
 }

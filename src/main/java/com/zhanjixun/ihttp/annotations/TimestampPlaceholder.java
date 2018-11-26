@@ -4,19 +4,23 @@ import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
+import java.util.concurrent.TimeUnit;
 
 /**
- * 断言一个方法的状态码
+ * 时间戳占位符
  *
  * @author :zhanjixun
- * @date : 2018/10/26 11:50
+ * @date : 2018/11/26 14:52
  */
 @Target({ElementType.METHOD})
 @Retention(RetentionPolicy.RUNTIME)
-public @interface AssertStatusCode {
+public @interface TimestampPlaceholder {
+    /**
+     * paramName
+     *
+     * @return
+     */
+    String name();
 
-    int[] value();
-
-    // String errorMessage() default "";
-
+    TimeUnit unit() default TimeUnit.MILLISECONDS;
 }

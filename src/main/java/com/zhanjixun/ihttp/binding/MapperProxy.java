@@ -2,10 +2,14 @@ package com.zhanjixun.ihttp.binding;
 
 import com.zhanjixun.ihttp.CookiesManager;
 import com.zhanjixun.ihttp.Request;
+import com.zhanjixun.ihttp.Response;
+import com.zhanjixun.ihttp.annotations.AssertStatusCode;
 import com.zhanjixun.ihttp.executor.BaseExecutor;
+import org.springframework.util.Assert;
 
 import java.lang.reflect.InvocationHandler;
 import java.lang.reflect.Method;
+import java.util.Arrays;
 
 /**
  * 代理Mapper对象
@@ -35,7 +39,17 @@ public class MapperProxy implements InvocationHandler {
             return method.invoke(executor, args);
         }
         Request request = mapper.getRequest(method.getName(), args);
-        return executor.execute(request);
+        Response response = executor.execute(request);
+
+        //断言状态码
+        AssertStatusCode annotation = method.getAnnotation(AssertStatusCode.class);
+        if (annotation != null) {
+            int[] codes = annotation.value();
+            String errorMessage = String.format("%s.%s没有返回需要的状态码(%d)", method.getDeclaringClass().getName(), method.getName(), response.getStatus());
+            Assert.isTrue(Arrays.asList(codes).contains(response.getStatus()), errorMessage);
+        }
+
+        return response;
     }
 
 }

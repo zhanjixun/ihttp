@@ -11,6 +11,7 @@ import java.lang.annotation.Target;
  *
  * @author :zhanjixun
  * @date : 2018/10/24 11:25
+ * @see com.alibaba.fastjson.JSON#toJSONString(Object)
  */
 @Target({ElementType.PARAMETER})
 @Retention(RetentionPolicy.RUNTIME)
