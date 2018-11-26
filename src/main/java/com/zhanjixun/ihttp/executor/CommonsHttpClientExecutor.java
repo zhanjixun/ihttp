@@ -4,7 +4,6 @@ import com.zhanjixun.ihttp.Request;
 import com.zhanjixun.ihttp.Response;
 import com.zhanjixun.ihttp.annotations.GET;
 import com.zhanjixun.ihttp.annotations.POST;
-import com.zhanjixun.ihttp.constant.Config;
 import com.zhanjixun.ihttp.domain.Cookie;
 import com.zhanjixun.ihttp.domain.MultiParts;
 import com.zhanjixun.ihttp.domain.NameValuePair;
@@ -31,9 +30,7 @@ import org.apache.commons.lang3.StringUtils;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
-import java.util.Date;
-import java.util.Optional;
-import java.util.Set;
+import java.util.*;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -48,14 +45,6 @@ public class CommonsHttpClientExecutor extends BaseExecutor {
 
     private final HttpClient httpClient = new HttpClient();
 
-    public CommonsHttpClientExecutor(Config config) {
-        if (config != null) {
-            if (config.getProxy() != null) {
-                httpClient.getHostConfiguration().setProxy(config.getProxy().hostName(), config.getProxy().port());
-            }
-        }
-    }
-
     @Override
     public Response execute(Request request) {
         if (request.getMethod().equals(GET.class.getSimpleName())) {
@@ -67,7 +56,6 @@ public class CommonsHttpClientExecutor extends BaseExecutor {
         throw new RuntimeException("未能识别的http请求方法：" + request.getMethod());
     }
 
-
     private Response doGetMethod(Request request) {
         GetMethod method = new GetMethod(request.getUrl());
         method.setFollowRedirects(request.isFollowRedirects());
@@ -75,8 +63,7 @@ public class CommonsHttpClientExecutor extends BaseExecutor {
         String charset = Optional.ofNullable(request.getCharset()).orElse("UTF-8");
         method.getParams().setParameter(HttpMethodParams.HTTP_CONTENT_CHARSET, charset);
 
-        Set<String> queryString = request.getParams().stream()
-                .map(pair -> pair.getName() + "=" + pair.getValue())
+        Set<String> queryString = request.getParams().stream().map(pair -> pair.getName() + "=" + pair.getValue())
                 .collect(Collectors.toSet());
 
         if (CollectionUtils.isNotEmpty(queryString)) {
@@ -105,7 +92,8 @@ public class CommonsHttpClientExecutor extends BaseExecutor {
                 try {
                     parts[index++] = new FilePart(multiParts.getName(), multiParts.getFilePart());
                 } catch (FileNotFoundException e) {
-                    throw new RuntimeException(String.format("文件不存在：%s[%s]", multiParts.getName(), multiParts.getFilePart().getAbsolutePath()), e);
+                    throw new RuntimeException(String.format("文件不存在：%s[%s]", multiParts.getName(),
+                            multiParts.getFilePart().getAbsolutePath()), e);
                 }
             }
             for (NameValuePair nameValuePair : request.getParams()) {
@@ -115,7 +103,8 @@ public class CommonsHttpClientExecutor extends BaseExecutor {
         }
 
         if (StringUtils.isNotBlank(request.getBody())) {
-            String contentType = Optional.ofNullable(method.getRequestHeader("Content-Type")).orElse(new Header("", "text/html")).getValue();
+            String contentType = Optional.ofNullable(method.getRequestHeader("Content-Type"))
+                    .orElse(new Header("", "text/html")).getValue();
             try {
                 method.setRequestEntity(new StringRequestEntity(request.getBody(), contentType, charset));
             } catch (UnsupportedEncodingException e) {
@@ -138,8 +127,10 @@ public class CommonsHttpClientExecutor extends BaseExecutor {
             response.setRequest(request);
             response.setStatus(status);
             response.setBody(Okio.buffer(Okio.source(httpMethod.getResponseBodyAsStream())).readByteArray());
-            response.setCharset(Optional.ofNullable(request.getResponseCharset()).orElse(httpMethod.getResponseCharSet()));
-            Stream.of(httpMethod.getResponseHeaders()).forEach(header -> response.getHeaders().add(new NameValuePair(header.getName(), header.getValue())));
+            response.setCharset(
+                    Optional.ofNullable(request.getResponseCharset()).orElse(httpMethod.getResponseCharSet()));
+            Stream.of(httpMethod.getResponseHeaders()).forEach(
+                    header -> response.getHeaders().add(new NameValuePair(header.getName(), header.getValue())));
 
             log.info(chromeStyleLog(connectionInfo));
             return response;
@@ -154,11 +145,13 @@ public class CommonsHttpClientExecutor extends BaseExecutor {
         String dateFormatPattern = "yyyy-MM-dd HH:mm:ss.SSS";
 
         StringBuilder builder = new StringBuilder();
-        builder.append("----------------------").append(DateUtil.formatDate(new Date(info.getStartTime()), dateFormatPattern)).append("\n");
+        builder.append("----------------------")
+                .append(DateUtil.formatDate(new Date(info.getStartTime()), dateFormatPattern)).append("\n");
         builder.append("▼ General").append("\n");
         builder.append("Request URL:").append(info.getUrl()).append("\n");
         builder.append("Request Method:").append(info.getMethod()).append("\n");
-        builder.append("Status Code:").append(info.getStatusCode()).append(" ").append(info.getStatusText()).append("\n");
+        builder.append("Status Code:").append(info.getStatusCode()).append(" ").append(info.getStatusText())
+                .append("\n");
         builder.append("\n");
 
         builder.append("▼ Request Headers").append("\n");
@@ -185,7 +178,9 @@ public class CommonsHttpClientExecutor extends BaseExecutor {
             builder.append("\n");
         }
 
-        builder.append("----------------------").append(DateUtil.formatDate(new Date(info.getEndTime()), dateFormatPattern)).append(" 耗时：" + (info.getEndTime() - info.getStartTime()) + "ms").append("\n");
+        builder.append("----------------------")
+                .append(DateUtil.formatDate(new Date(info.getEndTime()), dateFormatPattern))
+                .append(" 耗时：" + (info.getEndTime() - info.getStartTime()) + "ms").append("\n");
         return builder.toString();
     }
 
@@ -199,13 +194,16 @@ public class CommonsHttpClientExecutor extends BaseExecutor {
             connectionInfo.setStatusLine(httpMethod.getStatusLine().toString());
             connectionInfo.setStatusText(httpMethod.getStatusText());
 
-            Stream.of(httpMethod.getRequestHeaders()).forEach(h -> connectionInfo.getRequestHeaders().put(new String(h.getName()), h.getValue()));
-            Stream.of(httpMethod.getResponseHeaders()).forEach(h -> connectionInfo.getResponseHeaders().put(new String(h.getName()), h.getValue()));
+            Stream.of(httpMethod.getRequestHeaders())
+                    .forEach(h -> connectionInfo.getRequestHeaders().put(new String(h.getName()), h.getValue()));
+            Stream.of(httpMethod.getResponseHeaders())
+                    .forEach(h -> connectionInfo.getResponseHeaders().put(new String(h.getName()), h.getValue()));
 
             if (httpMethod instanceof GetMethod) {
                 connectionInfo.setMethod("GET");
                 if (StringUtils.isNotBlank(httpMethod.getQueryString())) {
-                    Stream.of(httpMethod.getQueryString().split("&")).forEach(s -> connectionInfo.getParams().put(new String(s.split("=")[0]), s.split("=")[1]));
+                    Stream.of(httpMethod.getQueryString().split("&"))
+                            .forEach(s -> connectionInfo.getParams().put(new String(s.split("=")[0]), s.split("=")[1]));
                 }
             }
             if (httpMethod instanceof PostMethod) {
@@ -215,7 +213,8 @@ public class CommonsHttpClientExecutor extends BaseExecutor {
                 if (requestEntity != null && requestEntity instanceof StringRequestEntity) {
                     connectionInfo.setStringBody(((StringRequestEntity) requestEntity).getContent());
                 }
-                Stream.of(postMethod.getParameters()).forEach(h -> connectionInfo.getParams().put(h.getName(), h.getValue()));
+                Stream.of(postMethod.getParameters())
+                        .forEach(h -> connectionInfo.getParams().put(h.getName(), h.getValue()));
             }
             return connectionInfo;
         } catch (URIException e) {
@@ -224,37 +223,26 @@ public class CommonsHttpClientExecutor extends BaseExecutor {
         return null;
     }
 
-
     @Override
     public void addCookie(Cookie cookie) {
-
+        httpClient.getState().addCookie(copyProperties(cookie, new org.apache.commons.httpclient.Cookie()));
     }
 
     @Override
-    public Cookie[] getCookies() {
-        org.apache.commons.httpclient.Cookie[] cookies = httpClient.getState().getCookies();
-        Cookie[] result = new Cookie[cookies.length];
-        for (int i = 0; i < cookies.length; i++) {
-            result[i] = new Cookie();
-            result[i].setName(cookies[i].getName());
-            result[i].setValue(cookies[i].getValue());
-
-            result[i].setComment(cookies[i].getComment());
-            result[i].setDomain(cookies[i].getDomain());
-            result[i].setExpiryDate(cookies[i].getExpiryDate());
-            result[i].setPath(cookies[i].getPath());
-            result[i].setSecure(cookies[i].getSecure());
-
-            result[i].setHasPathAttribute(cookies[i].isPathAttributeSpecified());
-            result[i].setHasDomainAttribute(cookies[i].isDomainAttributeSpecified());
-
-            result[i].setVersion(cookies[i].getVersion());
-        }
-        return result;
+    public List<Cookie> getCookies() {
+        return Arrays.stream(httpClient.getState().getCookies())
+                .map(c -> copyProperties(c, new Cookie()))
+                .collect(Collectors.toList());
     }
 
     @Override
     public void clearCookies() {
         httpClient.getState().clearCookies();
     }
+
+    @Override
+    public void addCookies(List<Cookie> cookie) {
+        httpClient.getState().addCookies(cookie.stream().map(d -> copyProperties(cookie, new org.apache.commons.httpclient.Cookie())).toArray(org.apache.commons.httpclient.Cookie[]::new));
+    }
+
 }

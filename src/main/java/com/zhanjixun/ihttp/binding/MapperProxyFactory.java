@@ -28,7 +28,7 @@ public class MapperProxyFactory<T> {
 
     public T newInstance() {
         Mapper mapper = cachedMapper(mapperInterface);
-        MapperProxy mapperProxy = new MapperProxy(mapper, new CommonsHttpClientExecutor(mapper.getConfig()));
+        MapperProxy mapperProxy = new MapperProxy(mapper, new CommonsHttpClientExecutor());
         return newInstance(mapperProxy);
     }
 

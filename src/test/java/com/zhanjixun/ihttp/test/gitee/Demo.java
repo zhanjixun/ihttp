@@ -2,6 +2,8 @@ package com.zhanjixun.ihttp.test.gitee;
 
 import com.google.common.collect.Maps;
 import com.zhanjixun.ihttp.Response;
+import com.zhanjixun.ihttp.domain.Cookie;
+
 import lombok.extern.log4j.Log4j;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -45,5 +47,7 @@ public class Demo {
                 Arrays.stream(gitee.getCookies()).forEach(System.out::println);
             });
         }, index -> log.warn("首页index状态码：" + index.getStatus()));
+        
+     
     }
 }

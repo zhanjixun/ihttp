@@ -5,7 +5,6 @@ import com.google.common.collect.Maps;
 import com.zhanjixun.ihttp.annotations.*;
 import com.zhanjixun.ihttp.binding.Mapper;
 import com.zhanjixun.ihttp.binding.MapperMethod;
-import com.zhanjixun.ihttp.constant.Config;
 import com.zhanjixun.ihttp.domain.NameValuePair;
 import lombok.extern.log4j.Log4j;
 import org.apache.commons.collections.CollectionUtils;
@@ -15,7 +14,10 @@ import java.lang.annotation.Annotation;
 import java.lang.reflect.AnnotatedElement;
 import java.lang.reflect.Method;
 import java.lang.reflect.Parameter;
-import java.util.*;
+import java.util.Arrays;
+import java.util.List;
+import java.util.Map;
+import java.util.Objects;
 import java.util.stream.Collectors;
 
 /**
@@ -79,12 +81,6 @@ public class AnnotationParser implements Parser {
             }
             if (annotationType == ResponseCharset.class) {
                 mapper.setCommonResponseCharset(((ResponseCharset) annotation).value());
-            }
-            if (annotationType == Proxy.class) {
-                Proxy proxy = (Proxy) annotation;
-                Config config = Optional.ofNullable(mapper.getConfig()).orElse(new Config());
-                config.setProxy(proxy);
-                mapper.setConfig(config);
             }
         }
         //解析请求头

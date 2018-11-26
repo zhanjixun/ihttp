@@ -2,13 +2,23 @@ package com.zhanjixun.ihttp;
 
 import com.zhanjixun.ihttp.domain.Cookie;
 
+import java.util.List;
+
 /**
  * cookie管理
  *
  * @author :zhanjixun
  * @date : 2018/9/28 13:41
+ * @see org.springframework.beans.BeanUtils
  */
 public interface CookiesManager {
+    /**
+     * 增加cookie
+     *
+     * @param cookie 需要增加的cookie
+     */
+    void addCookies(List<Cookie> cookie);
+
     /**
      * 增加cookie
      *
@@ -21,7 +31,7 @@ public interface CookiesManager {
      *
      * @return 所有cookie
      */
-    Cookie[] getCookies();
+    List<Cookie> getCookies();
 
     /**
      * 清除所有cookie

@@ -16,23 +16,15 @@ import java.util.Date;
 public class Cookie {
 
     private String name;
-
     private String value;
 
     private String comment;
-
     private String domain;
 
     private Date expiryDate;
-
     private String path;
 
     private boolean isSecure;
-
-    private boolean hasPathAttribute = false;
-
-    private boolean hasDomainAttribute = false;
-
     private int version = 0;
 
 }

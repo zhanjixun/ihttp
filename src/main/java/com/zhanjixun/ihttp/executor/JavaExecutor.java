@@ -12,6 +12,7 @@ import java.io.IOException;
 import java.net.HttpURLConnection;
 import java.net.MalformedURLException;
 import java.net.URL;
+import java.util.List;
 
 
 /**
@@ -71,12 +72,16 @@ public class JavaExecutor extends BaseExecutor {
     }
 
     @Override
-    public Cookie[] getCookies() {
-        return new Cookie[0];
+    public List<Cookie> getCookies() {
+        return null;
     }
 
     @Override
     public void clearCookies() {
 
+    }
+
+    @Override
+    public void addCookies(List<Cookie> cookie) {
     }
 }

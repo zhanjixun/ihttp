@@ -7,6 +7,7 @@ import java.lang.annotation.Target;
 
 /**
  * 设置请求正文，直接将字符串写入请求体
+ * 可用类型，基本数据类型 String
  */
 @Target({ElementType.METHOD, ElementType.PARAMETER})
 @Retention(RetentionPolicy.RUNTIME)

@@ -5,7 +5,6 @@ import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import com.zhanjixun.ihttp.Request;
 import com.zhanjixun.ihttp.annotations.*;
-import com.zhanjixun.ihttp.constant.Config;
 import com.zhanjixun.ihttp.domain.NameValuePair;
 import lombok.Data;
 import org.apache.commons.lang3.ArrayUtils;
@@ -33,7 +32,6 @@ public class Mapper {
     //存放所有方法
     private final Map<String, MapperMethod> methods = Maps.newHashMap();
 
-    private Config config;
     private String commonUrl;
     private String commonRequestCharset;
     private String commonResponseCharset;
