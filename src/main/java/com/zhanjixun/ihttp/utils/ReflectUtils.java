@@ -5,7 +5,10 @@ import com.google.common.collect.Lists;
 import java.lang.annotation.Annotation;
 import java.lang.annotation.Repeatable;
 import java.lang.reflect.AnnotatedElement;
+import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
+import java.util.stream.Collectors;
 
 /**
  * @author :zhanjixun
@@ -24,30 +27,30 @@ public class ReflectUtils {
     /**
      * 获取Repeatable注解
      *
+     * @param <T>
      * @param target
      * @param annotationClass
-     * @param <T>
      * @return
      */
     public static <T extends Annotation> List<T> getRepeatableAnnotation(AnnotatedElement target, Class<T> annotationClass) {
-        List<T> list = Lists.newArrayList();
         T annotation = target.getAnnotation(annotationClass);
         //当可重复注解只使用一次的时候
         if (annotation != null) {
-            list.add(annotation);
-            return list;
+            return Lists.newArrayList(annotation);
         }
         //重复使用多次的时候
         Repeatable repeatable = annotationClass.getAnnotation(Repeatable.class);
         Annotation repeatableAnnotation = target.getAnnotation(repeatable.value());
+        if (repeatableAnnotation == null) {
+            return Collections.emptyList();
+        }
+
         try {
             Object[] objects = (Object[]) repeatableAnnotation.annotationType().getMethod("value").invoke(repeatableAnnotation);
-            for (Object o : objects) {
-                list.add((T) o);
-            }
+            return Arrays.stream(objects).map(o -> (T) o).collect(Collectors.toList());
         } catch (Exception e) {
             e.printStackTrace();
         }
-        return list;
+        return Collections.emptyList();
     }
 }

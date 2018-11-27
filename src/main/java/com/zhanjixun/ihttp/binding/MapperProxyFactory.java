@@ -4,7 +4,7 @@ package com.zhanjixun.ihttp.binding;
 import com.google.common.collect.Maps;
 import com.zhanjixun.ihttp.annotations.HttpExecutor;
 import com.zhanjixun.ihttp.executor.BaseExecutor;
-import com.zhanjixun.ihttp.executor.CommonsHttpClientExecutor;
+import com.zhanjixun.ihttp.executor.ComponentsHttpClientExecutor;
 import com.zhanjixun.ihttp.parsing.AnnotationParser;
 import lombok.Getter;
 
@@ -30,7 +30,7 @@ public class MapperProxyFactory<T> {
     public T newInstance() {
         Mapper mapper = cachedMapper(mapperInterface);
         HttpExecutor annotation = mapperInterface.getAnnotation(HttpExecutor.class);
-        Class<? extends BaseExecutor> executorClass = mapperInterface.getAnnotation(HttpExecutor.class) == null ? CommonsHttpClientExecutor.class : annotation.value();
+        Class<? extends BaseExecutor> executorClass = mapperInterface.getAnnotation(HttpExecutor.class) == null ? ComponentsHttpClientExecutor.class : annotation.value();
         try {
             BaseExecutor baseExecutor = executorClass.newInstance();
             MapperProxy mapperProxy = new MapperProxy(mapper, baseExecutor);
