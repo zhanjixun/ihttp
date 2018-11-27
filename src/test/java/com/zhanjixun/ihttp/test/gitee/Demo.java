@@ -27,7 +27,8 @@ public class Demo {
     private Gitee gitee;
 
     /**
-     * 此测试用例用来演示IHTTP的使用，演示模拟登录gitee(码云),请在user.properties填写您的码云帐号信息测试
+     * 此测试用例用来演示IHTTP的使用，演示模拟登录gitee(码云)
+     * 请在user.properties填写您的码云帐号信息测试
      */
     @Test
     public void test() {
@@ -44,7 +45,6 @@ public class Demo {
                 gitee.getCookies().forEach(System.out::println);
             });
         }, index -> log.warn("首页index状态码：" + index.getStatus()));
-
-
     }
+
 }

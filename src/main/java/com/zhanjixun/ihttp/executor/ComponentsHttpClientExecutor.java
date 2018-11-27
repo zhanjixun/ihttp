@@ -5,22 +5,30 @@ import com.zhanjixun.ihttp.Response;
 import com.zhanjixun.ihttp.annotations.GET;
 import com.zhanjixun.ihttp.annotations.POST;
 import com.zhanjixun.ihttp.domain.Cookie;
+import com.zhanjixun.ihttp.domain.MultiParts;
 import com.zhanjixun.ihttp.domain.NameValuePair;
 import lombok.extern.log4j.Log4j;
 import okio.Okio;
+import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.http.HeaderElement;
 import org.apache.http.HttpResponse;
 import org.apache.http.client.HttpClient;
 import org.apache.http.client.config.RequestConfig;
+import org.apache.http.client.entity.UrlEncodedFormEntity;
 import org.apache.http.client.methods.HttpGet;
 import org.apache.http.client.methods.HttpPost;
-import org.apache.http.client.methods.HttpUriRequest;
+import org.apache.http.client.methods.HttpRequestBase;
+import org.apache.http.entity.ContentType;
 import org.apache.http.entity.StringEntity;
+import org.apache.http.entity.mime.MultipartEntityBuilder;
 import org.apache.http.impl.client.BasicCookieStore;
 import org.apache.http.impl.client.HttpClients;
 import org.apache.http.impl.cookie.BasicClientCookie;
+import org.apache.http.message.BasicNameValuePair;
 
+import javax.activation.MimetypesFileTypeMap;
+import java.io.File;
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
 import java.util.List;
@@ -66,7 +74,6 @@ public class ComponentsHttpClientExecutor extends BaseExecutor {
         for (NameValuePair nameValuePair : request.getHeaders()) {
             method.addHeader(nameValuePair.getName(), nameValuePair.getValue());
         }
-
         return executeMethod(method, request);
     }
 
@@ -75,43 +82,71 @@ public class ComponentsHttpClientExecutor extends BaseExecutor {
         for (NameValuePair nameValuePair : request.getHeaders()) {
             method.addHeader(nameValuePair.getName(), nameValuePair.getValue());
         }
-
+        //带参数
+        String charset = Optional.ofNullable(request.getCharset()).orElse("utf-8");
+        List<BasicNameValuePair> formParams = request.getParams().stream().map(p -> new BasicNameValuePair(p.getName(), p.getValue())).collect(Collectors.toList());
+        if (CollectionUtils.isNotEmpty(formParams)) {
+            try {
+                method.setEntity(new UrlEncodedFormEntity(formParams, charset));
+            } catch (UnsupportedEncodingException e) {
+                throw new RuntimeException("构造请求参数不支持的字符编码", e);
+            }
+        }
         //直接请求体
         if (StringUtils.isNotBlank(request.getBody())) {
             try {
-                String contentType = Optional.ofNullable(method.getFirstHeader("Content-Type")).map(org.apache.http.NameValuePair::getValue).orElse("text/html");
-
-                StringEntity stringEntity = new StringEntity(request.getBody());
-                stringEntity.setContentType(contentType);
-                method.setEntity(stringEntity);
+                Optional<String> contentType = Optional.ofNullable(method.getFirstHeader("Content-Type")).map(org.apache.http.NameValuePair::getValue);
+                if (contentType.isPresent()) {
+                    StringEntity stringEntity = new StringEntity(request.getBody());
+                    stringEntity.setContentType(contentType.get());
+                    method.setEntity(stringEntity);
+                } else {
+                    method.setEntity(new StringEntity(request.getBody(), ContentType.APPLICATION_JSON));
+                }
             } catch (UnsupportedEncodingException e) {
-                log.error("构造请求体StringBody出错", e);
+                throw new RuntimeException("构造请求体StringBody出错", e);
             }
+        }
+        //带文件
+        if (CollectionUtils.isNotEmpty(request.getMultiParts())) {
+            MultipartEntityBuilder builder = MultipartEntityBuilder.create();
+            for (NameValuePair nameValuePair : request.getParams()) {
+                builder.addTextBody(nameValuePair.getName(), nameValuePair.getValue());
+            }
+            for (MultiParts multiParts : request.getMultiParts()) {
+                File file = multiParts.getFilePart();
+
+                String mimeType = new MimetypesFileTypeMap().getContentType(file);
+                ContentType contentType = mimeType != null ? ContentType.create(mimeType) : ContentType.DEFAULT_BINARY;
+
+                builder.addBinaryBody(multiParts.getName(), file, contentType, file.getName());
+            }
+            method.setEntity(builder.build());
         }
         return executeMethod(method, request);
     }
 
-    private Response executeMethod(HttpUriRequest method, Request request) {
+    private Response executeMethod(HttpRequestBase method, Request request) {
         try {
+            method.setConfig(RequestConfig.custom().setConnectTimeout(30000).setSocketTimeout(30000).build());
             HttpResponse httpResponse = httpClient.execute(method);
 
             String charset = request.getResponseCharset();
-            HeaderElement[] elements = httpResponse.getEntity().getContentType().getElements();
-            if (elements.length == 1) {
-                org.apache.http.NameValuePair param = elements[0].getParameterByName("charset");
-                if (param != null) {
-                    charset = param.getValue();
-                }
-            }
             if (charset == null) {
-                charset = request.getCharset();
+                HeaderElement[] elements = httpResponse.getEntity().getContentType().getElements();
+                if (elements.length == 1) {
+                    org.apache.http.NameValuePair param = elements[0].getParameterByName("charset");
+                    if (param != null) {
+                        charset = param.getValue();
+                    }
+                }
             }
 
             Response response = new Response();
             response.setRequest(request);
             response.setStatus(httpResponse.getStatusLine().getStatusCode());
             response.setBody(Okio.buffer(Okio.source(httpResponse.getEntity().getContent())).readByteArray());
-            response.setCharset("utf-8");
+            response.setCharset(Optional.ofNullable(charset).orElse("UTF-8"));
             return response;
         } catch (IOException e) {
             log.error("发送" + request.getMethod() + "请求失败", e);
@@ -126,9 +161,7 @@ public class ComponentsHttpClientExecutor extends BaseExecutor {
 
     @Override
     public List<Cookie> getCookies() {
-        return cookieStore.getCookies().stream()
-                .map(c -> copyProperties(c, new Cookie()))
-                .collect(Collectors.toList());
+        return cookieStore.getCookies().stream().map(c -> copyProperties(c, new Cookie())).collect(Collectors.toList());
     }
 
     @Override

@@ -9,9 +9,7 @@ import lombok.extern.log4j.Log4j;
 import okio.Okio;
 
 import java.io.IOException;
-import java.net.HttpURLConnection;
-import java.net.MalformedURLException;
-import java.net.URL;
+import java.net.*;
 import java.util.List;
 
 
@@ -23,6 +21,10 @@ import java.util.List;
  */
 @Log4j
 public class JavaExecutor extends BaseExecutor {
+
+    public JavaExecutor() {
+        CookieHandler.setDefault(new CookieManager());
+    }
 
     @Override
     public Response execute(Request request) {

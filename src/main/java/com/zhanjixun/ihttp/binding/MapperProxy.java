@@ -1,5 +1,6 @@
 package com.zhanjixun.ihttp.binding;
 
+import com.google.common.primitives.Ints;
 import com.zhanjixun.ihttp.CookiesManager;
 import com.zhanjixun.ihttp.Request;
 import com.zhanjixun.ihttp.Response;
@@ -9,7 +10,6 @@ import org.springframework.util.Assert;
 
 import java.lang.reflect.InvocationHandler;
 import java.lang.reflect.Method;
-import java.util.Arrays;
 
 /**
  * 代理Mapper对象
@@ -45,8 +45,8 @@ public class MapperProxy implements InvocationHandler {
         AssertStatusCode annotation = method.getAnnotation(AssertStatusCode.class);
         if (annotation != null) {
             int[] codes = annotation.value();
-            String errorMessage = String.format("%s.%s没有返回需要的状态码(%d)", method.getDeclaringClass().getName(), method.getName(), response.getStatus());
-            Assert.isTrue(Arrays.asList(codes).contains(response.getStatus()), errorMessage);
+            String errorMessage = String.format("%s.%s状态码断言异常(需要%s,返回%d)", method.getDeclaringClass().getName(), method.getName(), Ints.asList(codes), response.getStatus());
+            Assert.isTrue(Ints.asList(codes).contains(response.getStatus()), errorMessage);
         }
 
         return response;

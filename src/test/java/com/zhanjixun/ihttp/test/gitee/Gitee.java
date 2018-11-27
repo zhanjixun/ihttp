@@ -3,11 +3,13 @@ package com.zhanjixun.ihttp.test.gitee;
 import com.zhanjixun.ihttp.CookiesManager;
 import com.zhanjixun.ihttp.Response;
 import com.zhanjixun.ihttp.annotations.*;
+import com.zhanjixun.ihttp.executor.ComponentsHttpClientExecutor;
 
 import java.util.Map;
 
 @URL("https://gitee.com")
-@UserAgent("zhanjixun@qq.com")
+@UserAgent("Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/69.0.3497.92 Safari/537.36")
+@HttpExecutor(ComponentsHttpClientExecutor.class)
 public interface Gitee extends CookiesManager {
 
     @GET()
