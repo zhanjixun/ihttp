@@ -16,7 +16,25 @@ import java.lang.annotation.Target;
 @Target({ElementType.PARAMETER})
 @Retention(RetentionPolicy.RUNTIME)
 public @interface Placeholder {
-
+    /**
+     * 占位符
+     *
+     * @return
+     */
     String value();
+
+    /**
+     * 是否进行编码
+     *
+     * @return
+     */
+    boolean encode() default false;
+
+    /**
+     * url编码的字符编码
+     *
+     * @return
+     */
+    String charset() default "utf-8";
 
 }

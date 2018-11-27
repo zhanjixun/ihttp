@@ -13,7 +13,9 @@ import org.apache.commons.lang3.ArrayUtils;
 import org.apache.commons.lang3.StringUtils;
 
 import java.io.File;
+import java.io.UnsupportedEncodingException;
 import java.lang.annotation.Annotation;
+import java.net.URLEncoder;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
@@ -115,6 +117,13 @@ public class Mapper {
             }
             if (value == null) {
                 throw new RuntimeException(target + "的替换值为null");
+            }
+            if (((Placeholder) annotation).encode()) {
+                try {
+                    value = URLEncoder.encode(value, ((Placeholder) annotation).charset());
+                } catch (UnsupportedEncodingException e) {
+                    throw new RuntimeException("占位符URL编码不支持的字符类型:", e);
+                }
             }
             //搜索URL
             request.setUrl(request.getUrl().replace(target, value));
