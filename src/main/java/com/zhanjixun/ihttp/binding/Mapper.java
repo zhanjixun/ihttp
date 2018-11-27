@@ -156,7 +156,16 @@ public class Mapper {
                 request.addHeader(((Header) annotation).name(), (String) arg);
             }
             if (annotationType == Param.class) {
-                request.addParam(((Param) annotation).name(), (String) arg);
+                Param paramAnno = (Param) annotation;
+                String value = (String) arg;
+                if (paramAnno.encode()) {
+                    try {
+                        value = URLEncoder.encode(value, paramAnno.charset());
+                    } catch (UnsupportedEncodingException e) {
+                        throw new RuntimeException("动态请求参数URL编码不支持的字符类型:", e);
+                    }
+                }
+                request.addParam(paramAnno.name(), value);
             }
             if (annotationType == FilePart.class) {
                 FilePart filePart = (FilePart) annotation;

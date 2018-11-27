@@ -35,6 +35,6 @@ public @interface Placeholder {
      *
      * @return
      */
-    String charset() default "utf-8";
+    String charset() default "UTF-8";
 
 }

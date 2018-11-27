@@ -15,7 +15,6 @@ import org.apache.http.HeaderElement;
 import org.apache.http.HttpResponse;
 import org.apache.http.client.HttpClient;
 import org.apache.http.client.config.RequestConfig;
-import org.apache.http.client.entity.UrlEncodedFormEntity;
 import org.apache.http.client.methods.HttpGet;
 import org.apache.http.client.methods.HttpPost;
 import org.apache.http.client.methods.HttpRequestBase;
@@ -25,7 +24,6 @@ import org.apache.http.entity.mime.MultipartEntityBuilder;
 import org.apache.http.impl.client.BasicCookieStore;
 import org.apache.http.impl.client.HttpClients;
 import org.apache.http.impl.cookie.BasicClientCookie;
-import org.apache.http.message.BasicNameValuePair;
 
 import javax.activation.MimetypesFileTypeMap;
 import java.io.File;
@@ -82,15 +80,11 @@ public class ComponentsHttpClientExecutor extends BaseExecutor {
         for (NameValuePair nameValuePair : request.getHeaders()) {
             method.addHeader(nameValuePair.getName(), nameValuePair.getValue());
         }
+        
         //带参数
-        String charset = Optional.ofNullable(request.getCharset()).orElse("utf-8");
-        List<BasicNameValuePair> formParams = request.getParams().stream().map(p -> new BasicNameValuePair(p.getName(), p.getValue())).collect(Collectors.toList());
-        if (CollectionUtils.isNotEmpty(formParams)) {
-            try {
-                method.setEntity(new UrlEncodedFormEntity(formParams, charset));
-            } catch (UnsupportedEncodingException e) {
-                throw new RuntimeException("构造请求参数不支持的字符编码", e);
-            }
+        String paramString = request.getParams().stream().map(p -> p.getName() + "=" + p.getValue()).collect(Collectors.joining("&"));
+        if (StringUtils.isNotBlank(paramString)) {
+            method.setEntity(new StringEntity(paramString, ContentType.APPLICATION_FORM_URLENCODED));
         }
         //直接请求体
         if (StringUtils.isNotBlank(request.getBody())) {

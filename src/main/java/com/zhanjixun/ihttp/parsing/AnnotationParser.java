@@ -13,10 +13,12 @@ import org.apache.commons.lang3.RandomStringUtils;
 import org.apache.commons.lang3.StringUtils;
 
 import java.io.File;
+import java.io.UnsupportedEncodingException;
 import java.lang.annotation.Annotation;
 import java.lang.reflect.AnnotatedElement;
 import java.lang.reflect.Method;
 import java.lang.reflect.Parameter;
+import java.net.URLEncoder;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
@@ -139,11 +141,27 @@ public class AnnotationParser implements Parser {
             //固定参数
             if (method.getAnnotation(Param.class) != null) {
                 Param p = method.getAnnotation(Param.class);
-                mapperMethod.getParams().add(new NameValuePair(p.name(), p.value()));
+                String value = p.value();
+                if (p.encode()) {
+                    try {
+                        value = URLEncoder.encode(value, p.charset());
+                    } catch (UnsupportedEncodingException e) {
+                        throw new RuntimeException("请求参数URL编码不支持的字符类型:", e);
+                    }
+                }
+                mapperMethod.getParams().add(new NameValuePair(p.name(), value));
             }
             if (method.getAnnotation(Params.class) != null) {
                 for (Param p : method.getAnnotation(Params.class).value()) {
-                    mapperMethod.getParams().add(new NameValuePair(p.name(), p.value()));
+                    String value = p.value();
+                    if (p.encode()) {
+                        try {
+                            value = URLEncoder.encode(value, p.charset());
+                        } catch (UnsupportedEncodingException e) {
+                            throw new RuntimeException("请求参数URL编码不支持的字符类型:", e);
+                        }
+                    }
+                    mapperMethod.getParams().add(new NameValuePair(p.name(), value));
                 }
             }
 
