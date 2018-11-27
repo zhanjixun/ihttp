@@ -6,6 +6,7 @@ import com.zhanjixun.ihttp.annotations.*;
 import com.zhanjixun.ihttp.binding.Mapper;
 import com.zhanjixun.ihttp.binding.MapperMethod;
 import com.zhanjixun.ihttp.domain.NameValuePair;
+import com.zhanjixun.ihttp.utils.ReflectUtils;
 import lombok.extern.log4j.Log4j;
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.collections.MapUtils;
@@ -139,40 +140,20 @@ public class AnnotationParser implements Parser {
             mapperMethod.getHeaders().addAll(parseHeader(method));
 
             //固定参数
-            if (method.getAnnotation(Param.class) != null) {
-                Param p = method.getAnnotation(Param.class);
-                String value = p.value();
-                if (p.encode()) {
+            for (Param param : ReflectUtils.getRepeatableAnnotation(method, Param.class)) {
+                String value = param.value();
+                if (param.encode()) {
                     try {
-                        value = URLEncoder.encode(value, p.charset());
+                        value = URLEncoder.encode(value, param.charset());
                     } catch (UnsupportedEncodingException e) {
                         throw new RuntimeException("请求参数URL编码不支持的字符类型:", e);
                     }
                 }
-                mapperMethod.getParams().add(new NameValuePair(p.name(), value));
+                mapperMethod.getParams().add(new NameValuePair(param.name(), value));
             }
-            if (method.getAnnotation(Params.class) != null) {
-                for (Param p : method.getAnnotation(Params.class).value()) {
-                    String value = p.value();
-                    if (p.encode()) {
-                        try {
-                            value = URLEncoder.encode(value, p.charset());
-                        } catch (UnsupportedEncodingException e) {
-                            throw new RuntimeException("请求参数URL编码不支持的字符类型:", e);
-                        }
-                    }
-                    mapperMethod.getParams().add(new NameValuePair(p.name(), value));
-                }
-            }
-
-            if (method.getAnnotation(FilePart.class) != null) {
-                FilePart f = method.getAnnotation(FilePart.class);
-                mapperMethod.getMultiParts().add(new com.zhanjixun.ihttp.domain.MultiParts(f.name(), new File(f.value())));
-            }
-            if (method.getAnnotation(MultiParts.class) != null) {
-                for (FilePart f : method.getAnnotation(MultiParts.class).value()) {
-                    mapperMethod.getMultiParts().add(new com.zhanjixun.ihttp.domain.MultiParts(f.name(), new File(f.value())));
-                }
+            //文件上传
+            for (FilePart filePart : ReflectUtils.getRepeatableAnnotation(method, FilePart.class)) {
+                mapperMethod.getMultiParts().add(new com.zhanjixun.ihttp.domain.MultiParts(filePart.name(), new File(filePart.value())));
             }
 
             mapperMethod.setRequestCharset(method.getAnnotation(RequestCharset.class) == null ? null : method.getAnnotation(RequestCharset.class).value());
@@ -216,19 +197,15 @@ public class AnnotationParser implements Parser {
     private List<NameValuePair> parseHeader(AnnotatedElement element) {
         List<NameValuePair> headers = Lists.newArrayList();
 
-        if (element.getAnnotation(Header.class) != null) {
-            Header header = element.getAnnotation(Header.class);
+        for (Header header : ReflectUtils.getRepeatableAnnotation(element, Header.class)) {
             headers.add(new NameValuePair(header.name(), header.value()));
         }
-        if (element.getAnnotation(Headers.class) != null) {
-            Arrays.stream(element.getAnnotation(Headers.class).value()).forEach(header ->
-                    headers.add(new NameValuePair(header.name(), header.value())));
-        }
+
         for (Map.Entry<String, Class<? extends Annotation>> entry : HEADER_ANNOTATIONS.entrySet()) {
             Class<? extends Annotation> annotationClass = entry.getValue();
             if (element.isAnnotationPresent(annotationClass)) {
-                Annotation annotation = element.getAnnotation(annotationClass);
                 try {
+                    Annotation annotation = element.getAnnotation(annotationClass);
                     String value = (String) annotationClass.getMethod("value").invoke(annotation);
                     headers.add(new NameValuePair(entry.getKey(), value));
                 } catch (Exception e) {
