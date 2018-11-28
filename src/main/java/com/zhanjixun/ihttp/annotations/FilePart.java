@@ -10,7 +10,7 @@ import java.lang.annotation.RetentionPolicy;
  * @author zhanjixun
  */
 @Retention(RetentionPolicy.RUNTIME)
-@Repeatable(MultiParts.class)
+@Repeatable(FilePartRepeatable.class)
 public @interface FilePart {
 
     String name();

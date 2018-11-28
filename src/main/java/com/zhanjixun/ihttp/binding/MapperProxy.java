@@ -1,7 +1,7 @@
 package com.zhanjixun.ihttp.binding;
 
 import com.google.common.primitives.Ints;
-import com.zhanjixun.ihttp.CookiesManager;
+import com.zhanjixun.ihttp.CookiesStore;
 import com.zhanjixun.ihttp.Request;
 import com.zhanjixun.ihttp.Response;
 import com.zhanjixun.ihttp.annotations.AssertStatusCode;
@@ -35,7 +35,7 @@ public class MapperProxy implements InvocationHandler {
                 t.printStackTrace();
             }
         }
-        if (CookiesManager.class.equals(method.getDeclaringClass())) {
+        if (CookiesStore.class.equals(method.getDeclaringClass())) {
             return method.invoke(executor, args);
         }
         Request request = mapper.getRequest(method.getName(), args);

@@ -5,13 +5,13 @@ import com.zhanjixun.ihttp.domain.Cookie;
 import java.util.List;
 
 /**
- * cookie管理
+ * cookie商店
  *
  * @author :zhanjixun
  * @date : 2018/9/28 13:41
  * @see org.springframework.beans.BeanUtils
  */
-public interface CookiesManager {
+public interface CookiesStore {
     /**
      * 增加cookie
      *

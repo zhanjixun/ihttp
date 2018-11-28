@@ -10,7 +10,7 @@ import java.lang.annotation.RetentionPolicy;
  * @author zhanjixun
  */
 @Retention(RetentionPolicy.RUNTIME)
-@Repeatable(Params.class)
+@Repeatable(ParamRepeatable.class)
 public @interface Param {
 
     String name();

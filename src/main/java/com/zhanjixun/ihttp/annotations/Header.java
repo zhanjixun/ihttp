@@ -5,7 +5,7 @@ import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 
 @Retention(RetentionPolicy.RUNTIME)
-@Repeatable(Headers.class)
+@Repeatable(HeaderRepeatable.class)
 public @interface Header {
 
     String name();
