@@ -1,7 +1,7 @@
 package com.zhanjixun.ihttp;
 
 import com.google.common.collect.Lists;
-import com.zhanjixun.ihttp.domain.MultiParts;
+import com.zhanjixun.ihttp.domain.FileParts;
 import com.zhanjixun.ihttp.domain.NameValuePair;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
@@ -28,7 +28,7 @@ public class Request {
 
     private List<NameValuePair> headers = Lists.newArrayList();
     private List<NameValuePair> params = Lists.newArrayList();
-    private List<MultiParts> multiParts = Lists.newArrayList();
+    private List<FileParts> fileParts = Lists.newArrayList();
 
     public void addHeader(String name, String value) {
         headers.add(new NameValuePair(name, value));
@@ -39,7 +39,7 @@ public class Request {
     }
 
     public void addFile(String name, File file) {
-        multiParts.add(new MultiParts(name, file));
+        fileParts.add(new FileParts(name, file));
     }
 
 }

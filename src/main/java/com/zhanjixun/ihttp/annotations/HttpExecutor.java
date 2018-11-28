@@ -1,7 +1,7 @@
 package com.zhanjixun.ihttp.annotations;
 
 import com.zhanjixun.ihttp.executor.BaseExecutor;
-import com.zhanjixun.ihttp.executor.CommonsHttpClientExecutor;
+import com.zhanjixun.ihttp.executor.ComponentsHttpClientExecutor;
 
 import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;
@@ -18,6 +18,6 @@ import java.lang.annotation.Target;
 @Retention(RetentionPolicy.RUNTIME)
 public @interface HttpExecutor {
 
-    Class<? extends BaseExecutor> value() default CommonsHttpClientExecutor.class;
+    Class<? extends BaseExecutor> value() default ComponentsHttpClientExecutor.class;
 
 }

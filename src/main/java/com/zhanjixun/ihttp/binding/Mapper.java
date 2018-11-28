@@ -69,7 +69,7 @@ public class Mapper {
 
         request.getHeaders().addAll(mapperMethod.getHeaders());
         request.getParams().addAll(mapperMethod.getParams());
-        request.getMultiParts().addAll(mapperMethod.getMultiParts());
+        request.getFileParts().addAll(mapperMethod.getFileParts());
 
         //绑定动态参数
         bindingParameter(request, mapperMethod.getParamMapping(), args);

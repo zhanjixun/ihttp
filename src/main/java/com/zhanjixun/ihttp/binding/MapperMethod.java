@@ -1,7 +1,7 @@
 package com.zhanjixun.ihttp.binding;
 
 import com.google.common.collect.Lists;
-import com.zhanjixun.ihttp.domain.MultiParts;
+import com.zhanjixun.ihttp.domain.FileParts;
 import com.zhanjixun.ihttp.domain.NameValuePair;
 import lombok.Data;
 
@@ -26,7 +26,7 @@ public class MapperMethod {
 
     private List<NameValuePair> headers = Lists.newArrayList();
     private List<NameValuePair> params = Lists.newArrayList();
-    private List<MultiParts> multiParts = Lists.newArrayList();
+    private List<FileParts> fileParts = Lists.newArrayList();
 
     private Annotation[] paramMapping;
 }

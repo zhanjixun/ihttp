@@ -5,7 +5,7 @@ import com.zhanjixun.ihttp.Response;
 import com.zhanjixun.ihttp.annotations.GET;
 import com.zhanjixun.ihttp.annotations.POST;
 import com.zhanjixun.ihttp.domain.Cookie;
-import com.zhanjixun.ihttp.domain.MultiParts;
+import com.zhanjixun.ihttp.domain.FileParts;
 import com.zhanjixun.ihttp.domain.NameValuePair;
 import lombok.extern.log4j.Log4j;
 import okio.Okio;
@@ -80,11 +80,16 @@ public class ComponentsHttpClientExecutor extends BaseExecutor {
         for (NameValuePair nameValuePair : request.getHeaders()) {
             method.addHeader(nameValuePair.getName(), nameValuePair.getValue());
         }
-        
+
         //带参数
+        String charset = Optional.ofNullable(request.getCharset()).orElse("utf-8");
         String paramString = request.getParams().stream().map(p -> p.getName() + "=" + p.getValue()).collect(Collectors.joining("&"));
         if (StringUtils.isNotBlank(paramString)) {
-            method.setEntity(new StringEntity(paramString, ContentType.APPLICATION_FORM_URLENCODED));
+            try {
+                method.setEntity(new StringEntity(paramString, "application/x-www-form-urlencoded", charset));
+            } catch (UnsupportedEncodingException e) {
+                e.printStackTrace();
+            }
         }
         //直接请求体
         if (StringUtils.isNotBlank(request.getBody())) {
@@ -102,18 +107,18 @@ public class ComponentsHttpClientExecutor extends BaseExecutor {
             }
         }
         //带文件
-        if (CollectionUtils.isNotEmpty(request.getMultiParts())) {
+        if (CollectionUtils.isNotEmpty(request.getFileParts())) {
             MultipartEntityBuilder builder = MultipartEntityBuilder.create();
             for (NameValuePair nameValuePair : request.getParams()) {
                 builder.addTextBody(nameValuePair.getName(), nameValuePair.getValue());
             }
-            for (MultiParts multiParts : request.getMultiParts()) {
-                File file = multiParts.getFilePart();
+            for (FileParts fileParts : request.getFileParts()) {
+                File file = fileParts.getFilePart();
 
                 String mimeType = new MimetypesFileTypeMap().getContentType(file);
                 ContentType contentType = mimeType != null ? ContentType.create(mimeType) : ContentType.DEFAULT_BINARY;
 
-                builder.addBinaryBody(multiParts.getName(), file, contentType, file.getName());
+                builder.addBinaryBody(fileParts.getName(), file, contentType, file.getName());
             }
             method.setEntity(builder.build());
         }

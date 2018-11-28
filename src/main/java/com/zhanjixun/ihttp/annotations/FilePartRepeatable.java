@@ -7,14 +7,13 @@ import java.lang.annotation.Target;
 
 /**
  * 文件上传 GET请求不支持文件上传
- * 
- * @author zhanjixun
  *
+ * @author zhanjixun
  */
 @Target(ElementType.METHOD)
 @Retention(RetentionPolicy.RUNTIME)
-public @interface MultiParts {
+public @interface FilePartRepeatable {
 
-	FilePart[] value() default {};
+    FilePart[] value() default {};
 
 }

@@ -5,6 +5,7 @@ import com.google.common.collect.Maps;
 import com.zhanjixun.ihttp.annotations.*;
 import com.zhanjixun.ihttp.binding.Mapper;
 import com.zhanjixun.ihttp.binding.MapperMethod;
+import com.zhanjixun.ihttp.domain.FileParts;
 import com.zhanjixun.ihttp.domain.NameValuePair;
 import com.zhanjixun.ihttp.utils.ReflectUtils;
 import lombok.extern.log4j.Log4j;
@@ -153,7 +154,7 @@ public class AnnotationParser implements Parser {
             }
             //文件上传
             for (FilePart filePart : ReflectUtils.getRepeatableAnnotation(method, FilePart.class)) {
-                mapperMethod.getMultiParts().add(new com.zhanjixun.ihttp.domain.MultiParts(filePart.name(), new File(filePart.value())));
+                mapperMethod.getFileParts().add(new FileParts(filePart.name(), new File(filePart.value())));
             }
 
             mapperMethod.setRequestCharset(method.getAnnotation(RequestCharset.class) == null ? null : method.getAnnotation(RequestCharset.class).value());
