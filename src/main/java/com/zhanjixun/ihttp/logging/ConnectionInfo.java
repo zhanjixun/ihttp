@@ -29,18 +29,19 @@ public class ConnectionInfo {
 
     private String url;
     private String method;
-    private String stringBody;
+    private String version;
 
+    private String stringBody;
     private int statusCode;
     private String statusText;
     private String statusLine;
 
-    private List<NameValuePair> header = Lists.newArrayList();
-
+    //请求
+    private List<NameValuePair> requestHeaders = Lists.newArrayList();
     private List<NameValuePair> params = Lists.newArrayList();
     private List<FileParts> files = Lists.newArrayList();
 
-    private List<NameValuePair> requestHeaders = Lists.newArrayList();
+    //结果
     private List<NameValuePair> responseHeaders = Lists.newArrayList();
 
     private long startTime;
@@ -56,11 +57,11 @@ public class ConnectionInfo {
         builder.append("\n");
 
         builder.append("▼ Request Headers\n");
-        getRequestHeaders().forEach(h -> builder.append(String.format("%s:%s\n", h.getName(), h.getValue())));
+        getRequestHeaders().forEach(h -> builder.append(String.format("%s : %s\n", h.getName(), h.getValue())));
         builder.append("\n");
 
         builder.append("▼ Response Headers" + "\n");
-        getResponseHeaders().forEach(h -> builder.append(String.format("%s:%s\n", h.getName(), h.getValue())));
+        getResponseHeaders().forEach(h -> builder.append(String.format("%s : %s\n", h.getName(), h.getValue())));
         builder.append("\n");
 
         if (GET.class.getSimpleName().equalsIgnoreCase(getMethod()) && CollectionUtils.isNotEmpty(getParams())) {
@@ -87,4 +88,11 @@ public class ConnectionInfo {
     private String formatDate(Date date) {
         return DateUtil.formatDate(date, "yyyy-MM-dd HH:mm:ss.SSS");
     }
+
+    public String toRawStyleLog() {
+        StringBuilder builder = new StringBuilder();
+        builder.append(String.format("%s %s %s", method, url));
+        return builder.toString();
+    }
+
 }

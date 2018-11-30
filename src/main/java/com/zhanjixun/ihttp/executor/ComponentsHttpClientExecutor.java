@@ -7,6 +7,7 @@ import com.zhanjixun.ihttp.annotations.POST;
 import com.zhanjixun.ihttp.domain.Cookie;
 import com.zhanjixun.ihttp.domain.FileParts;
 import com.zhanjixun.ihttp.domain.NameValuePair;
+import com.zhanjixun.ihttp.utils.StrUtils;
 import lombok.extern.log4j.Log4j;
 import okio.Okio;
 import org.apache.commons.collections.CollectionUtils;
@@ -61,12 +62,7 @@ public class ComponentsHttpClientExecutor extends BaseExecutor {
     }
 
     private Response doGetMethod(Request request) {
-        String paramQuery = request.getParams().stream().map(d -> d.getName() + "=" + d.getValue()).collect(Collectors.joining("&"));
-        if (StringUtils.isNotBlank(paramQuery)) {
-            request.setUrl(request.getUrl().contains("?") ? request.getUrl() + "&" + paramQuery : request.getUrl() + "?" + paramQuery);
-        }
-
-        HttpGet method = new HttpGet(request.getUrl());
+        HttpGet method = new HttpGet(StrUtils.addQuery(request.getUrl(), request.getParams()));
         method.setConfig(RequestConfig.custom().setRedirectsEnabled(request.isFollowRedirects()).build());
 
         for (NameValuePair nameValuePair : request.getHeaders()) {
@@ -127,9 +123,9 @@ public class ComponentsHttpClientExecutor extends BaseExecutor {
 
     private Response executeMethod(HttpRequestBase method, Request request) {
         try {
-            method.setConfig(RequestConfig.custom().setConnectTimeout(30000).setSocketTimeout(30000).build());
+            method.setConfig(RequestConfig.custom().setConnectTimeout(3000).setSocketTimeout(3000).build());
             HttpResponse httpResponse = httpClient.execute(method);
-
+          
             String charset = request.getResponseCharset();
             if (charset == null) {
                 HeaderElement[] elements = httpResponse.getEntity().getContentType().getElements();

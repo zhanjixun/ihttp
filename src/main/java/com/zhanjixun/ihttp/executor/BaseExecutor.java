@@ -17,5 +17,4 @@ public abstract class BaseExecutor implements CookiesStore {
         BeanUtils.copyProperties(source, target);
         return target;
     }
-
 }

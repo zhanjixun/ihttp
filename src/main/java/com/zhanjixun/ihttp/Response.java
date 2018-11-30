@@ -37,10 +37,6 @@ public class Response {
     private Document document;
     private BufferedImage image;
 
-    public void addHeader(String name, String value) {
-        headers.add(new NameValuePair(name, value));
-    }
-
     public boolean isOK() {
         return status == 200;
     }

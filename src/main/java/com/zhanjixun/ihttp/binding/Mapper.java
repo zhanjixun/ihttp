@@ -6,6 +6,7 @@ import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import com.zhanjixun.ihttp.Request;
 import com.zhanjixun.ihttp.annotations.*;
+import com.zhanjixun.ihttp.domain.FileParts;
 import com.zhanjixun.ihttp.domain.NameValuePair;
 import com.zhanjixun.ihttp.utils.ReflectUtils;
 import lombok.Data;
@@ -153,7 +154,7 @@ public class Mapper {
                 request.setUrl(buildUrl(request.getUrl(), (String) arg));
             }
             if (annotationType == Header.class) {
-                request.addHeader(((Header) annotation).name(), (String) arg);
+                request.getHeaders().add(new NameValuePair(((Header) annotation).name(), (String) arg));
             }
             if (annotationType == Param.class) {
                 Param paramAnno = (Param) annotation;
@@ -165,14 +166,14 @@ public class Mapper {
                         throw new RuntimeException("动态请求参数URL编码不支持的字符类型:", e);
                     }
                 }
-                request.addParam(paramAnno.name(), value);
+                request.getParams().add(new NameValuePair(paramAnno.name(), value));
             }
             if (annotationType == FilePart.class) {
                 FilePart filePart = (FilePart) annotation;
                 if (arg instanceof String) {
-                    request.addFile(filePart.name(), new File((String) arg));
+                    request.getFileParts().add(new FileParts(filePart.name(), new File((String) arg)));
                 } else if (arg instanceof File) {
-                    request.addFile(filePart.name(), (File) arg);
+                    request.getFileParts().add(new FileParts(filePart.name(), (File) arg));
                 } else {
                     throw new IllegalArgumentException("在方法的参数中使用" + FilePart.class.getName() + "时，被注解的参数类型必须为java.lang.String或者java.io.File");
                 }
@@ -185,12 +186,12 @@ public class Mapper {
             }
             if (annotationType == ParamMap.class) {
                 if (arg instanceof Map) {
-                    ((Map<String, ? extends Object>) arg).forEach((k, v) -> request.addParam(k, String.valueOf(v)));
+                    ((Map<String, ? extends Object>) arg).forEach((k, v) -> request.getParams().add(new NameValuePair(k, String.valueOf(v))));
                 } else {
                     throw new IllegalArgumentException("在方法的参数中使用" + ParamMap.class.getName() + "时，被注解的参数类型必须为java.util.Map");
                 }
             }
-            HEADER_ANNOTATIONS.entrySet().stream().filter(entry -> annotationType == entry.getValue()).forEach(entry -> request.addHeader(entry.getKey(), (String) arg));
+            HEADER_ANNOTATIONS.entrySet().stream().filter(entry -> annotationType == entry.getValue()).forEach(entry -> request.getHeaders().add(new NameValuePair(entry.getKey(), (String) arg)));
         }
     }
 

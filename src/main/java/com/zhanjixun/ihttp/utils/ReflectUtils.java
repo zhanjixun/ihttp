@@ -15,7 +15,12 @@ import java.util.stream.Collectors;
  * @date : 2018/11/26 14:35
  */
 public class ReflectUtils {
-
+    /**
+     * 一个类型是基本类型或者其封装类
+     *
+     * @param obj
+     * @return
+     */
     public static boolean isPrimitive(Object obj) {
         try {
             return ((Class<?>) obj.getClass().getField("TYPE").get(null)).isPrimitive();

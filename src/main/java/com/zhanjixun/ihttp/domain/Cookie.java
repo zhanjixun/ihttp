@@ -27,4 +27,5 @@ public class Cookie {
     private boolean isSecure;
     private int version = 0;
 
+    private boolean httpOnly;
 }

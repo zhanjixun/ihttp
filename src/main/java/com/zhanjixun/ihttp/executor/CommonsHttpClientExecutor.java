@@ -8,6 +8,7 @@ import com.zhanjixun.ihttp.domain.Cookie;
 import com.zhanjixun.ihttp.domain.FileParts;
 import com.zhanjixun.ihttp.domain.NameValuePair;
 import com.zhanjixun.ihttp.logging.ConnectionInfo;
+import com.zhanjixun.ihttp.utils.StrUtils;
 import lombok.extern.log4j.Log4j;
 import okio.Okio;
 import org.apache.commons.collections.CollectionUtils;
@@ -32,7 +33,6 @@ import java.io.UnsupportedEncodingException;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
-import java.util.Set;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -59,21 +59,11 @@ public class CommonsHttpClientExecutor extends BaseExecutor {
     }
 
     private Response doGetMethod(Request request) {
-        GetMethod method = new GetMethod(request.getUrl());
+        GetMethod method = new GetMethod(StrUtils.addQuery(request.getUrl(), request.getParams()));
         method.setFollowRedirects(request.isFollowRedirects());
 
         String charset = Optional.ofNullable(request.getCharset()).orElse("UTF-8");
         method.getParams().setParameter(HttpMethodParams.HTTP_CONTENT_CHARSET, charset);
-
-        Set<String> queryString = request.getParams().stream().map(pair -> pair.getName() + "=" + pair.getValue())
-                .collect(Collectors.toSet());
-
-        if (CollectionUtils.isNotEmpty(queryString)) {
-            if (StringUtils.isNotEmpty(method.getQueryString())) {
-                queryString.add(method.getQueryString());
-            }
-            method.setQueryString(String.join("&", queryString));
-        }
 
         request.getHeaders().forEach(h -> method.addRequestHeader(h.getName(), h.getValue()));
         return executeMethod(method, request);
@@ -154,16 +144,16 @@ public class CommonsHttpClientExecutor extends BaseExecutor {
 
     private ConnectionInfo buildConnectionInfo(long startTime, long endTime, int status, HttpMethodBase httpMethod) {
         try {
-            ConnectionInfo connectionInfo = new ConnectionInfo();
-            connectionInfo.setStartTime(startTime);
-            connectionInfo.setEndTime(endTime);
-            connectionInfo.setUrl(httpMethod.getURI().getURI());
-            connectionInfo.setStatusCode(status);
-            connectionInfo.setStatusLine(httpMethod.getStatusLine().toString());
-            connectionInfo.setStatusText(httpMethod.getStatusText());
-
-            Stream.of(httpMethod.getRequestHeaders()).forEach(h -> connectionInfo.getRequestHeaders().add(new NameValuePair(h.getName(), h.getValue())));
-            Stream.of(httpMethod.getResponseHeaders()).forEach(h -> connectionInfo.getResponseHeaders().add(new NameValuePair(h.getName(), h.getValue())));
+            ConnectionInfo connectionInfo = ConnectionInfo.builder()
+                    .url(httpMethod.getURI().getURI())
+                    .statusCode(status)
+                    .statusLine(httpMethod.getStatusLine().toString())
+                    .statusText(httpMethod.getStatusText())
+                    .requestHeaders(Arrays.stream(httpMethod.getRequestHeaders()).map(d -> new NameValuePair(d.getName(), d.getValue())).collect(Collectors.toList()))
+                    .responseHeaders(Arrays.stream(httpMethod.getResponseHeaders()).map(d -> new NameValuePair(d.getName(), d.getValue())).collect(Collectors.toList()))
+                    .startTime(startTime)
+                    .endTime(endTime)
+                    .build();
 
             if (httpMethod instanceof GetMethod) {
                 connectionInfo.setMethod("GET");

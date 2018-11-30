@@ -5,12 +5,22 @@ import com.zhanjixun.ihttp.Response;
 import com.zhanjixun.ihttp.annotations.GET;
 import com.zhanjixun.ihttp.annotations.POST;
 import com.zhanjixun.ihttp.domain.Cookie;
+import com.zhanjixun.ihttp.domain.FileParts;
+import com.zhanjixun.ihttp.domain.NameValuePair;
+import com.zhanjixun.ihttp.utils.StrUtils;
 import lombok.extern.log4j.Log4j;
 import okio.Okio;
+import org.apache.commons.collections.CollectionUtils;
+import org.apache.commons.lang3.StringUtils;
 
+import javax.activation.MimetypesFileTypeMap;
 import java.io.IOException;
+import java.io.OutputStream;
 import java.net.*;
 import java.util.List;
+import java.util.Optional;
+import java.util.UUID;
+import java.util.stream.Collectors;
 
 
 /**
@@ -22,8 +32,10 @@ import java.util.List;
 @Log4j
 public class JavaExecutor extends BaseExecutor {
 
+    private final CookieManager cookieManager = new CookieManager();
+
     public JavaExecutor() {
-        CookieHandler.setDefault(new CookieManager());
+        CookieHandler.setDefault(cookieManager);
     }
 
     @Override
@@ -38,52 +50,152 @@ public class JavaExecutor extends BaseExecutor {
     }
 
     private Response doPostMethod(Request request) {
-        return null;
+        try {
+            HttpURLConnection connection = (HttpURLConnection) new URL(request.getUrl()).openConnection();
+            connection.setRequestMethod("POST");
+            connection.setDoOutput(true);
+            connection.setDoInput(true);
+            //请求头
+            request.getHeaders().forEach(h -> connection.addRequestProperty(h.getName(), h.getValue()));
+
+            //参数
+            String paramString = request.getParams().stream().map(p -> p.getName() + "=" + p.getValue()).collect(Collectors.joining("&"));
+            if (StringUtils.isNotBlank(paramString)) {
+                OutputStream outputStream = connection.getOutputStream();
+                outputStream.write(paramString.getBytes());
+                outputStream.flush();
+                outputStream.close();
+            }
+            //发送JSON
+            if (StringUtils.isNotBlank(request.getBody())) {
+                OutputStream outputStream = connection.getOutputStream();
+                outputStream.write(request.getBody().getBytes());
+                outputStream.flush();
+                outputStream.close();
+            }
+            //文件上传
+            if (CollectionUtils.isNotEmpty(request.getFileParts())) {
+                OutputStream outputStream = connection.getOutputStream();
+                String prefix = "----", boundary = UUID.randomUUID().toString(), lineEnd = "\r\n";
+                String oneLine = prefix + boundary + lineEnd;
+
+                connection.addRequestProperty("Content-Type", "multipart/form-data; boundary=" + prefix + boundary);
+
+                for (NameValuePair nameValuePair : request.getParams()) {
+                    outputStream.write(oneLine.getBytes());
+                    outputStream.write(String.format("Content-Disposition: form-data; name=\"%s\"%s", nameValuePair.getName(), lineEnd).getBytes());
+
+                    outputStream.write(lineEnd.getBytes());
+                    outputStream.write(String.format("%s%s", nameValuePair.getValue(), lineEnd).getBytes());
+                }
+                for (FileParts fileParts : request.getFileParts()) {
+                    String mimeType = new MimetypesFileTypeMap().getContentType(fileParts.getFilePart());
+                    String contentType = Optional.ofNullable(mimeType).orElse("application/octet-stream");
+
+                    outputStream.write(oneLine.getBytes());
+                    outputStream.write(String.format("Content-Disposition: form-data; name=\"%s\"; filename=\"%s\"", fileParts.getName(), fileParts.getFilePart().getName()).getBytes());
+                    outputStream.write(String.format("Content-Type: %s%s", contentType, lineEnd).getBytes());
+                    outputStream.write(lineEnd.getBytes());
+
+                    outputStream.write(Okio.buffer(Okio.source(fileParts.getFilePart())).readByteArray());
+                }
+                outputStream.write(oneLine.getBytes());
+                outputStream.flush();
+                outputStream.close();
+            }
+            return executeMethod(request, connection);
+        } catch (IOException e) {
+            throw new RuntimeException("构建POST请求失败", e);
+        }
     }
 
     private Response doGetMethod(Request request) {
-        HttpURLConnection connection = null;
         try {
-            URL url = new URL(request.getUrl());
-            connection = (HttpURLConnection) url.openConnection();
+            URL url = new URL(StrUtils.addQuery(request.getUrl(), request.getParams()));
+            HttpURLConnection connection = (HttpURLConnection) url.openConnection();
             connection.setRequestMethod("GET");
             connection.setInstanceFollowRedirects(request.isFollowRedirects());
+
+            connection.setDoOutput(false);
+            connection.setDoInput(true);
+
+            request.getHeaders().forEach(h -> connection.addRequestProperty(h.getName(), h.getValue()));
+            return executeMethod(request, connection);
+        } catch (MalformedURLException e) {
+            throw new RuntimeException("构建URL失败" + request.getUrl(), e);
+        } catch (ProtocolException e) {
+            throw new RuntimeException("构建请求失败", e);
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        return null;
+    }
+
+    private Response executeMethod(Request request, HttpURLConnection connection) {
+        try {
+            connection.setConnectTimeout(3000);
+            connection.setReadTimeout(3000);
             //发送请求
             connection.connect();
 
             Response response = new Response();
+            response.setRequest(request);
             response.setStatus(connection.getResponseCode());
-            response.setBody(Okio.buffer(Okio.source(connection.getInputStream())).readByteArray());
+            //返回请求头
+            connection.getHeaderFields().entrySet().stream()
+                    .flatMap(entry -> entry.getValue().stream().map(value -> new NameValuePair(entry.getKey(), value)))
+                    .forEach(h -> response.getHeaders().add(h));
 
-        } catch (MalformedURLException e) {
-            throw new RuntimeException("构建URL失败" + request.getUrl(), e);
-        } catch (IOException e) {
-            throw new RuntimeException("HTTP请求失败", e);
+            response.setBody(Okio.buffer(Okio.source(connection.getInputStream())).readByteArray());
+            String charset = request.getResponseCharset();
+            if (charset == null) {
+                Optional<String> charsetHeader = response.getHeaders().stream()
+                        .filter(h -> h.getName().equals("Content-Type"))
+                        .map(NameValuePair::getValue)
+                        .filter(v -> v.contains("charset="))
+                        .map(d -> StringUtils.substringAfterLast(d, "charset="))
+                        .findFirst();
+                if (charsetHeader.isPresent()) {
+                    charset = charsetHeader.get();
+                }
+                if (charset == null) {
+                    charset = request.getCharset();
+                }
+            }
+            response.setCharset(charset);
+            return response;
+        } catch (Exception e) {
+            throw new RuntimeException("发送http请求失败", e);
         } finally {
             if (connection != null) {
                 connection.disconnect();
             }
         }
-        return null;
     }
-
 
     @Override
     public void addCookie(Cookie cookie) {
-
+        try {
+            cookieManager.getCookieStore().add(new URI(cookie.getDomain()), copyProperties(cookie, new HttpCookie(cookie.getName(), cookie.getValue())));
+        } catch (URISyntaxException e) {
+            e.printStackTrace();
+        }
     }
 
     @Override
     public List<Cookie> getCookies() {
-        return null;
+        return cookieManager.getCookieStore().getCookies().stream().map(d -> copyProperties(d, new Cookie())).collect(Collectors.toList());
     }
 
     @Override
     public void clearCookies() {
-
+        cookieManager.getCookieStore().removeAll();
     }
 
     @Override
     public void addCookies(List<Cookie> cookie) {
+        for (Cookie cookie1 : cookie) {
+            addCookie(cookie1);
+        }
     }
 }
