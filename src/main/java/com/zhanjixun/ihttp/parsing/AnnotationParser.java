@@ -6,8 +6,10 @@ import com.zhanjixun.ihttp.annotations.*;
 import com.zhanjixun.ihttp.binding.Mapper;
 import com.zhanjixun.ihttp.binding.MapperMethod;
 import com.zhanjixun.ihttp.domain.FileParts;
+import com.zhanjixun.ihttp.domain.HttpProxy;
 import com.zhanjixun.ihttp.domain.NameValuePair;
 import com.zhanjixun.ihttp.utils.ReflectUtils;
+import com.zhanjixun.ihttp.utils.StrUtils;
 import lombok.extern.log4j.Log4j;
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.collections.MapUtils;
@@ -15,12 +17,10 @@ import org.apache.commons.lang3.RandomStringUtils;
 import org.apache.commons.lang3.StringUtils;
 
 import java.io.File;
-import java.io.UnsupportedEncodingException;
 import java.lang.annotation.Annotation;
 import java.lang.reflect.AnnotatedElement;
 import java.lang.reflect.Method;
 import java.lang.reflect.Parameter;
-import java.net.URLEncoder;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
@@ -52,9 +52,6 @@ public class AnnotationParser implements Parser {
 
         HTTP_METHOD_ANNOTATIONS.add(GET.class);
         HTTP_METHOD_ANNOTATIONS.add(POST.class);
-        HTTP_METHOD_ANNOTATIONS.add(DELETE.class);
-        HTTP_METHOD_ANNOTATIONS.add(HEAD.class);
-        HTTP_METHOD_ANNOTATIONS.add(PUT.class);
 
         PARAMETER_ANNOTATIONS.add(URL.class);
         PARAMETER_ANNOTATIONS.add(Param.class);
@@ -75,124 +72,119 @@ public class AnnotationParser implements Parser {
     public Mapper parse() {
         Mapper mapper = new Mapper(target);
         parseClassAnnotation(mapper);
-        parseMethodAnnotation(mapper);
+        for (Method method : target.getDeclaredMethods()) {
+            mapper.addMethod(method.getName(), parseMethodAnnotation(method, mapper));
+        }
         return mapper;
     }
 
     private void parseClassAnnotation(Mapper mapper) {
+
+        ReflectUtils.containsAnnotation(target, Proxy.class, p -> mapper.getConfiguration().setProxy(new HttpProxy(p.hostName(), p.port())));
+        ReflectUtils.containsAnnotation(target, HttpExecutor.class, e -> mapper.getConfiguration().setExecutor(e.value()));
+        //ReflectUtils.containsAnnotation(target, EnableCookieCache.class, e -> mapper.getConfiguration().setCookieCacheEnable(true));
+
         for (Annotation annotation : target.getAnnotations()) {
             Class<? extends Annotation> annotationType = annotation.annotationType();
             if (annotationType == URL.class) {
                 mapper.setCommonUrl(((URL) annotation).value());
-            }
-            if (annotationType == RequestCharset.class) {
-                mapper.setCommonRequestCharset(((RequestCharset) annotation).value());
-            }
-            if (annotationType == ResponseCharset.class) {
-                mapper.setCommonResponseCharset(((ResponseCharset) annotation).value());
             }
         }
         //解析请求头
         mapper.getCommonHeaders().addAll(parseHeader(target));
     }
 
-    private void parseMethodAnnotation(Mapper mapper) {
-        for (Method method : target.getDeclaredMethods()) {
-            MapperMethod mapperMethod = new MapperMethod();
-            mapperMethod.setName(method.getName());
-            //URL
-            if (Objects.nonNull(method.getAnnotation(URL.class))) {
-                mapperMethod.setUrl(method.getAnnotation(URL.class).value());
-            }
-
-            //http方法
-            List<? extends Annotation> httpMethod = HTTP_METHOD_ANNOTATIONS.stream().map(method::getAnnotation).filter(Objects::nonNull).collect(Collectors.toList());
-            if (CollectionUtils.isEmpty(httpMethod)) {
-                throw new RuntimeException(String.format("没有找到HTTP请求方法 %s", target.getName() + "." + method.getName()));
-            }
-            if (httpMethod.size() > 1) {
-                throw new RuntimeException(String.format("重复设置HTTP请求方法 %s[%s]", target.getName() + "." + method.getName(), String.join(",", httpMethod.stream().map(d -> d.annotationType().getSimpleName()).collect(Collectors.toList()))));
-            }
-            Annotation annotation = httpMethod.get(0);
-            mapperMethod.setMethod(annotation.annotationType().getSimpleName());
-            if (annotation instanceof GET) {
-                mapperMethod.setFollowRedirects(((GET) httpMethod.get(0)).followRedirects());
-                mapperMethod.setRequestCharset(((GET) httpMethod.get(0)).charset());
-            }
-            if (annotation instanceof POST) {
-                mapperMethod.setRequestCharset(((POST) httpMethod.get(0)).charset());
-            }
-
-            //解析方法形参
-            Parameter[] parameters = method.getParameters();
-            Annotation[] parameterAMapping = new Annotation[method.getParameterCount()];
-            for (int i = 0; i < method.getParameterCount(); i++) {
-                List<Annotation> annotations = Arrays.stream(parameters[i].getAnnotations())
-                        .filter(a -> PARAMETER_ANNOTATIONS.contains(a.annotationType()))
-                        .collect(Collectors.toList());
-                if (CollectionUtils.isEmpty(annotations)) {
-                    continue;
-                }
-                parameterAMapping[i] = annotations.get(0);
-            }
-            mapperMethod.setParamMapping(parameterAMapping);
-
-            //请求头
-            mapperMethod.getHeaders().addAll(parseHeader(method));
-
-            //固定参数
-            for (Param param : ReflectUtils.getRepeatableAnnotation(method, Param.class)) {
-                String value = param.value();
-                if (param.encode()) {
-                    try {
-                        value = URLEncoder.encode(value, param.charset());
-                    } catch (UnsupportedEncodingException e) {
-                        throw new RuntimeException("请求参数URL编码不支持的字符类型:", e);
-                    }
-                }
-                mapperMethod.getParams().add(new NameValuePair(param.name(), value));
-            }
-            //文件上传
-            for (FilePart filePart : ReflectUtils.getRepeatableAnnotation(method, FilePart.class)) {
-                mapperMethod.getFileParts().add(new FileParts(filePart.name(), new File(filePart.value())));
-            }
-
-            mapperMethod.setRequestCharset(method.getAnnotation(RequestCharset.class) == null ? null : method.getAnnotation(RequestCharset.class).value());
-            mapperMethod.setResponseCharset(method.getAnnotation(ResponseCharset.class) == null ? null : method.getAnnotation(ResponseCharset.class).value());
-
-            //直接请求体
-            mapperMethod.setStringBody(method.getAnnotation(StringBody.class) == null ? null : method.getAnnotation(StringBody.class).value());
-
-            //随机码占位符
-            Map<String, String> replacement = Maps.newHashMap();
-            RandomPlaceholder randomPlaceholder = method.getAnnotation(RandomPlaceholder.class);
-            if (randomPlaceholder != null) {
-                String target = String.format("#{%s}", randomPlaceholder.name());
-                String value = RandomStringUtils.random(randomPlaceholder.length(), randomPlaceholder.chars());
-                replacement.put(target, value);
-            }
-            //时间戳占位符
-            TimestampPlaceholder timestampPlaceholder = method.getAnnotation(TimestampPlaceholder.class);
-            if (timestampPlaceholder != null) {
-                String target = String.format("#{%s}", timestampPlaceholder.name());
-                String value = timestampPlaceholder.unit().convert(System.currentTimeMillis(), TimeUnit.MILLISECONDS) + "";
-                replacement.put(target, value);
-            }
-            if (MapUtils.isNotEmpty(replacement)) {
-                replacement.forEach((target, value) -> {
-                    mapperMethod.setUrl(StringUtils.replace(mapperMethod.getUrl(), target, value));
-                    mapperMethod.setStringBody(StringUtils.replace(mapperMethod.getStringBody(), target, value));
-                    for (NameValuePair nameValuePair : mapperMethod.getHeaders()) {
-                        nameValuePair.setValue(StringUtils.replace(nameValuePair.getValue(), target, value));
-                    }
-                    for (NameValuePair nameValuePair : mapperMethod.getParams()) {
-                        nameValuePair.setValue(StringUtils.replace(nameValuePair.getValue(), target, value));
-                    }
-                });
-            }
-
-            mapper.addMethod(method.getName(), mapperMethod);
+    private MapperMethod parseMethodAnnotation(Method method, Mapper mapper) {
+        MapperMethod mapperMethod = new MapperMethod();
+        mapperMethod.setName(method.getName());
+        //URL
+        if (Objects.nonNull(method.getAnnotation(URL.class))) {
+            mapperMethod.setUrl(method.getAnnotation(URL.class).value());
         }
+
+        //http方法
+        List<? extends Annotation> httpMethod = HTTP_METHOD_ANNOTATIONS.stream().map(method::getAnnotation).filter(Objects::nonNull).collect(Collectors.toList());
+        if (CollectionUtils.isEmpty(httpMethod)) {
+            throw new RuntimeException(String.format("没有找到HTTP请求方法 %s", target.getName() + "." + method.getName()));
+        }
+        if (httpMethod.size() > 1) {
+            throw new RuntimeException(String.format("重复设置HTTP请求方法 %s[%s]", target.getName() + "." + method.getName(), String.join(",", httpMethod.stream().map(d -> d.annotationType().getSimpleName()).collect(Collectors.toList()))));
+        }
+        Annotation annotation = httpMethod.get(0);
+        mapperMethod.setMethod(annotation.annotationType().getSimpleName());
+        if (annotation instanceof GET) {
+            mapperMethod.setFollowRedirects(((GET) httpMethod.get(0)).followRedirects());
+            mapperMethod.setCharset(((GET) httpMethod.get(0)).charset());
+        }
+        if (annotation instanceof POST) {
+            mapperMethod.setCharset(((POST) httpMethod.get(0)).charset());
+        }
+
+        //解析方法形参
+        Parameter[] parameters = method.getParameters();
+        Annotation[] parameterAMapping = new Annotation[method.getParameterCount()];
+        for (int i = 0; i < method.getParameterCount(); i++) {
+            List<Annotation> annotations = Arrays.stream(parameters[i].getAnnotations())
+                    .filter(a -> PARAMETER_ANNOTATIONS.contains(a.annotationType()))
+                    .collect(Collectors.toList());
+            if (CollectionUtils.isEmpty(annotations)) {
+                continue;
+            }
+            parameterAMapping[i] = annotations.get(0);
+        }
+        mapperMethod.setParamMapping(parameterAMapping);
+
+        //请求头
+        mapperMethod.getHeaders().addAll(parseHeader(method));
+
+        //固定参数
+        for (Param param : ReflectUtils.getRepeatableAnnotation(method, Param.class)) {
+            String value = param.value();
+            if (param.encode()) {
+                value = StrUtils.URLEncoder(value, mapperMethod.getCharset());
+            }
+            mapperMethod.getParams().add(new NameValuePair(param.name(), value));
+        }
+        //文件上传
+        for (FilePart filePart : ReflectUtils.getRepeatableAnnotation(method, FilePart.class)) {
+            mapperMethod.getFileParts().add(new FileParts(filePart.name(), new File(filePart.value())));
+        }
+
+        //直接请求体
+        mapperMethod.setStringBody(method.getAnnotation(StringBody.class) == null ? null : method.getAnnotation(StringBody.class).value());
+
+        //随机码占位符
+        Map<String, String> replacement = Maps.newHashMap();
+        for (RandomPlaceholder randomPlaceholder : ReflectUtils.getRepeatableAnnotation(method, RandomPlaceholder.class)) {
+            String target = String.format("#{%s}", randomPlaceholder.name());
+            String value = RandomStringUtils.random(randomPlaceholder.length(), randomPlaceholder.chars());
+            replacement.put(target, value);
+        }
+        //时间戳占位符
+        for (TimestampPlaceholder timestampPlaceholder : ReflectUtils.getRepeatableAnnotation(method, TimestampPlaceholder.class)) {
+            String target = String.format("#{%s}", timestampPlaceholder.name());
+            String value = timestampPlaceholder.unit().convert(System.currentTimeMillis(), TimeUnit.MILLISECONDS) + "";
+            replacement.put(target, value);
+        }
+
+        if (MapUtils.isNotEmpty(replacement)) {
+            replacement.forEach((target, value) -> {
+                //替换URL
+                mapperMethod.setUrl(StringUtils.replace(mapperMethod.getUrl(), target, value));
+                //替换StringBody
+                mapperMethod.setStringBody(StringUtils.replace(mapperMethod.getStringBody(), target, value));
+                //替换请求头
+                for (NameValuePair nameValuePair : mapperMethod.getHeaders()) {
+                    nameValuePair.setValue(StringUtils.replace(nameValuePair.getValue(), target, value));
+                }
+                //替换请求参数
+                for (NameValuePair nameValuePair : mapperMethod.getParams()) {
+                    nameValuePair.setValue(StringUtils.replace(nameValuePair.getValue(), target, value));
+                }
+            });
+        }
+
+        return mapperMethod;
     }
 
     private List<NameValuePair> parseHeader(AnnotatedElement element) {
@@ -205,13 +197,9 @@ public class AnnotationParser implements Parser {
         for (Map.Entry<String, Class<? extends Annotation>> entry : HEADER_ANNOTATIONS.entrySet()) {
             Class<? extends Annotation> annotationClass = entry.getValue();
             if (element.isAnnotationPresent(annotationClass)) {
-                try {
-                    Annotation annotation = element.getAnnotation(annotationClass);
-                    String value = (String) annotationClass.getMethod("value").invoke(annotation);
-                    headers.add(new NameValuePair(entry.getKey(), value));
-                } catch (Exception e) {
-                    throw new RuntimeException("Could not find value method on Header annotation.  Cause: " + e, e);
-                }
+                Annotation annotation = element.getAnnotation(annotationClass);
+                String value = (String) ReflectUtils.invokeAnnotationMethod(annotation, "value");
+                headers.add(new NameValuePair(entry.getKey(), value));
             }
         }
         return headers;

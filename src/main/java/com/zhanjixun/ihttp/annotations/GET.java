@@ -24,7 +24,7 @@ public @interface GET {
      *
      * @return
      * @see Param#encode()
+     * @see Placeholder#encode()
      */
-    @Deprecated
     String charset() default "UTF-8";
 }

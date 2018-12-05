@@ -6,6 +6,7 @@ import com.alibaba.fastjson.JSONObject;
 import com.google.common.collect.Lists;
 import com.zhanjixun.ihttp.domain.NameValuePair;
 import lombok.Data;
+import org.apache.commons.lang3.StringUtils;
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
 
@@ -82,9 +83,20 @@ public class Response {
     public String getText() {
         if (text == null) {
             try {
+                if (StringUtils.isBlank(charset)) {
+                    headers.stream().filter(h -> h.getName().equals("Content-Type"))
+                            .map(NameValuePair::getValue).findFirst()
+                            .ifPresent(s -> charset = StringUtils.substringAfterLast(s, "charset="));
+                }
+                if (StringUtils.isBlank(charset)) {
+                    charset = request.getCharset();
+                }
+                if (StringUtils.isBlank(charset)) {
+                    charset = "UTF-8";
+                }
                 text = new String(body, charset);
             } catch (UnsupportedEncodingException e) {
-                throw new UnsupportedOperationException("响应类型不是文本");
+                throw new UnsupportedOperationException(e);
             }
         }
         return text;
@@ -102,7 +114,7 @@ public class Response {
             try {
                 image = ImageIO.read(new ByteArrayInputStream(body));
             } catch (IOException e) {
-                throw new UnsupportedOperationException("响应类型不是图片");
+                throw new UnsupportedOperationException(e);
             }
         }
         return image;

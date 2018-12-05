@@ -13,7 +13,4 @@ public class SysTest {
 
     }
 
-    public void a(int a, Integer a1, String s) {
-
-    }
 }

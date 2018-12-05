@@ -32,19 +32,19 @@ public class Demo {
      */
     @Test
     public void test() {
-        gitee.index().ok(index -> {
-            String token = index.getDocument().select("[name='authenticity_token']").get(0).val();
-            Map<String, String> map = Maps.newHashMap();
-            map.put("user[login]", email);
-            map.put("user[password]", password);
-            gitee.login(token, map).redirect(login -> {
-                String href = login.getDocument().select("a").get(0).attr("href");
-                Response home = gitee.home(href);
-                System.out.println("欢迎您：" + home.getDocument().select(".git-user-name-link").get(0).text());
+        Response index = gitee.index();
+        String token = index.getDocument().select("[name='authenticity_token']").get(0).val();
 
-                gitee.getCookies().forEach(System.out::println);
-            });
-        }, index -> log.warn("首页index状态码：" + index.getStatus()));
+        Map<String, String> map = Maps.newHashMap();
+        map.put("user[login]", email);
+        map.put("user[password]", password);
+
+        Response login = gitee.login(token, map);
+        if (login.isRedirect()) {
+            String href = login.getDocument().select("a").get(0).attr("href");
+            Response home = gitee.home(href);
+            System.out.println("欢迎您：" + home.getDocument().select(".git-user-name-link").get(0).text());
+            gitee.getCookies().forEach(System.out::println);
+        }
     }
-
 }

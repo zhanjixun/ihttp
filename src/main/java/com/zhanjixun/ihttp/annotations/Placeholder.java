@@ -27,14 +27,9 @@ public @interface Placeholder {
      * 是否进行编码
      *
      * @return
+     * @see GET#charset()
+     * @see POST#charset()
      */
     boolean encode() default false;
-
-    /**
-     * url编码的字符编码
-     *
-     * @return
-     */
-    String charset() default "UTF-8";
 
 }

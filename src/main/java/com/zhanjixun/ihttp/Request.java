@@ -21,12 +21,11 @@ public class Request {
 
     private String url;
     private String method;
-    private String charset;
     private boolean followRedirects = true;
 
     private String body;
-    private String responseCharset;
-
+    private String charset;
+    
     private List<NameValuePair> headers = Lists.newArrayList();
     private List<NameValuePair> params = Lists.newArrayList();
     private List<FileParts> fileParts = Lists.newArrayList();

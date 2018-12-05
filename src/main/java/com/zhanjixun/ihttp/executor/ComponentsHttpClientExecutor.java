@@ -2,17 +2,17 @@ package com.zhanjixun.ihttp.executor;
 
 import com.zhanjixun.ihttp.Request;
 import com.zhanjixun.ihttp.Response;
-import com.zhanjixun.ihttp.annotations.GET;
-import com.zhanjixun.ihttp.annotations.POST;
+import com.zhanjixun.ihttp.domain.Configuration;
 import com.zhanjixun.ihttp.domain.Cookie;
 import com.zhanjixun.ihttp.domain.FileParts;
 import com.zhanjixun.ihttp.domain.NameValuePair;
+import com.zhanjixun.ihttp.utils.CookieUtils;
 import com.zhanjixun.ihttp.utils.StrUtils;
 import lombok.extern.log4j.Log4j;
 import okio.Okio;
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
-import org.apache.http.HeaderElement;
+import org.apache.http.HttpHost;
 import org.apache.http.HttpResponse;
 import org.apache.http.client.HttpClient;
 import org.apache.http.client.config.RequestConfig;
@@ -23,6 +23,7 @@ import org.apache.http.entity.ContentType;
 import org.apache.http.entity.StringEntity;
 import org.apache.http.entity.mime.MultipartEntityBuilder;
 import org.apache.http.impl.client.BasicCookieStore;
+import org.apache.http.impl.client.HttpClientBuilder;
 import org.apache.http.impl.client.HttpClients;
 import org.apache.http.impl.cookie.BasicClientCookie;
 
@@ -30,9 +31,9 @@ import javax.activation.MimetypesFileTypeMap;
 import java.io.File;
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
-import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
 /**
@@ -42,26 +43,21 @@ import java.util.stream.Collectors;
 @Log4j
 public class ComponentsHttpClientExecutor extends BaseExecutor {
 
-    private final BasicCookieStore cookieStore;
+    private final BasicCookieStore cookieStore = new BasicCookieStore();
     private final HttpClient httpClient;
 
-    public ComponentsHttpClientExecutor() {
-        cookieStore = new BasicCookieStore();
-        httpClient = HttpClients.custom().setDefaultCookieStore(cookieStore).setConnectionTimeToLive(5, TimeUnit.SECONDS).build();
+    public ComponentsHttpClientExecutor(Configuration configuration) {
+        super(configuration);
+        HttpClientBuilder builder = HttpClients.custom();
+        builder.setDefaultCookieStore(cookieStore);
+        if (configuration.getProxy() != null) {
+            builder.setProxy(new HttpHost(configuration.getProxy().getHostName(), configuration.getProxy().getPort()));
+        }
+        httpClient = builder.build();
     }
 
     @Override
-    public Response execute(Request request) {
-        if (request.getMethod().equals(GET.class.getSimpleName())) {
-            return doGetMethod(request);
-        }
-        if (request.getMethod().equals(POST.class.getSimpleName())) {
-            return doPostMethod(request);
-        }
-        throw new RuntimeException("未能识别的http请求方法：" + request.getMethod());
-    }
-
-    private Response doGetMethod(Request request) {
+    protected Response doGetMethod(Request request) {
         HttpGet method = new HttpGet(StrUtils.addQuery(request.getUrl(), request.getParams()));
         method.setConfig(RequestConfig.custom().setRedirectsEnabled(request.isFollowRedirects()).build());
 
@@ -71,7 +67,8 @@ public class ComponentsHttpClientExecutor extends BaseExecutor {
         return executeMethod(method, request);
     }
 
-    private Response doPostMethod(Request request) {
+    @Override
+    protected Response doPostMethod(Request request) {
         HttpPost method = new HttpPost(request.getUrl());
         for (NameValuePair nameValuePair : request.getHeaders()) {
             method.addHeader(nameValuePair.getName(), nameValuePair.getValue());
@@ -125,23 +122,12 @@ public class ComponentsHttpClientExecutor extends BaseExecutor {
         try {
             method.setConfig(RequestConfig.custom().setConnectTimeout(3000).setSocketTimeout(3000).build());
             HttpResponse httpResponse = httpClient.execute(method);
-          
-            String charset = request.getResponseCharset();
-            if (charset == null) {
-                HeaderElement[] elements = httpResponse.getEntity().getContentType().getElements();
-                if (elements.length == 1) {
-                    org.apache.http.NameValuePair param = elements[0].getParameterByName("charset");
-                    if (param != null) {
-                        charset = param.getValue();
-                    }
-                }
-            }
 
             Response response = new Response();
             response.setRequest(request);
             response.setStatus(httpResponse.getStatusLine().getStatusCode());
             response.setBody(Okio.buffer(Okio.source(httpResponse.getEntity().getContent())).readByteArray());
-            response.setCharset(Optional.ofNullable(charset).orElse("UTF-8"));
+            Arrays.stream(httpResponse.getAllHeaders()).map(h -> new NameValuePair(h.getName(), h.getValue())).forEach(h -> response.getHeaders().add(h));
             return response;
         } catch (IOException e) {
             log.error("发送" + request.getMethod() + "请求失败", e);
@@ -151,12 +137,12 @@ public class ComponentsHttpClientExecutor extends BaseExecutor {
 
     @Override
     public void addCookie(Cookie cookie) {
-        cookieStore.addCookie(copyProperties(cookie, new BasicClientCookie(cookie.getName(), cookie.getValue())));
+        cookieStore.addCookie(CookieUtils.copyProperties(cookie, new BasicClientCookie(cookie.getName(), cookie.getValue())));
     }
 
     @Override
     public List<Cookie> getCookies() {
-        return cookieStore.getCookies().stream().map(c -> copyProperties(c, new Cookie())).collect(Collectors.toList());
+        return cookieStore.getCookies().stream().map(c -> CookieUtils.copyProperties(c, new Cookie())).collect(Collectors.toList());
     }
 
     @Override
@@ -166,6 +152,6 @@ public class ComponentsHttpClientExecutor extends BaseExecutor {
 
     @Override
     public void addCookies(List<Cookie> cookie) {
-        cookieStore.addCookies(cookie.stream().map(c -> copyProperties(c, new BasicClientCookie(c.getName(), c.getValue()))).toArray(BasicClientCookie[]::new));
+        cookieStore.addCookies(cookie.stream().map(c -> CookieUtils.copyProperties(c, new BasicClientCookie(c.getName(), c.getValue()))).toArray(BasicClientCookie[]::new));
     }
 }

@@ -2,9 +2,9 @@ package com.zhanjixun.ihttp.executor;
 
 import com.zhanjixun.ihttp.Request;
 import com.zhanjixun.ihttp.Response;
-import com.zhanjixun.ihttp.annotations.GET;
-import com.zhanjixun.ihttp.annotations.POST;
+import com.zhanjixun.ihttp.domain.Configuration;
 import com.zhanjixun.ihttp.domain.Cookie;
+import com.zhanjixun.ihttp.domain.HttpProxy;
 import com.zhanjixun.ihttp.domain.NameValuePair;
 import com.zhanjixun.ihttp.utils.StrUtils;
 import lombok.Getter;
@@ -12,6 +12,8 @@ import okhttp3.*;
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
 
+import java.net.InetSocketAddress;
+import java.net.Proxy;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
@@ -24,24 +26,22 @@ import java.util.stream.Collectors;
 public class OkHttpExecutor extends BaseExecutor {
 
     private final MyCookieJar myCookieJar = new MyCookieJar();
-    private final OkHttpClient CLIENT = new OkHttpClient.Builder().cookieJar(myCookieJar).build();
+    private final OkHttpClient okHttpClient;
 
-    public OkHttpExecutor() {
+    public OkHttpExecutor(Configuration configuration) {
+        super(configuration);
+        OkHttpClient.Builder builder = new OkHttpClient.Builder();
+        builder.cookieJar(myCookieJar);
+        if (configuration.getProxy() != null) {
+            HttpProxy proxy = configuration.getProxy();
+            builder.proxy(new Proxy(Proxy.Type.HTTP, new InetSocketAddress(proxy.getHostName(), configuration.getProxy().getPort())));
+        }
+        okHttpClient = builder.build();
     }
+
 
     @Override
-    public Response execute(Request request) {
-        if (request.getMethod().equals(GET.class.getSimpleName())) {
-            return doGetMethod(request);
-        }
-        if (request.getMethod().equals(POST.class.getSimpleName())) {
-            return doPostMethod(request);
-        }
-        throw new RuntimeException("未能识别的http请求方法：" + request.getMethod());
-
-    }
-
-    private Response doPostMethod(Request request) {
+    protected Response doPostMethod(Request request) {
         okhttp3.Request.Builder builder = new okhttp3.Request.Builder();
         builder.url(request.getUrl());
         request.getHeaders().forEach(h -> builder.addHeader(h.getName(), h.getValue()));
@@ -65,8 +65,8 @@ public class OkHttpExecutor extends BaseExecutor {
         return executeMethod(request, builder.build());
     }
 
-
-    private Response doGetMethod(Request request) {
+    @Override
+    protected Response doGetMethod(Request request) {
         okhttp3.Request.Builder builder = new okhttp3.Request.Builder();
         builder.url(StrUtils.addQuery(request.getUrl(), request.getParams()));
         request.getHeaders().forEach(h -> builder.addHeader(h.getName(), h.getValue()));
@@ -76,7 +76,7 @@ public class OkHttpExecutor extends BaseExecutor {
 
     private Response executeMethod(Request request, okhttp3.Request okRequest) {
         try {
-            okhttp3.Response execute = CLIENT.newCall(okRequest).execute();
+            okhttp3.Response execute = okHttpClient.newCall(okRequest).execute();
 
             Response response = new Response();
             response.setRequest(request);
@@ -87,15 +87,6 @@ public class OkHttpExecutor extends BaseExecutor {
                     response.getHeaders().add(new NameValuePair(n, v));
                 }
             }
-            MediaType contentType = execute.body().contentType();
-            String charset = request.getResponseCharset();
-            if (charset == null && contentType != null && contentType.charset() != null) {
-                charset = contentType.charset().name();
-            }
-            if (charset == null) {
-                charset = Optional.ofNullable(request.getCharset()).orElse("UTF-8");
-            }
-            response.setCharset(charset);
             return response;
         } catch (Exception e) {
             e.printStackTrace();

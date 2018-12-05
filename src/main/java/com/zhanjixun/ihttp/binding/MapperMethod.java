@@ -19,14 +19,15 @@ public class MapperMethod {
     private String name;
     private String url;
     private String method;
-    private String requestCharset;
-    private String responseCharset;
+    private String charset;
     private String stringBody;
+
     private boolean followRedirects = true;
 
     private List<NameValuePair> headers = Lists.newArrayList();
     private List<NameValuePair> params = Lists.newArrayList();
     private List<FileParts> fileParts = Lists.newArrayList();
 
+    //动态参数
     private Annotation[] paramMapping;
 }

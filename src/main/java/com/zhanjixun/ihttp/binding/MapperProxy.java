@@ -39,6 +39,7 @@ public class MapperProxy implements InvocationHandler {
             return method.invoke(executor, args);
         }
         Request request = mapper.getRequest(method.getName(), args);
+
         Response response = executor.execute(request);
 
         //断言状态码
@@ -46,7 +47,7 @@ public class MapperProxy implements InvocationHandler {
         if (annotation != null) {
             int[] codes = annotation.value();
             String errorMessage = String.format("%s.%s状态码断言异常(需要%s,返回%d)", method.getDeclaringClass().getName(), method.getName(), Ints.asList(codes), response.getStatus());
-            Assert.isTrue(Ints.asList(codes).contains(response.getStatus()), errorMessage);
+            Assert.isTrue(Ints.contains(codes, response.getStatus()), errorMessage);
         }
 
         return response;

@@ -2,11 +2,11 @@ package com.zhanjixun.ihttp.executor;
 
 import com.zhanjixun.ihttp.Request;
 import com.zhanjixun.ihttp.Response;
-import com.zhanjixun.ihttp.annotations.GET;
-import com.zhanjixun.ihttp.annotations.POST;
+import com.zhanjixun.ihttp.domain.Configuration;
 import com.zhanjixun.ihttp.domain.Cookie;
 import com.zhanjixun.ihttp.domain.FileParts;
 import com.zhanjixun.ihttp.domain.NameValuePair;
+import com.zhanjixun.ihttp.utils.CookieUtils;
 import com.zhanjixun.ihttp.utils.StrUtils;
 import lombok.extern.log4j.Log4j;
 import okio.Okio;
@@ -34,22 +34,14 @@ public class JavaExecutor extends BaseExecutor {
 
     private final CookieManager cookieManager = new CookieManager();
 
-    public JavaExecutor() {
+    public JavaExecutor(Configuration configuration) {
+        super(configuration);
         CookieHandler.setDefault(cookieManager);
     }
 
-    @Override
-    public Response execute(Request request) {
-        if (request.getMethod().equals(GET.class.getSimpleName())) {
-            return doGetMethod(request);
-        }
-        if (request.getMethod().equals(POST.class.getSimpleName())) {
-            return doPostMethod(request);
-        }
-        throw new RuntimeException("未能识别的http请求方法：" + request.getMethod());
-    }
 
-    private Response doPostMethod(Request request) {
+    @Override
+    protected Response doPostMethod(Request request) {
         try {
             HttpURLConnection connection = (HttpURLConnection) new URL(request.getUrl()).openConnection();
             connection.setRequestMethod("POST");
@@ -109,7 +101,8 @@ public class JavaExecutor extends BaseExecutor {
         }
     }
 
-    private Response doGetMethod(Request request) {
+    @Override
+    protected Response doGetMethod(Request request) {
         try {
             URL url = new URL(StrUtils.addQuery(request.getUrl(), request.getParams()));
             HttpURLConnection connection = (HttpURLConnection) url.openConnection();
@@ -147,22 +140,6 @@ public class JavaExecutor extends BaseExecutor {
                     .forEach(h -> response.getHeaders().add(h));
 
             response.setBody(Okio.buffer(Okio.source(connection.getInputStream())).readByteArray());
-            String charset = request.getResponseCharset();
-            if (charset == null) {
-                Optional<String> charsetHeader = response.getHeaders().stream()
-                        .filter(h -> h.getName().equals("Content-Type"))
-                        .map(NameValuePair::getValue)
-                        .filter(v -> v.contains("charset="))
-                        .map(d -> StringUtils.substringAfterLast(d, "charset="))
-                        .findFirst();
-                if (charsetHeader.isPresent()) {
-                    charset = charsetHeader.get();
-                }
-                if (charset == null) {
-                    charset = request.getCharset();
-                }
-            }
-            response.setCharset(charset);
             return response;
         } catch (Exception e) {
             throw new RuntimeException("发送http请求失败", e);
@@ -176,7 +153,7 @@ public class JavaExecutor extends BaseExecutor {
     @Override
     public void addCookie(Cookie cookie) {
         try {
-            cookieManager.getCookieStore().add(new URI(cookie.getDomain()), copyProperties(cookie, new HttpCookie(cookie.getName(), cookie.getValue())));
+            cookieManager.getCookieStore().add(new URI(cookie.getDomain()), CookieUtils.copyProperties(cookie, new HttpCookie(cookie.getName(), cookie.getValue())));
         } catch (URISyntaxException e) {
             e.printStackTrace();
         }
@@ -184,7 +161,7 @@ public class JavaExecutor extends BaseExecutor {
 
     @Override
     public List<Cookie> getCookies() {
-        return cookieManager.getCookieStore().getCookies().stream().map(d -> copyProperties(d, new Cookie())).collect(Collectors.toList());
+        return cookieManager.getCookieStore().getCookies().stream().map(d -> CookieUtils.copyProperties(d, new Cookie())).collect(Collectors.toList());
     }
 
     @Override

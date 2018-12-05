@@ -2,6 +2,7 @@ package com.zhanjixun.ihttp;
 
 import com.zhanjixun.ihttp.domain.Cookie;
 
+import java.io.File;
 import java.util.List;
 
 /**
@@ -37,4 +38,19 @@ public interface CookiesStore {
      * 清除所有cookie
      */
     void clearCookies();
+
+    /**
+     * 缓存cookie到本地文件中
+     *
+     * @param cacheFile
+     */
+    void cacheCookie(File cacheFile);
+
+    /**
+     * 加载本地cookie缓存
+     *
+     * @param cacheFile
+     * @return 加载了多少条cookie
+     */
+    int loadCookieCache(File cacheFile);
 }

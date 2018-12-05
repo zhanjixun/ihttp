@@ -2,12 +2,12 @@ package com.zhanjixun.ihttp.executor;
 
 import com.zhanjixun.ihttp.Request;
 import com.zhanjixun.ihttp.Response;
-import com.zhanjixun.ihttp.annotations.GET;
-import com.zhanjixun.ihttp.annotations.POST;
+import com.zhanjixun.ihttp.domain.Configuration;
 import com.zhanjixun.ihttp.domain.Cookie;
 import com.zhanjixun.ihttp.domain.FileParts;
 import com.zhanjixun.ihttp.domain.NameValuePair;
 import com.zhanjixun.ihttp.logging.ConnectionInfo;
+import com.zhanjixun.ihttp.utils.CookieUtils;
 import com.zhanjixun.ihttp.utils.StrUtils;
 import lombok.extern.log4j.Log4j;
 import okio.Okio;
@@ -24,7 +24,6 @@ import org.apache.commons.httpclient.methods.multipart.FilePart;
 import org.apache.commons.httpclient.methods.multipart.MultipartRequestEntity;
 import org.apache.commons.httpclient.methods.multipart.Part;
 import org.apache.commons.httpclient.methods.multipart.StringPart;
-import org.apache.commons.httpclient.params.HttpMethodParams;
 import org.apache.commons.lang3.StringUtils;
 
 import java.io.FileNotFoundException;
@@ -47,53 +46,36 @@ public class CommonsHttpClientExecutor extends BaseExecutor {
 
     private final HttpClient httpClient = new HttpClient();
 
-    @Override
-    public Response execute(Request request) {
-        if (request.getMethod().equals(GET.class.getSimpleName())) {
-            return doGetMethod(request);
+    public CommonsHttpClientExecutor(Configuration configuration) {
+        super(configuration);
+
+        //设置代理服务器
+        if (configuration.getProxy() != null) {
+            httpClient.getHostConfiguration().setProxy(configuration.getProxy().getHostName(), configuration.getProxy().getPort());
         }
-        if (request.getMethod().equals(POST.class.getSimpleName())) {
-            return doPostMethod(request);
-        }
-        throw new RuntimeException("未能识别的http请求方法：" + request.getMethod());
+
     }
 
-    private Response doGetMethod(Request request) {
+    @Override
+    protected Response doGetMethod(Request request) {
         GetMethod method = new GetMethod(StrUtils.addQuery(request.getUrl(), request.getParams()));
         method.setFollowRedirects(request.isFollowRedirects());
-
-        String charset = Optional.ofNullable(request.getCharset()).orElse("UTF-8");
-        method.getParams().setParameter(HttpMethodParams.HTTP_CONTENT_CHARSET, charset);
-
         request.getHeaders().forEach(h -> method.addRequestHeader(h.getName(), h.getValue()));
         return executeMethod(method, request);
     }
 
-    private Response doPostMethod(Request request) {
+    @Override
+    protected Response doPostMethod(Request request) {
         PostMethod method = new PostMethod(request.getUrl());
-
-        String charset = Optional.ofNullable(request.getCharset()).orElse("UTF-8");
-        method.getParams().setParameter(HttpMethodParams.HTTP_CONTENT_CHARSET, charset);
-
         request.getHeaders().forEach(h -> method.addRequestHeader(h.getName(), h.getValue()));
         request.getParams().forEach(p -> method.addParameter(p.getName(), p.getValue()));
 
-        /*
-        String paramString = request.getParams().stream().map(p -> p.getName() + "=" + p.getValue()).collect(Collectors.joining("&"));
-        if (StringUtils.isNotBlank(paramString)) {
-            try {
-                method.setRequestEntity(new StringRequestEntity(paramString, "application/x-www-form-urlencoded", charset));
-            } catch (UnsupportedEncodingException e) {
-                e.printStackTrace();
-            }
-        }
-        */
         //直接请求体
         if (StringUtils.isNotBlank(request.getBody())) {
             String contentType = Optional.ofNullable(method.getRequestHeader("Content-Type"))
-                    .orElse(new Header("", "text/html")).getValue();
+                    .orElse(new Header("", "application/json")).getValue();
             try {
-                method.setRequestEntity(new StringRequestEntity(request.getBody(), contentType, charset));
+                method.setRequestEntity(new StringRequestEntity(request.getBody(), contentType, request.getCharset()));
             } catch (UnsupportedEncodingException e) {
                 e.printStackTrace();
             }
@@ -112,7 +94,7 @@ public class CommonsHttpClientExecutor extends BaseExecutor {
                 }
             }
             for (NameValuePair nameValuePair : request.getParams()) {
-                parts[index++] = new StringPart(nameValuePair.getName(), nameValuePair.getValue(), charset);
+                parts[index++] = new StringPart(nameValuePair.getName(), nameValuePair.getValue(), request.getCharset());
             }
             method.setRequestEntity(new MultipartRequestEntity(parts, method.getParams()));
         }
@@ -130,7 +112,7 @@ public class CommonsHttpClientExecutor extends BaseExecutor {
             response.setRequest(request);
             response.setStatus(status);
             response.setBody(Okio.buffer(Okio.source(httpMethod.getResponseBodyAsStream())).readByteArray());
-            response.setCharset(Optional.ofNullable(request.getResponseCharset()).orElse(httpMethod.getResponseCharSet()));
+            response.setCharset(httpMethod.getResponseCharSet());
             Stream.of(httpMethod.getResponseHeaders()).forEach(h -> response.getHeaders().add(new NameValuePair(h.getName(), h.getValue())));
 
             log.info(buildConnectionInfo(startTime, endTime, status, httpMethod).toChromeStyleLog());
@@ -179,12 +161,12 @@ public class CommonsHttpClientExecutor extends BaseExecutor {
 
     @Override
     public void addCookie(Cookie cookie) {
-        httpClient.getState().addCookie(copyProperties(cookie, new org.apache.commons.httpclient.Cookie()));
+        httpClient.getState().addCookie(CookieUtils.copyProperties(cookie, new org.apache.commons.httpclient.Cookie()));
     }
 
     @Override
     public List<Cookie> getCookies() {
-        return Arrays.stream(httpClient.getState().getCookies()).map(c -> copyProperties(c, new Cookie())).collect(Collectors.toList());
+        return Arrays.stream(httpClient.getState().getCookies()).map(c -> CookieUtils.copyProperties(c, new Cookie())).collect(Collectors.toList());
     }
 
     @Override
@@ -194,7 +176,10 @@ public class CommonsHttpClientExecutor extends BaseExecutor {
 
     @Override
     public void addCookies(List<Cookie> cookie) {
-        httpClient.getState().addCookies(cookie.stream().map(d -> copyProperties(cookie, new org.apache.commons.httpclient.Cookie())).toArray(org.apache.commons.httpclient.Cookie[]::new));
+        if (CollectionUtils.isEmpty(cookie)) {
+            return;
+        }
+        httpClient.getState().addCookies(cookie.stream().map(d -> CookieUtils.copyProperties(cookie, new org.apache.commons.httpclient.Cookie())).toArray(org.apache.commons.httpclient.Cookie[]::new));
     }
 
 }

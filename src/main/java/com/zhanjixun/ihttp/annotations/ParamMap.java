@@ -15,5 +15,13 @@ import java.lang.annotation.Target;
 @Retention(RetentionPolicy.RUNTIME)
 public @interface ParamMap {
 
+    /**
+     * 是否进行编码
+     *
+     * @return
+     * @see GET#charset()
+     * @see POST#charset()
+     */
+    boolean encode() default false;
 
 }

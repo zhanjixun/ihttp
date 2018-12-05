@@ -35,4 +35,12 @@ public @interface RandomPlaceholder {
      */
     String chars() default "abcdefghijklnmopqrstuvwxyzABCDEFGHIJKLNMOPQRSTUVWXYZ0123456789";
 
+    /**
+     * 是否进行编码
+     *
+     * @return
+     * @see GET#charset()
+     * @see POST#charset()
+     */
+    boolean encode() default false;
 }
