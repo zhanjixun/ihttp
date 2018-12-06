@@ -112,7 +112,6 @@ public class CommonsHttpClientExecutor extends BaseExecutor {
             response.setRequest(request);
             response.setStatus(status);
             response.setBody(Okio.buffer(Okio.source(httpMethod.getResponseBodyAsStream())).readByteArray());
-            response.setCharset(httpMethod.getResponseCharSet());
             Stream.of(httpMethod.getResponseHeaders()).forEach(h -> response.getHeaders().add(new NameValuePair(h.getName(), h.getValue())));
 
             log.info(buildConnectionInfo(startTime, endTime, status, httpMethod).toChromeStyleLog());

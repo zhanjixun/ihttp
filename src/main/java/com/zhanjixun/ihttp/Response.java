@@ -89,9 +89,6 @@ public class Response {
                             .ifPresent(s -> charset = StringUtils.substringAfterLast(s, "charset="));
                 }
                 if (StringUtils.isBlank(charset)) {
-                    charset = request.getCharset();
-                }
-                if (StringUtils.isBlank(charset)) {
                     charset = "UTF-8";
                 }
                 text = new String(body, charset);

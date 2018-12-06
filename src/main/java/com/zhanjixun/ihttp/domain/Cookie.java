@@ -18,11 +18,12 @@ public class Cookie {
     private String name;
     private String value;
 
-    private String comment;
     private String domain;
+    private String path;
 
     private Date expiryDate;
-    private String path;
+
+    private String comment;
 
     private boolean isSecure;
     private int version = 0;

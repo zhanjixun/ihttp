@@ -115,10 +115,10 @@
     </dependencies>
 
     <properties>
-        <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+        <maven_compiler_plugin_version>3.3</maven_compiler_plugin_version>
         <java_source_version>1.8</java_source_version>
         <java_target_version>1.8</java_target_version>
-        <maven_compiler_plugin_version>3.3</maven_compiler_plugin_version>
+        <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
     </properties>
 
     <build>
@@ -132,6 +132,19 @@
                     <target>${java_target_version}</target>
                     <encoding>${project.build.sourceEncoding}</encoding>
                 </configuration>
+            </plugin>
+            <plugin>
+                <!--一起install源码-->
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-source-plugin</artifactId>
+                <executions>
+                    <execution>
+                        <id>attach-sources</id>
+                        <goals>
+                            <goal>jar</goal>
+                        </goals>
+                    </execution>
+                </executions>
             </plugin>
         </plugins>
     </build>

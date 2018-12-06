@@ -47,7 +47,9 @@ public abstract class BaseExecutor implements CookiesStore {
     public void cacheCookie(File cacheFile) {
         if (CollectionUtils.isNotEmpty(getCookies())) {
             try {
-                Okio.buffer(Okio.sink(cacheFile)).writeUtf8(JSON.toJSONString(getCookies())).flush();
+                String string = JSON.toJSONString(getCookies());
+                log.info("cache cookie " + string);
+                Okio.buffer(Okio.sink(cacheFile)).writeUtf8(string).flush();
             } catch (IOException e) {
                 throw new RuntimeException(e);
             }
@@ -58,6 +60,7 @@ public abstract class BaseExecutor implements CookiesStore {
     public int loadCookieCache(File cacheFile) {
         try {
             String json = Okio.buffer(Okio.source(cacheFile)).readUtf8();
+            log.info("load cookie cache " + json);
             List<Cookie> cookie = JSON.parseArray(json, Cookie.class);
             addCookies(cookie);
             return cookie.size();
