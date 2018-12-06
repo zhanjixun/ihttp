@@ -1,5 +1,6 @@
 package com.zhanjixun.ihttp.executor;
 
+import com.google.common.collect.Lists;
 import com.zhanjixun.ihttp.Request;
 import com.zhanjixun.ihttp.Response;
 import com.zhanjixun.ihttp.domain.Configuration;
@@ -15,6 +16,7 @@ import org.apache.commons.lang3.StringUtils;
 import java.net.InetSocketAddress;
 import java.net.Proxy;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
@@ -96,44 +98,17 @@ public class OkHttpExecutor extends BaseExecutor {
 
     @Override
     public void addCookies(List<Cookie> cookies) {
-        myCookieJar.getCookieList().addAll(cookies.stream().map(c -> {
-            okhttp3.Cookie.Builder build = new okhttp3.Cookie.Builder();
-            build.domain(c.getDomain());
-            build.path(c.getPath());
-            build.name(c.getName());
-            build.value(c.getValue());
-            build.expiresAt(c.getExpiryDate().getTime());
-            if (c.isSecure()) {
-                build.secure();
-            }
-            if (c.isHttpOnly()) {
-                build.httpOnly();
-            }
-            return build.build();
-
-        }).collect(Collectors.toList()));
+        myCookieJar.getCookieList().addAll(cookies.stream().map(this::i2ok).collect(Collectors.toList()));
     }
 
     @Override
     public void addCookie(Cookie cookie) {
-        okhttp3.Cookie.Builder build = new okhttp3.Cookie.Builder();
-        build.domain(cookie.getDomain());
-        build.path(cookie.getPath());
-        build.name(cookie.getName());
-        build.value(cookie.getValue());
-        build.expiresAt(cookie.getExpiryDate().getTime());
-        if (cookie.isSecure()) {
-            build.secure();
-        }
-        if (cookie.isHttpOnly()) {
-            build.httpOnly();
-        }
-        myCookieJar.getCookieList().add(build.build());
+        myCookieJar.getCookieList().add(i2ok(cookie));
     }
 
     @Override
     public List<Cookie> getCookies() {
-        return null;
+        return myCookieJar.getCookieList().stream().map(this::ok2i).collect(Collectors.toList());
     }
 
     @Override
@@ -141,9 +116,11 @@ public class OkHttpExecutor extends BaseExecutor {
         myCookieJar.getCookieList().clear();
     }
 
+    //https://github.com/franmontiel/PersistentCookieJar
     class MyCookieJar implements CookieJar {
+
         @Getter
-        private final List<okhttp3.Cookie> cookieList = new ArrayList<>();
+        private final List<okhttp3.Cookie> cookieList = Lists.newLinkedList();
 
         @Override
         public void saveFromResponse(HttpUrl url, List<okhttp3.Cookie> cookies) {
@@ -152,12 +129,51 @@ public class OkHttpExecutor extends BaseExecutor {
 
         @Override
         public List<okhttp3.Cookie> loadForRequest(HttpUrl url) {
-            List<okhttp3.Cookie> collect = cookieList.stream().filter(c -> url.host().endsWith(c.domain()))
-                    .filter(c -> c.expiresAt() < System.currentTimeMillis())
-                    .filter(c -> !c.httpOnly() || url.scheme().equals("http") || url.scheme().equals("https"))
-                    .collect(Collectors.toList());
-            return collect;
+            List<okhttp3.Cookie> cookiesToRemove = new ArrayList<>();
+            List<okhttp3.Cookie> validCookies = new ArrayList<>();
+
+            for (okhttp3.Cookie currentCookie : cookieList) {
+                if (isCookieExpired(currentCookie)) {
+                    cookiesToRemove.add(currentCookie);
+                } else if (currentCookie.matches(url)) {
+                    validCookies.add(currentCookie);
+                }
+            }
+
+            cookieList.removeAll(cookiesToRemove);
+            return validCookies;
+        }
+
+        private boolean isCookieExpired(okhttp3.Cookie cookie) {
+            return cookie.expiresAt() < System.currentTimeMillis();
         }
     }
 
+    private Cookie ok2i(okhttp3.Cookie cookie) {
+        Cookie iCookie = new Cookie();
+        iCookie.setDomain(cookie.domain());
+        iCookie.setPath(cookie.path());
+        iCookie.setName(cookie.name());
+        iCookie.setValue(cookie.value());
+        iCookie.setExpiryDate(new Date(cookie.expiresAt()));
+        iCookie.setSecure(cookie.secure());
+        iCookie.setHttpOnly(cookie.httpOnly());
+        return iCookie;
+    }
+
+    private okhttp3.Cookie i2ok(Cookie c) {
+        okhttp3.Cookie.Builder build = new okhttp3.Cookie.Builder();
+        build.domain(c.getDomain());
+        build.path(c.getPath());
+        build.name(c.getName());
+        build.value(c.getValue());
+        build.expiresAt(c.getExpiryDate().getTime());
+        if (c.isSecure()) {
+            build.secure();
+        }
+        if (c.isHttpOnly()) {
+            build.httpOnly();
+        }
+        return build.build();
+    }
 }
