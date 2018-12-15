@@ -3,11 +3,11 @@ package com.zhanjixun.ihttp.binding;
 
 import com.google.common.collect.Maps;
 import com.zhanjixun.ihttp.domain.Configuration;
-import com.zhanjixun.ihttp.executor.BaseExecutor;
-import com.zhanjixun.ihttp.executor.ComponentsHttpClientExecutor;
+import com.zhanjixun.ihttp.executor.*;
 import com.zhanjixun.ihttp.parsing.AnnotationParser;
 import lombok.Getter;
 
+import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Proxy;
 import java.util.Map;
 
@@ -31,9 +31,9 @@ public class MapperProxyFactory<T> {
         Mapper mapper = cachedMapper(mapperInterface);
         Configuration configuration = mapper.getConfiguration();
         Class<? extends BaseExecutor> executorClass = configuration.getExecutor() == null ? ComponentsHttpClientExecutor.class : configuration.getExecutor();
+
         try {
-            BaseExecutor baseExecutor = executorClass.getConstructor(Configuration.class).newInstance(configuration);
-            MapperProxy mapperProxy = new MapperProxy(mapper, baseExecutor);
+            MapperProxy mapperProxy = new MapperProxy(mapper, newExecutor(executorClass, configuration));
             return newInstance(mapperProxy);
         } catch (Exception e) {
             throw new RuntimeException(e);
@@ -52,5 +52,21 @@ public class MapperProxyFactory<T> {
     @SuppressWarnings("unchecked")
     protected T newInstance(MapperProxy mapperProxy) {
         return (T) Proxy.newProxyInstance(mapperInterface.getClassLoader(), new Class[]{mapperInterface}, mapperProxy);
+    }
+
+    private BaseExecutor newExecutor(Class<? extends BaseExecutor> executorClass, Configuration configuration) throws NoSuchMethodException, IllegalAccessException, InvocationTargetException, InstantiationException {
+        if (executorClass == ComponentsHttpClientExecutor.class) {
+            return new ComponentsHttpClientExecutor(configuration);
+        }
+        if (executorClass == CommonsHttpClientExecutor.class) {
+            return new CommonsHttpClientExecutor(configuration);
+        }
+        if (executorClass == OkHttpExecutor.class) {
+            return new OkHttpExecutor(configuration);
+        }
+        if (executorClass == JavaExecutor.class) {
+            return new JavaExecutor(configuration);
+        }
+        return executorClass.getConstructor(Configuration.class).newInstance(configuration);
     }
 }

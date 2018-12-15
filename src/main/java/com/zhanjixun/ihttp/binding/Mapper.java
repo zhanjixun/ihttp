@@ -71,7 +71,6 @@ public class Mapper {
         //替换占位符
         replacePlaceholder(request, mapperMethod.getParamMapping(), args);
 
-        Preconditions.checkArgument(StringUtils.isNotBlank(request.getUrl()), String.format("HTTP请求没有设置url %s.%s", mapperInterface.getName(), id));
         return request;
     }
 

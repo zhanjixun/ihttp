@@ -171,8 +171,6 @@ public class JavaExecutor extends BaseExecutor {
 
     @Override
     public void addCookies(List<Cookie> cookie) {
-        for (Cookie cookie1 : cookie) {
-            addCookie(cookie1);
-        }
+        cookie.forEach(this::addCookie);
     }
 }

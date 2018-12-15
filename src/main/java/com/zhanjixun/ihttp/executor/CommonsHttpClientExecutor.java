@@ -114,7 +114,7 @@ public class CommonsHttpClientExecutor extends BaseExecutor {
             response.setBody(Okio.buffer(Okio.source(httpMethod.getResponseBodyAsStream())).readByteArray());
             Stream.of(httpMethod.getResponseHeaders()).forEach(h -> response.getHeaders().add(new NameValuePair(h.getName(), h.getValue())));
 
-            log.info(buildConnectionInfo(startTime, endTime, status, httpMethod).toChromeStyleLog());
+            //log.info(buildConnectionInfo(startTime, endTime, status, httpMethod).toChromeStyleLog());
             return response;
         } catch (IOException e) {
             throw new RuntimeException("HTTP请求失败", e);

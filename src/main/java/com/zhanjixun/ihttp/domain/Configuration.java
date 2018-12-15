@@ -17,11 +17,11 @@ public class Configuration {
 
     private HttpProxy proxy;
 
-    // private boolean cookieCacheEnable;
+    private boolean cookieEnable = true;
 
     private Class<? extends BaseExecutor> executor;
 
     public static Configuration getDefault() {
-        return builder().proxy(null).executor(ComponentsHttpClientExecutor.class).build();
+        return builder().proxy(null).cookieEnable(true).executor(ComponentsHttpClientExecutor.class).build();
     }
 }

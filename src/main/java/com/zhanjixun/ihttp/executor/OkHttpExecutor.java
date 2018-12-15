@@ -19,6 +19,7 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 import java.util.Optional;
+import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
 /**
@@ -34,6 +35,8 @@ public class OkHttpExecutor extends BaseExecutor {
         super(configuration);
         OkHttpClient.Builder builder = new OkHttpClient.Builder();
         builder.cookieJar(myCookieJar);
+        builder.connectTimeout(30, TimeUnit.SECONDS);
+        builder.readTimeout(30, TimeUnit.SECONDS);
         if (configuration.getProxy() != null) {
             HttpProxy proxy = configuration.getProxy();
             builder.proxy(new Proxy(Proxy.Type.HTTP, new InetSocketAddress(proxy.getHostName(), configuration.getProxy().getPort())));

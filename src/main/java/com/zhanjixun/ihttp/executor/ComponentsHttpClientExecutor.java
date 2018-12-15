@@ -30,6 +30,7 @@ import org.apache.http.impl.cookie.BasicClientCookie;
 import javax.activation.MimetypesFileTypeMap;
 import java.io.File;
 import java.io.IOException;
+import java.io.InputStream;
 import java.io.UnsupportedEncodingException;
 import java.util.Arrays;
 import java.util.List;
@@ -119,10 +120,9 @@ public class ComponentsHttpClientExecutor extends BaseExecutor {
     }
 
     private Response executeMethod(HttpRequestBase method, Request request) {
+        HttpResponse httpResponse = null;
         try {
-            method.setConfig(RequestConfig.custom().setConnectTimeout(3000).setSocketTimeout(3000).build());
-            HttpResponse httpResponse = httpClient.execute(method);
-
+            httpResponse = httpClient.execute(method);
             Response response = new Response();
             response.setRequest(request);
             response.setStatus(httpResponse.getStatusLine().getStatusCode());
@@ -131,6 +131,18 @@ public class ComponentsHttpClientExecutor extends BaseExecutor {
             return response;
         } catch (IOException e) {
             log.error("发送" + request.getMethod() + "请求失败", e);
+        } finally {
+            if (httpResponse != null && httpResponse.getEntity() != null) {
+                try {
+                    //不关闭流会导致阻塞
+                    InputStream content = httpResponse.getEntity().getContent();
+                    if (content != null) {
+                        content.close();
+                    }
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+            }
         }
         return null;
     }

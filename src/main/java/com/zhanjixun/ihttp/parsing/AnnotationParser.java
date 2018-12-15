@@ -12,7 +12,6 @@ import com.zhanjixun.ihttp.utils.ReflectUtils;
 import com.zhanjixun.ihttp.utils.StrUtils;
 import lombok.extern.log4j.Log4j;
 import org.apache.commons.collections.CollectionUtils;
-import org.apache.commons.collections.MapUtils;
 import org.apache.commons.lang3.RandomStringUtils;
 import org.apache.commons.lang3.StringUtils;
 
@@ -79,17 +78,11 @@ public class AnnotationParser implements Parser {
     }
 
     private void parseClassAnnotation(Mapper mapper) {
-
         ReflectUtils.containsAnnotation(target, Proxy.class, p -> mapper.getConfiguration().setProxy(new HttpProxy(p.hostName(), p.port())));
         ReflectUtils.containsAnnotation(target, HttpExecutor.class, e -> mapper.getConfiguration().setExecutor(e.value()));
-        //ReflectUtils.containsAnnotation(target, EnableCookieCache.class, e -> mapper.getConfiguration().setCookieCacheEnable(true));
+        ReflectUtils.containsAnnotation(target, DisableCookie.class, e -> mapper.getConfiguration().setCookieEnable(false));
 
-        for (Annotation annotation : target.getAnnotations()) {
-            Class<? extends Annotation> annotationType = annotation.annotationType();
-            if (annotationType == URL.class) {
-                mapper.setCommonUrl(((URL) annotation).value());
-            }
-        }
+        ReflectUtils.containsAnnotation(target, URL.class, annotation -> mapper.setCommonUrl(annotation.value()));
         //解析请求头
         mapper.getCommonHeaders().addAll(parseHeader(target));
     }
@@ -98,9 +91,7 @@ public class AnnotationParser implements Parser {
         MapperMethod mapperMethod = new MapperMethod();
         mapperMethod.setName(method.getName());
         //URL
-        if (Objects.nonNull(method.getAnnotation(URL.class))) {
-            mapperMethod.setUrl(method.getAnnotation(URL.class).value());
-        }
+        ReflectUtils.containsAnnotation(method, URL.class, annotation -> mapperMethod.setUrl(annotation.value()));
 
         //http方法
         List<? extends Annotation> httpMethod = HTTP_METHOD_ANNOTATIONS.stream().map(method::getAnnotation).filter(Objects::nonNull).collect(Collectors.toList());
@@ -154,36 +145,32 @@ public class AnnotationParser implements Parser {
         mapperMethod.setStringBody(method.getAnnotation(StringBody.class) == null ? null : method.getAnnotation(StringBody.class).value());
 
         //随机码占位符
-        Map<String, String> replacement = Maps.newHashMap();
+        Map<String, String> replacementMap = Maps.newHashMap();
         for (RandomPlaceholder randomPlaceholder : ReflectUtils.getRepeatableAnnotation(method, RandomPlaceholder.class)) {
             String target = String.format("#{%s}", randomPlaceholder.name());
             String value = RandomStringUtils.random(randomPlaceholder.length(), randomPlaceholder.chars());
-            replacement.put(target, value);
+            replacementMap.put(target, value);
         }
         //时间戳占位符
         for (TimestampPlaceholder timestampPlaceholder : ReflectUtils.getRepeatableAnnotation(method, TimestampPlaceholder.class)) {
             String target = String.format("#{%s}", timestampPlaceholder.name());
             String value = timestampPlaceholder.unit().convert(System.currentTimeMillis(), TimeUnit.MILLISECONDS) + "";
-            replacement.put(target, value);
+            replacementMap.put(target, value);
         }
-
-        if (MapUtils.isNotEmpty(replacement)) {
-            replacement.forEach((target, value) -> {
-                //替换URL
-                mapperMethod.setUrl(StringUtils.replace(mapperMethod.getUrl(), target, value));
-                //替换StringBody
-                mapperMethod.setStringBody(StringUtils.replace(mapperMethod.getStringBody(), target, value));
-                //替换请求头
-                for (NameValuePair nameValuePair : mapperMethod.getHeaders()) {
-                    nameValuePair.setValue(StringUtils.replace(nameValuePair.getValue(), target, value));
-                }
-                //替换请求参数
-                for (NameValuePair nameValuePair : mapperMethod.getParams()) {
-                    nameValuePair.setValue(StringUtils.replace(nameValuePair.getValue(), target, value));
-                }
-            });
-        }
-
+        replacementMap.forEach((target, replacement) -> {
+            //替换URL
+            mapperMethod.setUrl(StringUtils.replace(mapperMethod.getUrl(), target, replacement));
+            //替换StringBody
+            mapperMethod.setStringBody(StringUtils.replace(mapperMethod.getStringBody(), target, replacement));
+            //替换请求头
+            for (NameValuePair nameValuePair : mapperMethod.getHeaders()) {
+                nameValuePair.setValue(StringUtils.replace(nameValuePair.getValue(), target, replacement));
+            }
+            //替换请求参数
+            for (NameValuePair nameValuePair : mapperMethod.getParams()) {
+                nameValuePair.setValue(StringUtils.replace(nameValuePair.getValue(), target, replacement));
+            }
+        });
         return mapperMethod;
     }
 
@@ -195,12 +182,10 @@ public class AnnotationParser implements Parser {
         }
 
         for (Map.Entry<String, Class<? extends Annotation>> entry : HEADER_ANNOTATIONS.entrySet()) {
-            Class<? extends Annotation> annotationClass = entry.getValue();
-            if (element.isAnnotationPresent(annotationClass)) {
-                Annotation annotation = element.getAnnotation(annotationClass);
+            ReflectUtils.containsAnnotation(element, entry.getValue(), annotation -> {
                 String value = (String) ReflectUtils.invokeAnnotationMethod(annotation, "value");
                 headers.add(new NameValuePair(entry.getKey(), value));
-            }
+            });
         }
         return headers;
     }
