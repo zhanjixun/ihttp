@@ -2,13 +2,13 @@ package com.zhanjixun.ihttp.binding;
 
 
 import com.google.common.collect.Maps;
+import com.google.common.reflect.Reflection;
 import com.zhanjixun.ihttp.domain.Configuration;
 import com.zhanjixun.ihttp.executor.*;
 import com.zhanjixun.ihttp.parsing.AnnotationParser;
 import lombok.Getter;
 
 import java.lang.reflect.InvocationTargetException;
-import java.lang.reflect.Proxy;
 import java.util.Map;
 
 /**
@@ -49,9 +49,8 @@ public class MapperProxyFactory<T> {
         return mapper;
     }
 
-    @SuppressWarnings("unchecked")
     protected T newInstance(MapperProxy mapperProxy) {
-        return (T) Proxy.newProxyInstance(mapperInterface.getClassLoader(), new Class[]{mapperInterface}, mapperProxy);
+        return Reflection.newProxy(mapperInterface, mapperProxy);
     }
 
     private BaseExecutor newExecutor(Class<? extends BaseExecutor> executorClass, Configuration configuration) throws NoSuchMethodException, IllegalAccessException, InvocationTargetException, InstantiationException {
