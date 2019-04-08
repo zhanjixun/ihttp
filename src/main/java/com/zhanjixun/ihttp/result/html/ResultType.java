@@ -10,7 +10,7 @@ public enum ResultType {
     /**
      * 默认值
      */
-    NONE,
+//    NONE,
     /**
      * 获取元素中Text内容
      */
@@ -31,6 +31,6 @@ public enum ResultType {
     /**
      * 获取元素中的value值
      */
-    VALUE;
+    VALUE
 
 }

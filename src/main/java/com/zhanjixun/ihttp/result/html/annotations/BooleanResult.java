@@ -1,4 +1,6 @@
-package com.zhanjixun.ihttp.result.html;
+package com.zhanjixun.ihttp.result.html.annotations;
+
+import com.zhanjixun.ihttp.result.html.ResultType;
 
 import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;
@@ -7,11 +9,11 @@ import java.lang.annotation.Target;
 
 /**
  * @author :zhanjixun
- * @date : 2018/8/20 13:51
+ * @date : 2018/8/20 15:00
  */
 @Target({ElementType.METHOD, ElementType.FIELD})
 @Retention(RetentionPolicy.RUNTIME)
-public @interface StringResult {
+public @interface BooleanResult {
     /**
      * css选择器
      *
@@ -26,5 +28,10 @@ public @interface StringResult {
      */
     int index() default 0;
 
-    Result result();
+    /**
+     * 选取数据部分
+     *
+     * @return
+     */
+    ResultType type();
 }

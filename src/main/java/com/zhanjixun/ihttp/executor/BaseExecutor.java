@@ -4,8 +4,6 @@ import com.alibaba.fastjson.JSON;
 import com.zhanjixun.ihttp.CookiesStore;
 import com.zhanjixun.ihttp.Request;
 import com.zhanjixun.ihttp.Response;
-import com.zhanjixun.ihttp.annotations.GET;
-import com.zhanjixun.ihttp.annotations.POST;
 import com.zhanjixun.ihttp.domain.Configuration;
 import com.zhanjixun.ihttp.domain.Cookie;
 import lombok.extern.log4j.Log4j;
@@ -26,16 +24,18 @@ public abstract class BaseExecutor implements CookiesStore {
     }
 
     public Response execute(Request request) {
-        Response response = null;
-        if (request.getMethod().equals(GET.class.getSimpleName())) {
-            response = doGetMethod(request);
+        Response response;
+        switch (request.getMethod()) {
+            case "GET":
+                response = doGetMethod(request);
+                break;
+            case "POST":
+                response = doPostMethod(request);
+                break;
+            default:
+                throw new RuntimeException("未能识别的HTTP请求方法：" + request.getMethod());
         }
-        if (request.getMethod().equals(POST.class.getSimpleName())) {
-            response = doPostMethod(request);
-        }
-        if (response == null) {
-            throw new RuntimeException("未能识别的HTTP请求方法：" + request.getMethod());
-        }
+        //do something before http execute
         return response;
     }
 

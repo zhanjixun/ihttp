@@ -47,7 +47,7 @@ public class MapperScanner implements BeanDefinitionRegistryPostProcessor, Appli
     @Getter
     private ApplicationContext applicationContext;
     private ResourcePatternResolver resourcePatternResolver = new PathMatchingResourcePatternResolver();
-    private MetadataReaderFactory metadataReaderFactory = new CachingMetadataReaderFactory(this.resourcePatternResolver);
+    private MetadataReaderFactory metadataReaderFactory = new CachingMetadataReaderFactory(resourcePatternResolver);
 
     @Override
     public void setApplicationContext(ApplicationContext applicationContext) throws BeansException {
@@ -56,13 +56,13 @@ public class MapperScanner implements BeanDefinitionRegistryPostProcessor, Appli
 
     @Override
     public void afterPropertiesSet() throws Exception {
-        notNull(this.basePackage, "Property 'basePackage' is required");
+        notNull(basePackage, "Property 'basePackage' is required");
     }
 
     @Override
     public void setResourceLoader(ResourceLoader resourceLoader) {
-        this.resourcePatternResolver = ResourcePatternUtils.getResourcePatternResolver(resourceLoader);
-        this.metadataReaderFactory = new CachingMetadataReaderFactory(resourceLoader);
+        resourcePatternResolver = ResourcePatternUtils.getResourcePatternResolver(resourceLoader);
+        metadataReaderFactory = new CachingMetadataReaderFactory(resourceLoader);
     }
 
     private Set<Class> scan(String[] basePackages) {
@@ -75,11 +75,11 @@ public class MapperScanner implements BeanDefinitionRegistryPostProcessor, Appli
         Set<Class> classes = new HashSet<>();
         try {
             String packageSearchPath = ResourcePatternResolver.CLASSPATH_ALL_URL_PREFIX + ClassUtils.convertClassNameToResourcePath(SystemPropertyUtils.resolvePlaceholders(basePackage)) + "/**/*.class";
-            Resource[] resources = this.resourcePatternResolver.getResources(packageSearchPath);
+            Resource[] resources = resourcePatternResolver.getResources(packageSearchPath);
 
             for (Resource resource : resources) {
                 if (resource.isReadable()) {
-                    MetadataReader metadataReader = this.metadataReaderFactory.getMetadataReader(resource);
+                    MetadataReader metadataReader = metadataReaderFactory.getMetadataReader(resource);
                     try {
                         classes.add(Class.forName(metadataReader.getClassMetadata().getClassName()));
                     } catch (ClassNotFoundException e) {
