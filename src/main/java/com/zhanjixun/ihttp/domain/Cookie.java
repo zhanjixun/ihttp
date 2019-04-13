@@ -1,6 +1,7 @@
 package com.zhanjixun.ihttp.domain;
 
 import lombok.AllArgsConstructor;
+import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
@@ -11,6 +12,7 @@ import java.util.Date;
  * @date : 2018/9/28 10:13
  */
 @Data
+@Builder
 @NoArgsConstructor
 @AllArgsConstructor
 public class Cookie {
