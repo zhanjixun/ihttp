@@ -31,4 +31,13 @@ public class Cookie {
     private int version = 0;
 
     private boolean httpOnly;
+
+    /**
+     * 是否已经过期
+     *
+     * @return
+     */
+    public boolean isExpired() {
+        return expiryDate != null && expiryDate.before(new Date());
+    }
 }

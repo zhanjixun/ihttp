@@ -1,28 +1,25 @@
 package com.zhanjixun.ihttp.executor;
 
-import com.alibaba.fastjson.JSON;
 import com.zhanjixun.ihttp.CookiesStore;
 import com.zhanjixun.ihttp.Request;
 import com.zhanjixun.ihttp.Response;
 import com.zhanjixun.ihttp.domain.Configuration;
-import com.zhanjixun.ihttp.domain.Cookie;
+import lombok.Getter;
 import lombok.extern.log4j.Log4j;
-import okio.Okio;
-import org.apache.commons.collections.CollectionUtils;
-
-import java.io.File;
-import java.io.IOException;
-import java.util.List;
 
 @Log4j
-public abstract class BaseExecutor implements CookiesStore {
+public abstract class BaseExecutor implements Executor {
 
     protected final Configuration configuration;
+    @Getter
+    protected CookiesStore cookiesStore;
 
     public BaseExecutor(Configuration configuration) {
         this.configuration = configuration;
+        cookiesStore = configuration.getCookiesStore();
     }
 
+    @Override
     public Response execute(Request request) {
         Response response;
         switch (request.getMethod()) {
@@ -43,29 +40,4 @@ public abstract class BaseExecutor implements CookiesStore {
 
     protected abstract Response doPostMethod(Request request);
 
-    @Override
-    public void cacheCookie(File cacheFile) {
-        if (CollectionUtils.isNotEmpty(getCookies())) {
-            try {
-                String string = JSON.toJSONString(getCookies());
-                log.info("cache cookie " + string);
-                Okio.buffer(Okio.sink(cacheFile)).writeUtf8(string).flush();
-            } catch (IOException e) {
-                throw new RuntimeException(e);
-            }
-        }
-    }
-
-    @Override
-    public int loadCookieCache(File cacheFile) {
-        try {
-            String json = Okio.buffer(Okio.source(cacheFile)).readUtf8();
-            log.info("load cookie cache " + json);
-            List<Cookie> cookie = JSON.parseArray(json, Cookie.class);
-            addCookies(cookie);
-            return cookie.size();
-        } catch (IOException e) {
-            throw new RuntimeException(e);
-        }
-    }
 }

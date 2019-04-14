@@ -7,6 +7,7 @@ import java.util.List;
 
 /**
  * cookie商店
+ * Mapper继承此接口获得操作Cookie的能力
  *
  * @author :zhanjixun
  * @date : 2018/9/28 13:41
@@ -26,6 +27,14 @@ public interface CookiesStore {
      * @param cookie 需要增加的cookie
      */
     void addCookie(Cookie cookie);
+
+    /**
+     * 移除Cookie
+     *
+     * @param cookie
+     * @return
+     */
+    boolean remove(Cookie cookie);
 
     /**
      * 获取所有cookie

@@ -1,4 +1,4 @@
-package com.zhanjixun.ihttp.result.html;
+package com.zhanjixun.ihttp.result.html.annotations;
 
 /**
  * 选取html元素的数据类型

@@ -28,6 +28,7 @@ public class MapperProxy implements InvocationHandler {
 
     @Override
     public Object invoke(Object proxy, Method method, Object[] args) throws Throwable {
+        //Object方法执行
         if (Object.class.equals(method.getDeclaringClass())) {
             try {
                 return method.invoke(this, args);
@@ -35,8 +36,9 @@ public class MapperProxy implements InvocationHandler {
                 t.printStackTrace();
             }
         }
+        //CookiesStore方法执行
         if (CookiesStore.class.equals(method.getDeclaringClass())) {
-            return method.invoke(executor, args);
+            return method.invoke(executor.getCookiesStore(), args);
         }
         Request request = mapper.getRequest(method.getName(), args);
 

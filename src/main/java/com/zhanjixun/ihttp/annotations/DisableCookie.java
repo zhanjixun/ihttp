@@ -11,7 +11,7 @@ import java.lang.annotation.Target;
  * @author :zhanjixun
  * @date : 2018/12/15 11:11
  */
-@Target({ElementType.TYPE})
+@Target({ElementType.TYPE, ElementType.METHOD})
 @Retention(RetentionPolicy.RUNTIME)
 public @interface DisableCookie {
 }

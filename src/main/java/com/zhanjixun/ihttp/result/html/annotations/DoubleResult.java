@@ -1,7 +1,5 @@
 package com.zhanjixun.ihttp.result.html.annotations;
 
-import com.zhanjixun.ihttp.result.html.ResultType;
-
 import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;

@@ -3,10 +3,8 @@ package com.zhanjixun.ihttp.executor;
 import com.zhanjixun.ihttp.Request;
 import com.zhanjixun.ihttp.Response;
 import com.zhanjixun.ihttp.domain.Configuration;
-import com.zhanjixun.ihttp.domain.Cookie;
 import com.zhanjixun.ihttp.domain.FileParts;
 import com.zhanjixun.ihttp.domain.NameValuePair;
-import com.zhanjixun.ihttp.utils.CookieUtils;
 import com.zhanjixun.ihttp.utils.StrUtils;
 import lombok.extern.log4j.Log4j;
 import okio.Okio;
@@ -17,7 +15,6 @@ import javax.activation.MimetypesFileTypeMap;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.net.*;
-import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 import java.util.stream.Collectors;
@@ -150,27 +147,27 @@ public class JavaExecutor extends BaseExecutor {
         }
     }
 
-    @Override
-    public void addCookie(Cookie cookie) {
-        try {
-            cookieManager.getCookieStore().add(new URI(cookie.getDomain()), CookieUtils.copyProperties(cookie, new HttpCookie(cookie.getName(), cookie.getValue())));
-        } catch (URISyntaxException e) {
-            e.printStackTrace();
-        }
-    }
-
-    @Override
-    public List<Cookie> getCookies() {
-        return cookieManager.getCookieStore().getCookies().stream().map(d -> CookieUtils.copyProperties(d, new Cookie())).collect(Collectors.toList());
-    }
-
-    @Override
-    public void clearCookies() {
-        cookieManager.getCookieStore().removeAll();
-    }
-
-    @Override
-    public void addCookies(List<Cookie> cookie) {
-        cookie.forEach(this::addCookie);
-    }
+//    @Override
+//    public void addCookie(Cookie cookie) {
+//        try {
+//            cookieManager.getCookieStore().add(new URI(cookie.getDomain()), CookieUtils.copyProperties(cookie, new HttpCookie(cookie.getName(), cookie.getValue())));
+//        } catch (URISyntaxException e) {
+//            e.printStackTrace();
+//        }
+//    }
+//
+//    @Override
+//    public List<Cookie> getCookies() {
+//        return cookieManager.getCookieStore().getCookies().stream().map(d -> CookieUtils.copyProperties(d, new Cookie())).collect(Collectors.toList());
+//    }
+//
+//    @Override
+//    public void clearCookies() {
+//        cookieManager.getCookieStore().removeAll();
+//    }
+//
+//    @Override
+//    public void addCookies(List<Cookie> cookie) {
+//        cookie.forEach(this::addCookie);
+//    }
 }

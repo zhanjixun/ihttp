@@ -1,14 +1,13 @@
 package com.zhanjixun.ihttp.executor;
 
-import com.google.common.collect.Lists;
+import com.zhanjixun.ihttp.CookiesStore;
 import com.zhanjixun.ihttp.Request;
 import com.zhanjixun.ihttp.Response;
 import com.zhanjixun.ihttp.domain.Configuration;
-import com.zhanjixun.ihttp.domain.Cookie;
 import com.zhanjixun.ihttp.domain.HttpProxy;
 import com.zhanjixun.ihttp.domain.NameValuePair;
+import com.zhanjixun.ihttp.utils.CookieUtils;
 import com.zhanjixun.ihttp.utils.StrUtils;
-import lombok.Getter;
 import okhttp3.*;
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
@@ -16,7 +15,6 @@ import org.apache.commons.lang3.StringUtils;
 import java.net.InetSocketAddress;
 import java.net.Proxy;
 import java.util.ArrayList;
-import java.util.Date;
 import java.util.List;
 import java.util.Optional;
 import java.util.concurrent.TimeUnit;
@@ -28,13 +26,12 @@ import java.util.stream.Collectors;
  */
 public class OkHttpExecutor extends BaseExecutor {
 
-    private final MyCookieJar myCookieJar = new MyCookieJar();
     private final OkHttpClient okHttpClient;
 
     public OkHttpExecutor(Configuration configuration) {
         super(configuration);
         OkHttpClient.Builder builder = new OkHttpClient.Builder();
-        builder.cookieJar(myCookieJar);
+        builder.cookieJar(new MyCookieJar(cookiesStore));
         builder.connectTimeout(30, TimeUnit.SECONDS);
         builder.readTimeout(30, TimeUnit.SECONDS);
         if (configuration.getProxy() != null) {
@@ -99,39 +96,24 @@ public class OkHttpExecutor extends BaseExecutor {
         return null;
     }
 
-    @Override
-    public void addCookies(List<Cookie> cookies) {
-        myCookieJar.getCookieList().addAll(cookies.stream().map(this::i2ok).collect(Collectors.toList()));
-    }
-
-    @Override
-    public void addCookie(Cookie cookie) {
-        myCookieJar.getCookieList().add(i2ok(cookie));
-    }
-
-    @Override
-    public List<Cookie> getCookies() {
-        return myCookieJar.getCookieList().stream().map(this::ok2i).collect(Collectors.toList());
-    }
-
-    @Override
-    public void clearCookies() {
-        myCookieJar.getCookieList().clear();
-    }
-
     //https://github.com/franmontiel/PersistentCookieJar
     class MyCookieJar implements CookieJar {
 
-        @Getter
-        private final List<okhttp3.Cookie> cookieList = Lists.newLinkedList();
+        private CookiesStore cookiesStore;
+
+        public MyCookieJar(CookiesStore cookiesStore) {
+            this.cookiesStore = cookiesStore;
+        }
 
         @Override
         public void saveFromResponse(HttpUrl url, List<okhttp3.Cookie> cookies) {
-            cookieList.addAll(cookies);
+            cookiesStore.addCookies(cookies.stream().map(CookieUtils::okhttpConvert).collect(Collectors.toList()));
         }
 
         @Override
         public List<okhttp3.Cookie> loadForRequest(HttpUrl url) {
+            List<com.zhanjixun.ihttp.domain.Cookie> cookies = cookiesStore.getCookies();
+
             List<okhttp3.Cookie> cookiesToRemove = new ArrayList<>();
             List<okhttp3.Cookie> validCookies = new ArrayList<>();
 
@@ -152,31 +134,5 @@ public class OkHttpExecutor extends BaseExecutor {
         }
     }
 
-    private Cookie ok2i(okhttp3.Cookie cookie) {
-        Cookie iCookie = new Cookie();
-        iCookie.setDomain(cookie.domain());
-        iCookie.setPath(cookie.path());
-        iCookie.setName(cookie.name());
-        iCookie.setValue(cookie.value());
-        iCookie.setExpiryDate(new Date(cookie.expiresAt()));
-        iCookie.setSecure(cookie.secure());
-        iCookie.setHttpOnly(cookie.httpOnly());
-        return iCookie;
-    }
 
-    private okhttp3.Cookie i2ok(Cookie c) {
-        okhttp3.Cookie.Builder build = new okhttp3.Cookie.Builder();
-        build.domain(c.getDomain());
-        build.path(c.getPath());
-        build.name(c.getName());
-        build.value(c.getValue());
-        build.expiresAt(c.getExpiryDate().getTime());
-        if (c.isSecure()) {
-            build.secure();
-        }
-        if (c.isHttpOnly()) {
-            build.httpOnly();
-        }
-        return build.build();
-    }
 }
