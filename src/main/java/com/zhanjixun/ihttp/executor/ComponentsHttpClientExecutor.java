@@ -4,7 +4,6 @@ import com.zhanjixun.ihttp.CookiesStore;
 import com.zhanjixun.ihttp.Request;
 import com.zhanjixun.ihttp.Response;
 import com.zhanjixun.ihttp.domain.Configuration;
-import com.zhanjixun.ihttp.domain.Cookie;
 import com.zhanjixun.ihttp.domain.FileParts;
 import com.zhanjixun.ihttp.domain.NameValuePair;
 import com.zhanjixun.ihttp.utils.CookieUtils;
@@ -169,17 +168,7 @@ public class ComponentsHttpClientExecutor extends BaseExecutor {
 
         @Override
         public boolean clearExpired(Date date) {
-            if (date == null) {
-                return false;
-            }
-            lock.writeLock().lock();
-            try {
-                List<Cookie> waitRemove = cookiesStore.getCookies().stream().filter(Cookie::isExpired).collect(Collectors.toList());
-                waitRemove.forEach(d -> cookiesStore.remove(d));
-                return CollectionUtils.isNotEmpty(waitRemove);
-            } finally {
-                lock.writeLock().unlock();
-            }
+            return cookiesStore.clearExpired(date);
         }
 
         @Override

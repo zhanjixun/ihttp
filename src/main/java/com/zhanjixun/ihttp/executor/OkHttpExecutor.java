@@ -14,7 +14,6 @@ import org.apache.commons.lang3.StringUtils;
 
 import java.net.InetSocketAddress;
 import java.net.Proxy;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import java.util.concurrent.TimeUnit;
@@ -112,25 +111,12 @@ public class OkHttpExecutor extends BaseExecutor {
 
         @Override
         public List<okhttp3.Cookie> loadForRequest(HttpUrl url) {
-            List<com.zhanjixun.ihttp.domain.Cookie> cookies = cookiesStore.getCookies();
-
-            List<okhttp3.Cookie> cookiesToRemove = new ArrayList<>();
-            List<okhttp3.Cookie> validCookies = new ArrayList<>();
-
-            for (okhttp3.Cookie currentCookie : cookieList) {
-                if (isCookieExpired(currentCookie)) {
-                    cookiesToRemove.add(currentCookie);
-                } else if (currentCookie.matches(url)) {
-                    validCookies.add(currentCookie);
-                }
-            }
-
-            cookieList.removeAll(cookiesToRemove);
-            return validCookies;
-        }
-
-        private boolean isCookieExpired(okhttp3.Cookie cookie) {
-            return cookie.expiresAt() < System.currentTimeMillis();
+            //清除过期cookie
+            cookiesStore.clearExpired();
+            //转换cookie类
+            List<Cookie> cookieList = cookiesStore.getCookies().stream().map(CookieUtils::okhttpConvert).collect(Collectors.toList());
+            //过滤出符合url
+            return cookieList.stream().filter(d -> d.matches(url)).collect(Collectors.toList());
         }
     }
 

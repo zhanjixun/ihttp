@@ -5,7 +5,7 @@ import com.zhanjixun.ihttp.CookiesStore;
 import com.zhanjixun.ihttp.Request;
 import com.zhanjixun.ihttp.Response;
 import com.zhanjixun.ihttp.annotations.AssertStatusCode;
-import com.zhanjixun.ihttp.executor.BaseExecutor;
+import com.zhanjixun.ihttp.executor.Executor;
 import org.springframework.util.Assert;
 
 import java.lang.reflect.InvocationHandler;
@@ -19,9 +19,9 @@ import java.lang.reflect.Method;
 public class MapperProxy implements InvocationHandler {
 
     private final Mapper mapper;
-    private final BaseExecutor executor;
+    private final Executor executor;
 
-    public MapperProxy(Mapper mapper, BaseExecutor executor) {
+    public MapperProxy(Mapper mapper, Executor executor) {
         this.mapper = mapper;
         this.executor = executor;
     }

@@ -11,9 +11,11 @@ import org.apache.commons.collections.CollectionUtils;
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
 import java.util.concurrent.locks.ReadWriteLock;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
+import java.util.stream.Collectors;
 
 /**
  * 接管Executor的Cookie
@@ -73,6 +75,26 @@ public class CookiesStoreImpl implements CookiesStore {
             return new ArrayList<>(cookies);
         } finally {
             lock.readLock().unlock();
+        }
+    }
+
+    @Override
+    public boolean clearExpired() {
+        return clearExpired(new Date());
+    }
+
+    @Override
+    public boolean clearExpired(Date date) {
+        if (date == null) {
+            return false;
+        }
+        lock.writeLock().lock();
+        try {
+            List<Cookie> waitRemove = cookies.stream().filter(Cookie::isExpired).collect(Collectors.toList());
+            waitRemove.forEach(cookies::remove);
+            return CollectionUtils.isNotEmpty(waitRemove);
+        } finally {
+            lock.writeLock().unlock();
         }
     }
 

@@ -3,6 +3,7 @@ package com.zhanjixun.ihttp;
 import com.zhanjixun.ihttp.domain.Cookie;
 
 import java.io.File;
+import java.util.Date;
 import java.util.List;
 
 /**
@@ -42,6 +43,21 @@ public interface CookiesStore {
      * @return 所有cookie
      */
     List<Cookie> getCookies();
+
+    /**
+     * 清除过期Cookie
+     *
+     * @return
+     */
+    boolean clearExpired();
+
+    /**
+     * 清除过期Cookie
+     *
+     * @param date
+     * @return
+     */
+    boolean clearExpired(Date date);
 
     /**
      * 清除所有cookie

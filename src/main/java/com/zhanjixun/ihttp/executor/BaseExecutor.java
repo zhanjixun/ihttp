@@ -12,7 +12,7 @@ public abstract class BaseExecutor implements Executor {
 
     protected final Configuration configuration;
     @Getter
-    protected CookiesStore cookiesStore;
+    protected final CookiesStore cookiesStore;
 
     public BaseExecutor(Configuration configuration) {
         this.configuration = configuration;

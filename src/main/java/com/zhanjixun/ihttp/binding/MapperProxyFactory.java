@@ -53,7 +53,7 @@ public class MapperProxyFactory<T> {
         return Reflection.newProxy(mapperInterface, mapperProxy);
     }
 
-    private BaseExecutor newExecutor(Class<? extends BaseExecutor> executorClass, Configuration configuration) throws NoSuchMethodException, IllegalAccessException, InvocationTargetException, InstantiationException {
+    private Executor newExecutor(Class<? extends BaseExecutor> executorClass, Configuration configuration) throws NoSuchMethodException, IllegalAccessException, InvocationTargetException, InstantiationException {
         if (executorClass == ComponentsHttpClientExecutor.class) {
             return new ComponentsHttpClientExecutor(configuration);
         }

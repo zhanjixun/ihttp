@@ -1,19 +1,18 @@
 package com.zhanjixun.ihttp.executor;
 
+import com.zhanjixun.ihttp.CookiesStore;
 import com.zhanjixun.ihttp.Request;
 import com.zhanjixun.ihttp.Response;
 import com.zhanjixun.ihttp.domain.Configuration;
 import com.zhanjixun.ihttp.domain.FileParts;
 import com.zhanjixun.ihttp.domain.NameValuePair;
 import com.zhanjixun.ihttp.logging.ConnectionInfo;
+import com.zhanjixun.ihttp.utils.CookieUtils;
 import com.zhanjixun.ihttp.utils.StrUtils;
 import lombok.extern.log4j.Log4j;
 import okio.Okio;
 import org.apache.commons.collections.CollectionUtils;
-import org.apache.commons.httpclient.Header;
-import org.apache.commons.httpclient.HttpClient;
-import org.apache.commons.httpclient.HttpMethodBase;
-import org.apache.commons.httpclient.URIException;
+import org.apache.commons.httpclient.*;
 import org.apache.commons.httpclient.methods.GetMethod;
 import org.apache.commons.httpclient.methods.PostMethod;
 import org.apache.commons.httpclient.methods.RequestEntity;
@@ -28,6 +27,7 @@ import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
 import java.util.Arrays;
+import java.util.Date;
 import java.util.Optional;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -45,7 +45,7 @@ public class CommonsHttpClientExecutor extends BaseExecutor {
 
     public CommonsHttpClientExecutor(Configuration configuration) {
         super(configuration);
-
+        httpClient.setState(new MyHttpState(cookiesStore));
         //设置代理服务器
         if (configuration.getProxy() != null) {
             httpClient.getHostConfiguration().setProxy(configuration.getProxy().getHostName(), configuration.getProxy().getPort());
@@ -155,28 +155,33 @@ public class CommonsHttpClientExecutor extends BaseExecutor {
         return null;
     }
 
-//    @Override
-//    public void addCookie(Cookie cookie) {
-//        httpClient.getState().addCookie(CookieUtils.copyProperties(cookie, new org.apache.commons.httpclient.Cookie()));
-//    }
-//
-//    @Override
-//    public List<Cookie> getCookies() {
-//        return Arrays.stream(httpClient.getState().getCookies()).map(c -> CookieUtils.copyProperties(c, new Cookie())).collect(Collectors.toList());
-//    }
-//
-//    @Override
-//    public void clearCookies() {
-//        httpClient.getState()
-//        httpClient.getState().clearCookies();
-//    }
-//
-//    @Override
-//    public void addCookies(List<Cookie> cookie) {
-//        if (CollectionUtils.isEmpty(cookie)) {
-//            return;
-//        }
-//        httpClient.getState().addCookies(cookie.stream().map(d -> CookieUtils.copyProperties(cookie, new org.apache.commons.httpclient.Cookie())).toArray(org.apache.commons.httpclient.Cookie[]::new));
-//    }
+    class MyHttpState extends HttpState {
+
+        private CookiesStore cookiesStore;
+
+        MyHttpState(CookiesStore cookiesStore) {
+            this.cookiesStore = cookiesStore;
+        }
+
+        @Override
+        public void addCookie(Cookie cookie) {
+            cookiesStore.addCookie(CookieUtils.commonsConvert(cookie));
+        }
+
+        @Override
+        public void addCookies(Cookie[] cookies) {
+            cookiesStore.addCookies(Arrays.stream(cookies).map(CookieUtils::commonsConvert).collect(Collectors.toList()));
+        }
+
+        @Override
+        public Cookie[] getCookies() {
+            return cookiesStore.getCookies().stream().map(CookieUtils::commonsConvert).toArray(Cookie[]::new);
+        }
+
+        @Override
+        public boolean purgeExpiredCookies(Date date) {
+            return cookiesStore.clearExpired(date);
+        }
+    }
 
 }

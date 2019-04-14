@@ -11,16 +11,16 @@ import java.util.Date;
  */
 public class CookieUtils {
 
-    public static <T> T copyProperties(Object source, T target) {
+    private static <T> T copyProperties(Object source, T target) {
         BeanUtils.copyProperties(source, target);
         return target;
     }
 
-    public org.apache.commons.httpclient.Cookie commonsConvert(Cookie originCookie) {
+    public static org.apache.commons.httpclient.Cookie commonsConvert(Cookie originCookie) {
         return copyProperties(originCookie, new org.apache.commons.httpclient.Cookie());
     }
 
-    public Cookie commonsConvert(org.apache.commons.httpclient.Cookie originCookie) {
+    public static Cookie commonsConvert(org.apache.commons.httpclient.Cookie originCookie) {
         return copyProperties(originCookie, new Cookie());
     }
 
