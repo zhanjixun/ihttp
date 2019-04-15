@@ -3,12 +3,14 @@ package com.zhanjixun.ihttp.binding;
 
 import com.google.common.collect.Maps;
 import com.google.common.reflect.Reflection;
+import com.zhanjixun.ihttp.cookie.CookiesStoreFactory;
 import com.zhanjixun.ihttp.domain.Configuration;
-import com.zhanjixun.ihttp.executor.*;
+import com.zhanjixun.ihttp.executor.ComponentsHttpClientExecutor;
+import com.zhanjixun.ihttp.executor.Executor;
 import com.zhanjixun.ihttp.parsing.AnnotationParser;
 import lombok.Getter;
+import org.apache.commons.lang3.ObjectUtils;
 
-import java.lang.reflect.InvocationTargetException;
 import java.util.Map;
 
 /**
@@ -30,10 +32,13 @@ public class MapperProxyFactory<T> {
     public T newInstance() {
         Mapper mapper = cachedMapper(mapperInterface);
         Configuration configuration = mapper.getConfiguration();
-        Class<? extends BaseExecutor> executorClass = configuration.getExecutor() == null ? ComponentsHttpClientExecutor.class : configuration.getExecutor();
+        configuration.setCookiesStore(new CookiesStoreFactory().createCookiesStore(mapperInterface));
+
+        Class<? extends Executor> executorClass = ObjectUtils.defaultIfNull(configuration.getExecutor(), ComponentsHttpClientExecutor.class);
 
         try {
-            MapperProxy mapperProxy = new MapperProxy(mapper, newExecutor(executorClass, configuration));
+            Executor executor = executorClass.getConstructor(Configuration.class).newInstance(configuration);
+            MapperProxy mapperProxy = new MapperProxy(mapper, executor);
             return newInstance(mapperProxy);
         } catch (Exception e) {
             throw new RuntimeException(e);
@@ -53,19 +58,4 @@ public class MapperProxyFactory<T> {
         return Reflection.newProxy(mapperInterface, mapperProxy);
     }
 
-    private Executor newExecutor(Class<? extends BaseExecutor> executorClass, Configuration configuration) throws NoSuchMethodException, IllegalAccessException, InvocationTargetException, InstantiationException {
-        if (executorClass == ComponentsHttpClientExecutor.class) {
-            return new ComponentsHttpClientExecutor(configuration);
-        }
-        if (executorClass == CommonsHttpClientExecutor.class) {
-            return new CommonsHttpClientExecutor(configuration);
-        }
-        if (executorClass == OkHttpExecutor.class) {
-            return new OkHttpExecutor(configuration);
-        }
-        if (executorClass == JavaExecutor.class) {
-            return new JavaExecutor(configuration);
-        }
-        return executorClass.getConstructor(Configuration.class).newInstance(configuration);
-    }
 }

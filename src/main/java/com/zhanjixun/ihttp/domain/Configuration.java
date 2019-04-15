@@ -1,9 +1,8 @@
 package com.zhanjixun.ihttp.domain;
 
 import com.zhanjixun.ihttp.CookiesStore;
-import com.zhanjixun.ihttp.cookie.CookiesStoreImpl;
-import com.zhanjixun.ihttp.executor.BaseExecutor;
 import com.zhanjixun.ihttp.executor.ComponentsHttpClientExecutor;
+import com.zhanjixun.ihttp.executor.Executor;
 import lombok.Builder;
 import lombok.Data;
 
@@ -21,17 +20,14 @@ public class Configuration {
 
     private boolean cookieEnable = true;
 
-    private String CookiesStoreID = null;
-
     private CookiesStore cookiesStore;
 
-    private Class<? extends BaseExecutor> executor;
+    private Class<? extends Executor> executor;
 
     public static Configuration getDefault() {
         return builder()
                 .proxy(null)
                 .cookieEnable(true)
-                .cookiesStore(new CookiesStoreImpl())
                 .executor(ComponentsHttpClientExecutor.class)
                 .build();
     }
