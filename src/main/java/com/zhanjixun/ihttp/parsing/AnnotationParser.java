@@ -81,7 +81,6 @@ public class AnnotationParser implements Parser {
         ReflectUtils.containsAnnotation(target, Proxy.class, p -> mapper.getConfiguration().setProxy(new HttpProxy(p.hostName(), p.port())));
         ReflectUtils.containsAnnotation(target, HttpExecutor.class, e -> mapper.getConfiguration().setExecutor(e.value()));
         ReflectUtils.containsAnnotation(target, DisableCookie.class, e -> mapper.getConfiguration().setCookieEnable(false));
-        ReflectUtils.containsAnnotation(target, CookieShare.class, e -> mapper.getConfiguration().setCookiesStoreID(e.value()));
 
         ReflectUtils.containsAnnotation(target, URL.class, e -> mapper.setCommonUrl(e.value()));
         //解析请求头
