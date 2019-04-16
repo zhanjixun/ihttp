@@ -84,7 +84,7 @@ public class Response {
         if (text == null) {
             try {
                 if (StringUtils.isBlank(charset)) {
-                    headers.stream().filter(h -> h.getName().equals("Content-Type"))
+                    headers.stream().filter(h -> StringUtils.equals("Content-Type", h.getName()))
                             .map(NameValuePair::getValue).findFirst()
                             .ifPresent(s -> charset = StringUtils.substringAfterLast(s, "charset="));
                 }
