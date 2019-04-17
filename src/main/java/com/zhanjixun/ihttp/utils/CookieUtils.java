@@ -1,6 +1,7 @@
 package com.zhanjixun.ihttp.utils;
 
 import com.zhanjixun.ihttp.domain.Cookie;
+import org.apache.http.impl.cookie.BasicClientCookie;
 import org.springframework.beans.BeanUtils;
 
 import java.util.Date;
@@ -25,11 +26,11 @@ public class CookieUtils {
     }
 
     public static Cookie componentsConvert(org.apache.http.cookie.Cookie originCookie) {
-        return null;
+        return copyProperties(originCookie, new Cookie());
     }
 
     public static org.apache.http.cookie.Cookie componentsConvert(Cookie originCookie) {
-        return null;
+        return copyProperties(originCookie, new BasicClientCookie(originCookie.getName(), originCookie.getValue()));
     }
 
     public static Cookie okhttpConvert(okhttp3.Cookie originCookie) {
