@@ -25,12 +25,16 @@ import org.apache.http.entity.StringEntity;
 import org.apache.http.entity.mime.MultipartEntityBuilder;
 import org.apache.http.impl.client.HttpClientBuilder;
 import org.apache.http.impl.client.HttpClients;
+import org.apache.http.ssl.SSLContextBuilder;
 
 import javax.activation.MimetypesFileTypeMap;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.UnsupportedEncodingException;
+import java.security.KeyManagementException;
+import java.security.KeyStoreException;
+import java.security.NoSuchAlgorithmException;
 import java.util.Arrays;
 import java.util.Date;
 import java.util.List;
@@ -54,13 +58,22 @@ public class ComponentsHttpClientExecutor extends BaseExecutor {
         //代理
         if (configuration.getProxy() != null) {
             builder.setProxy(new HttpHost(configuration.getProxy().getHostName(), configuration.getProxy().getPort()));
+            try {
+                // 信任所有SSL
+                builder.setSSLContext(new SSLContextBuilder().loadTrustMaterial(null, (chain, authType) -> true).build());
+            } catch (NoSuchAlgorithmException | KeyManagementException | KeyStoreException e) {
+                e.printStackTrace();
+            }
         }
         httpClient = builder.build();
     }
 
     @Override
     protected Response doGetMethod(Request request) {
-        HttpGet method = new HttpGet(StrUtils.addQuery(request.getUrl(), request.getParams()));
+        request.setUrl(StrUtils.addQuery(request.getUrl(), request.getParams()));
+        request.getParams().clear();
+
+        HttpGet method = new HttpGet(request.getUrl());
         method.setConfig(RequestConfig.custom().setRedirectsEnabled(request.isFollowRedirects()).build());
         request.getHeaders().forEach(h -> method.addHeader(h.getName(), h.getValue()));
         return executeMethod(method, request);

@@ -25,9 +25,13 @@ public class Request {
 
     private String body;
     private String charset;
-    
+
     private List<NameValuePair> headers = Lists.newArrayList();
     private List<NameValuePair> params = Lists.newArrayList();
     private List<FileParts> fileParts = Lists.newArrayList();
 
+    @Override
+    public String toString() {
+        return getMethod() + " " + url;
+    }
 }
