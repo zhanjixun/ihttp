@@ -3,6 +3,7 @@ package com.zhanjixun.ihttp.binding;
 
 import com.google.common.collect.Maps;
 import com.google.common.reflect.Reflection;
+import com.zhanjixun.ihttp.CookiesStore;
 import com.zhanjixun.ihttp.cookie.CookiesStoreFactory;
 import com.zhanjixun.ihttp.domain.Configuration;
 import com.zhanjixun.ihttp.executor.ComponentsHttpClientExecutor;
@@ -32,12 +33,12 @@ public class MapperProxyFactory<T> {
     public T newInstance() {
         Mapper mapper = cachedMapper(mapperInterface);
         Configuration configuration = mapper.getConfiguration();
-        configuration.setCookiesStore(new CookiesStoreFactory().createCookiesStore(mapperInterface));
 
         Class<? extends Executor> executorClass = ObjectUtils.defaultIfNull(configuration.getExecutor(), ComponentsHttpClientExecutor.class);
 
         try {
-            Executor executor = executorClass.getConstructor(Configuration.class).newInstance(configuration);
+            CookiesStore cookiesStore = new CookiesStoreFactory().createCookiesStore(mapperInterface);
+            Executor executor = executorClass.getConstructor(Configuration.class, CookiesStore.class).newInstance(configuration, cookiesStore);
             MapperProxy mapperProxy = new MapperProxy(mapper, executor);
             return newInstance(mapperProxy);
         } catch (Exception e) {
