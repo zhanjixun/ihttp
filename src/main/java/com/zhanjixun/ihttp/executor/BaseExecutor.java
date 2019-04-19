@@ -14,9 +14,9 @@ public abstract class BaseExecutor implements Executor {
     @Getter
     protected final CookiesStore cookiesStore;
 
-    public BaseExecutor(Configuration configuration) {
+    public BaseExecutor(Configuration configuration, CookiesStore cookiesStore) {
         this.configuration = configuration;
-        cookiesStore = configuration.getCookiesStore();
+        this.cookiesStore = cookiesStore;
     }
 
     @Override

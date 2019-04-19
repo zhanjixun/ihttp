@@ -27,8 +27,9 @@ public class OkHttpExecutor extends BaseExecutor {
 
     private final OkHttpClient okHttpClient;
 
-    public OkHttpExecutor(Configuration configuration) {
-        super(configuration);
+    public OkHttpExecutor(Configuration configuration, CookiesStore cookiesStore) {
+        super(configuration, cookiesStore);
+
         OkHttpClient.Builder builder = new OkHttpClient.Builder();
         builder.cookieJar(new MyCookieJar(cookiesStore));
         builder.connectTimeout(30, TimeUnit.SECONDS);

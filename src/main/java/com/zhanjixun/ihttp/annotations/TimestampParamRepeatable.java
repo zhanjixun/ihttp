@@ -6,14 +6,12 @@ import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
 /**
- * 为一个Mapper接口添加网络代理
+ * @author :zhanjixun
+ * @date : 2019/04/19 09:37
+ * @contact :zhanjixun@qq.com
  */
-@Target({ElementType.TYPE})
+@Target({ElementType.METHOD})
 @Retention(RetentionPolicy.RUNTIME)
-public @interface Proxy {
-
-    String hostName();
-
-    int port();
-
+public @interface TimestampParamRepeatable {
+    TimestampParam[] value() default {};
 }

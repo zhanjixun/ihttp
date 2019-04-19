@@ -1,5 +1,6 @@
 package com.zhanjixun.ihttp.executor;
 
+import com.zhanjixun.ihttp.CookiesStore;
 import com.zhanjixun.ihttp.Request;
 import com.zhanjixun.ihttp.Response;
 import com.zhanjixun.ihttp.domain.Configuration;
@@ -31,8 +32,8 @@ public class JavaExecutor extends BaseExecutor {
 
     private final CookieManager cookieManager = new CookieManager();
 
-    public JavaExecutor(Configuration configuration) {
-        super(configuration);
+    public JavaExecutor(Configuration configuration, CookiesStore cookiesStore) {
+        super(configuration, cookiesStore);
         CookieHandler.setDefault(cookieManager);
     }
 

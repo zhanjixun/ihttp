@@ -5,17 +5,17 @@ import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 
 /**
- * 占位符:在其他注解中使用#{paramName} 然后在java方法参数在添加这个注解 为其他注解替换占位符内容
- * 可以替换URL、StringBody、所有请求头的value以及所有请求参数的value
+ * 随机参数
  *
  * @author :zhanjixun
- * @date : 2018/10/21 0:01
+ * @date : 2019/04/19 09:52
+ * @contact :zhanjixun@qq.com
  */
 @Retention(RetentionPolicy.RUNTIME)
-@Repeatable(RandomPlaceholderRepeatable.class)
-public @interface RandomPlaceholder {
+@Repeatable(RandomParamRepeatable.class)
+public @interface RandomParam {
     /**
-     * 占位符
+     * 参数名
      *
      * @return
      */

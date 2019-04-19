@@ -43,14 +43,13 @@ public class CommonsHttpClientExecutor extends BaseExecutor {
 
     private final HttpClient httpClient = new HttpClient();
 
-    public CommonsHttpClientExecutor(Configuration configuration) {
-        super(configuration);
+    public CommonsHttpClientExecutor(Configuration configuration, CookiesStore cookiesStore) {
+        super(configuration, cookiesStore);
         httpClient.setState(new MyHttpState(cookiesStore));
         //设置代理服务器
         if (configuration.getProxy() != null) {
             httpClient.getHostConfiguration().setProxy(configuration.getProxy().getHostName(), configuration.getProxy().getPort());
         }
-
     }
 
     @Override
@@ -86,8 +85,7 @@ public class CommonsHttpClientExecutor extends BaseExecutor {
                 try {
                     parts[index++] = new FilePart(fileParts.getName(), fileParts.getFilePart());
                 } catch (FileNotFoundException e) {
-                    throw new RuntimeException(String.format("文件不存在：%s[%s]", fileParts.getName(),
-                            fileParts.getFilePart().getAbsolutePath()), e);
+                    throw new RuntimeException(String.format("文件不存在：%s[%s]", fileParts.getName(), fileParts.getFilePart().getAbsolutePath()), e);
                 }
             }
             for (NameValuePair nameValuePair : request.getParams()) {

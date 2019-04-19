@@ -35,8 +35,6 @@ import java.util.Arrays;
 import java.util.Date;
 import java.util.List;
 import java.util.Optional;
-import java.util.concurrent.locks.ReadWriteLock;
-import java.util.concurrent.locks.ReentrantReadWriteLock;
 import java.util.stream.Collectors;
 
 /**
@@ -48,8 +46,8 @@ public class ComponentsHttpClientExecutor extends BaseExecutor {
 
     private final HttpClient httpClient;
 
-    public ComponentsHttpClientExecutor(Configuration configuration) {
-        super(configuration);
+    public ComponentsHttpClientExecutor(Configuration configuration, CookiesStore cookiesStore) {
+        super(configuration, cookiesStore);
         HttpClientBuilder builder = HttpClients.custom();
         //cookie
         builder.setDefaultCookieStore(new MyCookieStore(cookiesStore));
@@ -64,23 +62,16 @@ public class ComponentsHttpClientExecutor extends BaseExecutor {
     protected Response doGetMethod(Request request) {
         HttpGet method = new HttpGet(StrUtils.addQuery(request.getUrl(), request.getParams()));
         method.setConfig(RequestConfig.custom().setRedirectsEnabled(request.isFollowRedirects()).build());
-
-        for (NameValuePair nameValuePair : request.getHeaders()) {
-            method.addHeader(nameValuePair.getName(), nameValuePair.getValue());
-        }
-
+        request.getHeaders().forEach(h -> method.addHeader(h.getName(), h.getValue()));
         return executeMethod(method, request);
     }
 
     @Override
     protected Response doPostMethod(Request request) {
         HttpPost method = new HttpPost(request.getUrl());
-        for (NameValuePair nameValuePair : request.getHeaders()) {
-            method.addHeader(nameValuePair.getName(), nameValuePair.getValue());
-        }
-
+        request.getHeaders().forEach(h -> method.addHeader(h.getName(), h.getValue()));
         //带参数
-        String charset = Optional.ofNullable(request.getCharset()).orElse("utf-8");
+        String charset = Optional.ofNullable(request.getCharset()).orElse("UTF-8");
         String paramString = request.getParams().stream().map(p -> p.getName() + "=" + p.getValue()).collect(Collectors.joining("&"));
         if (StringUtils.isNotBlank(paramString)) {
             method.setEntity(new StringEntity(paramString, ContentType.create("application/x-www-form-urlencoded", charset)));
@@ -103,9 +94,8 @@ public class ComponentsHttpClientExecutor extends BaseExecutor {
         //带文件
         if (CollectionUtils.isNotEmpty(request.getFileParts())) {
             MultipartEntityBuilder builder = MultipartEntityBuilder.create();
-            for (NameValuePair nameValuePair : request.getParams()) {
-                builder.addTextBody(nameValuePair.getName(), nameValuePair.getValue());
-            }
+            request.getParams().forEach(p -> builder.addTextBody(p.getName(), p.getValue()));
+
             for (FileParts fileParts : request.getFileParts()) {
                 File file = fileParts.getFilePart();
 
@@ -127,10 +117,10 @@ public class ComponentsHttpClientExecutor extends BaseExecutor {
             response.setRequest(request);
             response.setStatus(httpResponse.getStatusLine().getStatusCode());
             response.setBody(Okio.buffer(Okio.source(httpResponse.getEntity().getContent())).readByteArray());
-            Arrays.stream(httpResponse.getAllHeaders()).map(h -> new NameValuePair(h.getName(), h.getValue())).forEach(h -> response.getHeaders().add(h));
+            Arrays.stream(httpResponse.getAllHeaders()).forEach(h -> response.getHeaders().add(new NameValuePair(h.getName(), h.getValue())));
             return response;
         } catch (IOException e) {
-            log.error("发送" + request.getMethod() + "请求失败", e);
+            throw new RuntimeException(e);
         } finally {
             if (httpResponse != null && httpResponse.getEntity() != null) {
                 try {
@@ -144,13 +134,11 @@ public class ComponentsHttpClientExecutor extends BaseExecutor {
                 }
             }
         }
-        return null;
     }
 
     class MyCookieStore implements CookieStore {
 
         private CookiesStore cookiesStore;
-        private final ReadWriteLock lock = new ReentrantReadWriteLock();
 
         MyCookieStore(CookiesStore cookiesStore) {
             this.cookiesStore = cookiesStore;

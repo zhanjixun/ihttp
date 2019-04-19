@@ -6,16 +6,17 @@ import java.lang.annotation.RetentionPolicy;
 import java.util.concurrent.TimeUnit;
 
 /**
- * 时间戳占位符
+ * 时间戳参数 添加此注解会为请求添加参数 name=时间戳
  *
  * @author :zhanjixun
- * @date : 2018/11/26 14:52
+ * @date : 2019/04/19 09:36
+ * @contact :zhanjixun@qq.com
  */
 @Retention(RetentionPolicy.RUNTIME)
-@Repeatable(TimestampPlaceholderRepeatable.class)
-public @interface TimestampPlaceholder {
+@Repeatable(TimestampParamRepeatable.class)
+public @interface TimestampParam {
     /**
-     * 需要替换字符的占位符#{name}
+     * 参数名称
      *
      * @return
      */
