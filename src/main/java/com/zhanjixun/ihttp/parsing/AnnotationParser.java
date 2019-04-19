@@ -130,12 +130,22 @@ public class AnnotationParser implements Parser {
 
         //固定参数
         for (Param param : ReflectUtils.getRepeatableAnnotation(method, Param.class)) {
-            String value = param.value();
-            if (param.encode()) {
-                value = StrUtils.URLEncoder(value, mapperMethod.getCharset());
-            }
+            String value = param.encode() ? StrUtils.URLEncoder(param.value(), mapperMethod.getCharset()) : param.value();
             mapperMethod.getParams().add(new NameValuePair(param.name(), value));
         }
+        //随机参数
+        for (RandomParam randomParam : ReflectUtils.getRepeatableAnnotation(method, RandomParam.class)) {
+            String value = RandomStringUtils.random(randomParam.length(), randomParam.chars());
+            value = randomParam.encode() ? StrUtils.URLEncoder(value, mapperMethod.getCharset()) : value;
+
+            mapperMethod.getParams().add(new NameValuePair(randomParam.name(), value));
+        }
+        //时间戳参数
+        for (TimestampParam timestampParam : ReflectUtils.getRepeatableAnnotation(method, TimestampParam.class)) {
+            String value = timestampParam.unit().convert(System.currentTimeMillis(), TimeUnit.MILLISECONDS) + "";
+            mapperMethod.getParams().add(new NameValuePair(timestampParam.name(), value));
+        }
+
         //文件上传
         for (FilePart filePart : ReflectUtils.getRepeatableAnnotation(method, FilePart.class)) {
             mapperMethod.getFileParts().add(new FileParts(filePart.name(), new File(filePart.value())));
