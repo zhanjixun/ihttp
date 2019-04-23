@@ -17,5 +17,5 @@ public class ByteArrayFile {
 
     private long lastModified;
 
-    private String mineType;
+    //private String mineType;
 }

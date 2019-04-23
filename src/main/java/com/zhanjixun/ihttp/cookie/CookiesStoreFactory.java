@@ -27,7 +27,6 @@ public class CookiesStoreFactory {
         if (cookiesStore == null) {
             cookiesStore = new CookiesStoreImpl();
             sMap.put(key, cookiesStore);
-            log.info("Create CookiesStore  " + key);
         }
         return cookiesStore;
     }

@@ -112,7 +112,7 @@ public class ComponentsHttpClientExecutor extends BaseExecutor {
             for (FileParts fileParts : request.getFileParts()) {
                 File file = fileParts.getFilePart();
 
-                String mimeType = new MimetypesFileTypeMap().getContentType(file);
+                String mimeType = new MimetypesFileTypeMap().getContentType(file.getName());
                 ContentType contentType = mimeType != null ? ContentType.create(mimeType) : ContentType.DEFAULT_BINARY;
 
                 builder.addBinaryBody(fileParts.getName(), file, contentType, file.getName());
