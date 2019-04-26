@@ -4,6 +4,8 @@ import com.zhanjixun.ihttp.CookiesStore;
 import com.zhanjixun.ihttp.Request;
 import com.zhanjixun.ihttp.Response;
 
+import java.io.IOException;
+
 /**
  * HTTP执行器
  *
@@ -18,7 +20,7 @@ public interface Executor {
      * @param request
      * @return
      */
-    Response execute(Request request);
+    Response execute(Request request) throws IOException;
 
     /**
      * 获取Cookie接口

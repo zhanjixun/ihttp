@@ -69,7 +69,7 @@ public class ComponentsHttpClientExecutor extends BaseExecutor {
     }
 
     @Override
-    protected Response doGetMethod(Request request) {
+    protected Response doGetMethod(Request request) throws IOException {
         request.setUrl(StrUtils.addQuery(request.getUrl(), request.getParams()));
         request.getParams().clear();
 
@@ -80,7 +80,7 @@ public class ComponentsHttpClientExecutor extends BaseExecutor {
     }
 
     @Override
-    protected Response doPostMethod(Request request) {
+    protected Response doPostMethod(Request request) throws IOException {
         HttpPost method = new HttpPost(request.getUrl());
         request.getHeaders().forEach(h -> method.addHeader(h.getName(), h.getValue()));
         //带参数
@@ -122,7 +122,7 @@ public class ComponentsHttpClientExecutor extends BaseExecutor {
         return executeMethod(method, request);
     }
 
-    private Response executeMethod(HttpRequestBase method, Request request) {
+    private Response executeMethod(HttpRequestBase method, Request request) throws IOException {
         HttpResponse httpResponse = null;
         try {
             httpResponse = httpClient.execute(method);
@@ -132,8 +132,6 @@ public class ComponentsHttpClientExecutor extends BaseExecutor {
             response.setBody(Okio.buffer(Okio.source(httpResponse.getEntity().getContent())).readByteArray());
             Arrays.stream(httpResponse.getAllHeaders()).forEach(h -> response.getHeaders().add(new NameValuePair(h.getName(), h.getValue())));
             return response;
-        } catch (IOException e) {
-            throw new RuntimeException(e);
         } finally {
             if (httpResponse != null && httpResponse.getEntity() != null) {
                 try {

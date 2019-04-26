@@ -53,7 +53,7 @@ public class CommonsHttpClientExecutor extends BaseExecutor {
     }
 
     @Override
-    protected Response doGetMethod(Request request) {
+    protected Response doGetMethod(Request request) throws IOException {
         GetMethod method = new GetMethod(StrUtils.addQuery(request.getUrl(), request.getParams()));
         method.setFollowRedirects(request.isFollowRedirects());
         request.getHeaders().forEach(h -> method.addRequestHeader(h.getName(), h.getValue()));
@@ -61,7 +61,7 @@ public class CommonsHttpClientExecutor extends BaseExecutor {
     }
 
     @Override
-    protected Response doPostMethod(Request request) {
+    protected Response doPostMethod(Request request) throws IOException {
         PostMethod method = new PostMethod(request.getUrl());
         request.getHeaders().forEach(h -> method.addRequestHeader(h.getName(), h.getValue()));
         request.getParams().forEach(p -> method.addParameter(p.getName(), p.getValue()));
@@ -97,7 +97,7 @@ public class CommonsHttpClientExecutor extends BaseExecutor {
         return executeMethod(method, request);
     }
 
-    private Response executeMethod(HttpMethodBase httpMethod, Request request) {
+    private Response executeMethod(HttpMethodBase httpMethod, Request request) throws IOException {
         try {
             long startTime = System.currentTimeMillis();
             int status = httpClient.executeMethod(httpMethod);
@@ -111,8 +111,6 @@ public class CommonsHttpClientExecutor extends BaseExecutor {
 
             //log.info(buildConnectionInfo(startTime, endTime, status, httpMethod).toChromeStyleLog());
             return response;
-        } catch (IOException e) {
-            throw new RuntimeException("HTTP请求失败", e);
         } finally {
             httpMethod.releaseConnection();
         }

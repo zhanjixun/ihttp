@@ -12,6 +12,7 @@ import okhttp3.*;
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
 
+import java.io.IOException;
 import java.net.InetSocketAddress;
 import java.net.Proxy;
 import java.util.List;
@@ -43,7 +44,7 @@ public class OkHttpExecutor extends BaseExecutor {
 
 
     @Override
-    protected Response doPostMethod(Request request) {
+    protected Response doPostMethod(Request request) throws IOException {
         okhttp3.Request.Builder builder = new okhttp3.Request.Builder();
         builder.url(request.getUrl());
         request.getHeaders().forEach(h -> builder.addHeader(h.getName(), h.getValue()));
@@ -68,7 +69,7 @@ public class OkHttpExecutor extends BaseExecutor {
     }
 
     @Override
-    protected Response doGetMethod(Request request) {
+    protected Response doGetMethod(Request request) throws IOException {
         okhttp3.Request.Builder builder = new okhttp3.Request.Builder();
         builder.url(StrUtils.addQuery(request.getUrl(), request.getParams()));
         request.getHeaders().forEach(h -> builder.addHeader(h.getName(), h.getValue()));
@@ -76,24 +77,19 @@ public class OkHttpExecutor extends BaseExecutor {
         return executeMethod(request, builder.build());
     }
 
-    private Response executeMethod(Request request, okhttp3.Request okRequest) {
-        try {
-            okhttp3.Response execute = okHttpClient.newCall(okRequest).execute();
+    private Response executeMethod(Request request, okhttp3.Request okRequest) throws IOException {
+        okhttp3.Response execute = okHttpClient.newCall(okRequest).execute();
 
-            Response response = new Response();
-            response.setRequest(request);
-            response.setStatus(execute.code());
-            response.setBody(execute.body().bytes());
-            for (String n : execute.headers().names()) {
-                for (String v : execute.headers(n)) {
-                    response.getHeaders().add(new NameValuePair(n, v));
-                }
+        Response response = new Response();
+        response.setRequest(request);
+        response.setStatus(execute.code());
+        response.setBody(execute.body().bytes());
+        for (String n : execute.headers().names()) {
+            for (String v : execute.headers(n)) {
+                response.getHeaders().add(new NameValuePair(n, v));
             }
-            return response;
-        } catch (Exception e) {
-            e.printStackTrace();
         }
-        return null;
+        return response;
     }
 
     //https://github.com/franmontiel/PersistentCookieJar

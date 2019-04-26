@@ -7,6 +7,8 @@ import com.zhanjixun.ihttp.domain.Configuration;
 import lombok.Getter;
 import lombok.extern.log4j.Log4j;
 
+import java.io.IOException;
+
 @Log4j
 public abstract class BaseExecutor implements Executor {
 
@@ -20,7 +22,7 @@ public abstract class BaseExecutor implements Executor {
     }
 
     @Override
-    public Response execute(Request request) {
+    public Response execute(Request request) throws IOException {
         Response response;
         switch (request.getMethod()) {
             case "GET":
@@ -36,8 +38,8 @@ public abstract class BaseExecutor implements Executor {
         return response;
     }
 
-    protected abstract Response doGetMethod(Request request);
+    protected abstract Response doGetMethod(Request request) throws IOException;
 
-    protected abstract Response doPostMethod(Request request);
+    protected abstract Response doPostMethod(Request request) throws IOException;
 
 }
