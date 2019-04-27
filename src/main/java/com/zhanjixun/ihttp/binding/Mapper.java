@@ -49,7 +49,7 @@ public class Mapper {
         MapperMethod mapperMethod = methods.get(id);
 
         Request request = new Request();
-        request.setId(mapperInterface.getName() + "." + id);
+        request.setId(mapperInterface.getName() + "#" + id);
         //来自于类上面的注解配置
         request.getHeaders().addAll(commonHeaders);
         request.setUrl(commonUrl);

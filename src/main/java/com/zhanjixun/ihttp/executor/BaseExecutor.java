@@ -6,6 +6,7 @@ import com.zhanjixun.ihttp.Response;
 import com.zhanjixun.ihttp.domain.Configuration;
 import lombok.Getter;
 import lombok.extern.log4j.Log4j;
+import org.apache.commons.lang3.StringUtils;
 
 import java.io.IOException;
 
@@ -34,7 +35,8 @@ public abstract class BaseExecutor implements Executor {
             default:
                 throw new RuntimeException("未能识别的HTTP请求方法：" + request.getMethod());
         }
-        //do something before http execute
+        log.debug(String.join(" ", StringUtils.rightPad(request.getMethod(), 4), String.valueOf(response.getStatus()), request.getUrl()));
+        //do something after http execute
         return response;
     }
 

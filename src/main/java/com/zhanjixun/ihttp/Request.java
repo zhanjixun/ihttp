@@ -4,7 +4,7 @@ import com.google.common.collect.Lists;
 import com.zhanjixun.ihttp.domain.FileParts;
 import com.zhanjixun.ihttp.domain.NameValuePair;
 import lombok.Data;
-import lombok.EqualsAndHashCode;
+import org.apache.commons.lang3.StringUtils;
 
 import java.util.List;
 
@@ -13,7 +13,6 @@ import java.util.List;
  *
  * @author zhanjixun
  */
-@EqualsAndHashCode
 @Data
 public class Request {
 
@@ -21,6 +20,7 @@ public class Request {
 
     private String url;
     private String method;
+
     private boolean followRedirects = true;
 
     private String body;
@@ -32,6 +32,6 @@ public class Request {
 
     @Override
     public String toString() {
-        return getMethod() + " " + url;
+        return StringUtils.rightPad(getMethod(), 5) + " " + url;
     }
 }

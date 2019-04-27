@@ -16,7 +16,6 @@ import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
 import java.util.List;
-import java.util.function.Consumer;
 
 /**
  * http请求结果
@@ -50,36 +49,6 @@ public class Response {
         return status == 404;
     }
 
-    public void ifStatus(int status, Consumer<Response> success) {
-        if (this.status == status) {
-            success.accept(this);
-        }
-    }
-
-    public void ifStatus(int status, Consumer<Response> success, Consumer<Response> fail) {
-        if (this.status == status) {
-            success.accept(this);
-        } else {
-            fail.accept(this);
-        }
-    }
-
-    public void ok(Consumer<Response> success) {
-        ifStatus(200, success);
-    }
-
-    public void ok(Consumer<Response> success, Consumer<Response> fail) {
-        ifStatus(200, success, fail);
-    }
-
-    public void redirect(Consumer<Response> success) {
-        ifStatus(302, success);
-    }
-
-    public void redirect(Consumer<Response> success, Consumer<Response> fail) {
-        ifStatus(302, success, fail);
-    }
-
     public String getText() {
         if (text == null) {
             try {
@@ -88,10 +57,7 @@ public class Response {
                             .map(NameValuePair::getValue).findFirst()
                             .ifPresent(s -> charset = StringUtils.substringAfterLast(s, "charset="));
                 }
-                if (StringUtils.isBlank(charset)) {
-                    charset = "UTF-8";
-                }
-                text = new String(body, charset);
+                text = new String(body, StringUtils.defaultIfBlank(charset, "UTF-8"));
             } catch (UnsupportedEncodingException e) {
                 throw new UnsupportedOperationException(e);
             }
