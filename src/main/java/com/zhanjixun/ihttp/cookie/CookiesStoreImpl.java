@@ -113,7 +113,11 @@ public class CookiesStoreImpl implements CookiesStore {
         if (CollectionUtils.isNotEmpty(getCookies())) {
             try {
                 String string = JSON.toJSONString(getCookies());
-                log.info("cache cookie " + string);
+                //log.info("cache cookie " + string);
+                File parentFile = cacheFile.getParentFile();
+                if (!parentFile.exists()) {
+                    parentFile.mkdirs();
+                }
                 Okio.buffer(Okio.sink(cacheFile)).writeUtf8(string).flush();
             } catch (IOException e) {
                 throw new RuntimeException(e);
@@ -125,7 +129,7 @@ public class CookiesStoreImpl implements CookiesStore {
     public int loadCookieCache(File cacheFile) {
         try {
             String json = Okio.buffer(Okio.source(cacheFile)).readUtf8();
-            log.info("load cookie cache " + json);
+            //log.info("load cookie cache " + json);
             List<Cookie> cookie = JSON.parseArray(json, Cookie.class);
             addCookies(cookie);
             return cookie.size();
