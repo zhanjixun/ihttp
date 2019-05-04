@@ -17,4 +17,5 @@ public class HttpProxy {
 
     private int port;
 
+    private boolean trustSSL;
 }

@@ -5,6 +5,7 @@ import com.zhanjixun.ihttp.Request;
 import com.zhanjixun.ihttp.Response;
 import com.zhanjixun.ihttp.domain.Configuration;
 import com.zhanjixun.ihttp.domain.FileParts;
+import com.zhanjixun.ihttp.domain.HttpProxy;
 import com.zhanjixun.ihttp.domain.NameValuePair;
 import com.zhanjixun.ihttp.utils.CookieUtils;
 import com.zhanjixun.ihttp.utils.StrUtils;
@@ -57,10 +58,12 @@ public class ComponentsHttpClientExecutor extends BaseExecutor {
         builder.setDefaultCookieStore(new MyCookieStore(cookiesStore));
         //代理
         if (configuration.getProxy() != null) {
-            builder.setProxy(new HttpHost(configuration.getProxy().getHostName(), configuration.getProxy().getPort()));
+            HttpProxy proxy = configuration.getProxy();
+            builder.setProxy(new HttpHost(proxy.getHostName(), proxy.getPort()));
             try {
-                // 信任所有SSL
-                builder.setSSLContext(new SSLContextBuilder().loadTrustMaterial(null, (chain, authType) -> true).build());
+                builder.setSSLContext(new SSLContextBuilder()
+                        .loadTrustMaterial(null, (chain, authType) -> proxy.isTrustSSL())
+                        .build());
             } catch (NoSuchAlgorithmException | KeyManagementException | KeyStoreException e) {
                 e.printStackTrace();
             }

@@ -6,6 +6,7 @@ import com.zhanjixun.ihttp.annotations.*;
 
 import java.util.Map;
 
+@CookieShare("id")
 @URL("https://gitee.com")
 @UserAgent("Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/69.0.3497.92 Safari/537.36")
 public interface Gitee extends CookiesStore {

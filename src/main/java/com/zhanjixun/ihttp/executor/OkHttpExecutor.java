@@ -38,6 +38,7 @@ public class OkHttpExecutor extends BaseExecutor {
         if (configuration.getProxy() != null) {
             HttpProxy proxy = configuration.getProxy();
             builder.proxy(new Proxy(Proxy.Type.HTTP, new InetSocketAddress(proxy.getHostName(), configuration.getProxy().getPort())));
+            builder.hostnameVerifier((s, sslSession) -> proxy.isTrustSSL());
         }
         okHttpClient = builder.build();
     }

@@ -9,6 +9,7 @@ import com.zhanjixun.ihttp.executor.JavaExecutor;
  * @author :zhanjixun
  * @date : 2018/10/3 0:22
  */
+@CookieShare("id")
 @UserAgent("zhanjixun@qq.com")
 @HttpExecutor(JavaExecutor.class)
 public interface Hao6v extends CookiesStore {

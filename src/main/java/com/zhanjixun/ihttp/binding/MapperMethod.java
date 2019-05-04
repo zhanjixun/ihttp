@@ -30,4 +30,7 @@ public class MapperMethod {
 
     //动态参数
     private Annotation[] paramMapping;
+
+    //自动生成的参数
+    private Annotation[] generate;
 }

@@ -78,7 +78,7 @@ public class AnnotationParser implements Parser {
     }
 
     private void parseClassAnnotation(Mapper mapper) {
-        ReflectUtils.containsAnnotation(target, Proxy.class, p -> mapper.getConfiguration().setProxy(new HttpProxy(p.hostName(), p.port())));
+        ReflectUtils.containsAnnotation(target, Proxy.class, p -> mapper.getConfiguration().setProxy(new HttpProxy(p.hostName(), p.port(), p.trustSSL())));
         ReflectUtils.containsAnnotation(target, HttpExecutor.class, e -> mapper.getConfiguration().setExecutor(e.value()));
         ReflectUtils.containsAnnotation(target, DisableCookie.class, e -> mapper.getConfiguration().setCookieEnable(false));
 

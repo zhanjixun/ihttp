@@ -34,7 +34,7 @@ public class Mapper {
     @Getter
     private Configuration configuration = Configuration.getDefault();
     //Mapper定义类
-    private Class<?> mapperInterface;
+    private final Class<?> mapperInterface;
     //存放所有方法
     private final Map<String, MapperMethod> methods = Maps.newHashMap();
 
@@ -66,6 +66,8 @@ public class Mapper {
         request.getParams().addAll(mapperMethod.getParams());
         request.getFileParts().addAll(mapperMethod.getFileParts());
 
+        //绑定实时生成的内容
+        // bingGenerate();
         //绑定动态参数
         bindingParameter(request, mapperMethod.getParamMapping(), args);
         //替换占位符
@@ -130,6 +132,13 @@ public class Mapper {
         }
     }
 
+    /**
+     * 绑定动态参数
+     *
+     * @param request
+     * @param parameterMapping
+     * @param args
+     */
     private void bindingParameter(Request request, Annotation[] parameterMapping, Object... args) {
         if (ArrayUtils.isEmpty(parameterMapping)) {
             return;
