@@ -20,6 +20,7 @@ public class MapperMethod {
     private String url;
     private String method;
     private String charset;
+    private String responseCharset;
     private String stringBody;
 
     private boolean followRedirects = true;
@@ -28,10 +29,9 @@ public class MapperMethod {
     private List<NameValuePair> params = Lists.newArrayList();
     private List<FileParts> fileParts = Lists.newArrayList();
 
-    //动态参数
-    private Annotation[] paramMapping;
-
     //自动生成的参数
     private Annotation[] generate;
 
+    //动态参数
+    private Annotation[] paramMapping;
 }

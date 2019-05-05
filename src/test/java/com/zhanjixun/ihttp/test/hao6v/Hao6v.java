@@ -18,6 +18,7 @@ public interface Hao6v extends CookiesStore {
     @TimestampParam(name = "a")
     @RandomParam(name = "b", length = 6)
     @AssertStatusCode(200)
+    @ResponseCharset("GB2312")
     Response gvod();
 
 }

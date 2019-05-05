@@ -12,7 +12,6 @@ import java.util.List;
  *
  * @author :zhanjixun
  * @date : 2018/9/28 13:41
- * @see org.springframework.beans.BeanUtils
  */
 public interface CookiesStore {
     /**

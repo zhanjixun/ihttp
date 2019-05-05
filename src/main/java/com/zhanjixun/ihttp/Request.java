@@ -27,6 +27,8 @@ public class Request {
     private String body;
     //请求字符编码
     private String charset;
+    //指定响应字符编码
+    private String responseCharset;
 
     //请求头
     private List<NameValuePair> headers = Lists.newArrayList();

@@ -106,6 +106,7 @@ public class CommonsHttpClientExecutor extends BaseExecutor {
             Response response = new Response();
             response.setRequest(request);
             response.setStatus(status);
+            response.setCharset(request.getResponseCharset());
             response.setBody(Okio.buffer(Okio.source(httpMethod.getResponseBodyAsStream())).readByteArray());
             Stream.of(httpMethod.getResponseHeaders()).forEach(h -> response.getHeaders().add(new NameValuePair(h.getName(), h.getValue())));
 

@@ -113,6 +113,8 @@ public class AnnotationParser implements Parser {
         if (annotation instanceof POST) {
             mapperMethod.setCharset(((POST) httpMethod.get(0)).charset());
         }
+        //返回值编码
+        ReflectUtils.containsAnnotation(method, ResponseCharset.class, a -> mapperMethod.setResponseCharset(a.value()));
 
         //解析方法形参
         Parameter[] parameters = method.getParameters();

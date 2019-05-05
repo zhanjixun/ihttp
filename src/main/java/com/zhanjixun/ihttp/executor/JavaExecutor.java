@@ -121,6 +121,7 @@ public class JavaExecutor extends BaseExecutor {
 
             Response response = new Response();
             response.setRequest(request);
+            response.setCharset(request.getResponseCharset());
             response.setStatus(connection.getResponseCode());
             //返回请求头
             connection.getHeaderFields().entrySet().stream()

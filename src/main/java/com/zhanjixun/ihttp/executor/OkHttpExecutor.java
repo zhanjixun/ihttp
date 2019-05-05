@@ -83,6 +83,7 @@ public class OkHttpExecutor extends BaseExecutor {
 
         Response response = new Response();
         response.setRequest(request);
+        response.setCharset(request.getResponseCharset());
         response.setStatus(execute.code());
         response.setBody(execute.body().bytes());
         for (String n : execute.headers().names()) {

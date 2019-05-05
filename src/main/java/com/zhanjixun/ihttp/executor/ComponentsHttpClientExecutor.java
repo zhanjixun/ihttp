@@ -131,6 +131,7 @@ public class ComponentsHttpClientExecutor extends BaseExecutor {
             httpResponse = httpClient.execute(method);
             Response response = new Response();
             response.setRequest(request);
+            response.setCharset(request.getResponseCharset());
             response.setStatus(httpResponse.getStatusLine().getStatusCode());
             response.setBody(Okio.buffer(Okio.source(httpResponse.getEntity().getContent())).readByteArray());
             Arrays.stream(httpResponse.getAllHeaders()).forEach(h -> response.getHeaders().add(new NameValuePair(h.getName(), h.getValue())));

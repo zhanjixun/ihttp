@@ -56,6 +56,7 @@ public class Mapper {
         request.getHeaders().addAll(commonHeaders);
         request.setUrl(commonUrl);
         request.setCharset(mapperMethod.getCharset());
+        request.setResponseCharset(mapperMethod.getResponseCharset());
 
         //来自于方法上面的注解配置
         request.setUrl(buildUrl(request.getUrl(), mapperMethod.getUrl()));
