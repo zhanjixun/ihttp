@@ -14,6 +14,7 @@ import com.zhanjixun.ihttp.utils.StrUtils;
 import lombok.Data;
 import lombok.Getter;
 import org.apache.commons.lang3.ArrayUtils;
+import org.apache.commons.lang3.RandomStringUtils;
 import org.apache.commons.lang3.StringUtils;
 
 import java.io.File;
@@ -21,6 +22,7 @@ import java.lang.annotation.Annotation;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.TimeUnit;
 
 import static com.zhanjixun.ihttp.parsing.AnnotationParser.HEADER_ANNOTATIONS;
 
@@ -67,7 +69,7 @@ public class Mapper {
         request.getFileParts().addAll(mapperMethod.getFileParts());
 
         //绑定实时生成的内容
-        // bingGenerate();
+        bingGenerate(request, mapperMethod.getGenerate());
         //绑定动态参数
         bindingParameter(request, mapperMethod.getParamMapping(), args);
         //替换占位符
@@ -76,9 +78,47 @@ public class Mapper {
         return request;
     }
 
+    private void bingGenerate(Request request, Annotation[] generate) {
+        //随机码占位符
+        Map<String, String> replacementMap = Maps.newHashMap();
+        for (Annotation annotation : generate) {
+            //随机参数
+            if (annotation.annotationType() == RandomParam.class) {
+                RandomParam randomParam = (RandomParam) annotation;
+                String value = RandomStringUtils.random(randomParam.length(), randomParam.chars());
+                value = randomParam.encode() ? StrUtils.URLEncoder(value, request.getCharset()) : value;
+
+                request.getParams().add(new NameValuePair(randomParam.name(), value));
+            }
+            //时间戳参数
+            if (annotation.annotationType() == TimestampParam.class) {
+                TimestampParam timestampParam = (TimestampParam) annotation;
+                String value = timestampParam.unit().convert(System.currentTimeMillis(), TimeUnit.MILLISECONDS) + "";
+
+                request.getParams().add(new NameValuePair(timestampParam.name(), value));
+            }
+            //随机占位符
+            if (annotation.annotationType() == RandomPlaceholder.class) {
+                RandomPlaceholder randomPlaceholder = (RandomPlaceholder) annotation;
+                String target = String.format("#{%s}", randomPlaceholder.name());
+                String value = RandomStringUtils.random(randomPlaceholder.length(), randomPlaceholder.chars());
+                replacementMap.put(target, value);
+            }
+            //时间戳占位符
+            if (annotation.annotationType() == TimestampPlaceholder.class) {
+                TimestampPlaceholder timestampPlaceholder = (TimestampPlaceholder) annotation;
+                String target = String.format("#{%s}", timestampPlaceholder.name());
+                String value = timestampPlaceholder.unit().convert(System.currentTimeMillis(), TimeUnit.MILLISECONDS) + "";
+                replacementMap.put(target, value);
+            }
+        }
+        replace(request, replacementMap);
+    }
+
     public void addMethod(String name, MapperMethod mapperMethod) {
         methods.put(name, mapperMethod);
     }
+
 
     /**
      * 替换占位符
@@ -91,7 +131,7 @@ public class Mapper {
         if (Arrays.stream(parameterMapping).noneMatch(d -> d.annotationType() == Placeholder.class)) {
             return;
         }
-
+        Map<String, String> replacementMap = Maps.newHashMap();
         for (int i = 0; i < parameterMapping.length; i++) {
             Annotation annotation = parameterMapping[i];
             Class<? extends Annotation> annotationType = annotation.annotationType();
@@ -100,6 +140,7 @@ public class Mapper {
             if (annotationType != Placeholder.class) {
                 continue;
             }
+
             String placeholder = ((Placeholder) annotation).value();
             Preconditions.checkArgument(StringUtils.isNotBlank(placeholder), String.format("占位符为空 %s 参数索引 %d", request.getId(), i));
 
@@ -112,24 +153,14 @@ public class Mapper {
                 value = (String) arg;
             }
             if (value == null) {
-                throw new RuntimeException(target + "的替换值为null");
+                throw new NullPointerException(target + "的替换值为null");
             }
             if (((Placeholder) annotation).encode()) {
                 value = StrUtils.URLEncoder(value, request.getCharset());
             }
-            //搜索URL
-            request.setUrl(request.getUrl().replace(target, value));
-            //搜索Body
-            request.setBody(StringUtils.replace(request.getBody(), target, value));
-            //搜索Header
-            for (NameValuePair nameValuePair : request.getHeaders()) {
-                nameValuePair.setValue(nameValuePair.getValue().replace(target, value));
-            }
-            //搜索Params
-            for (NameValuePair nameValuePair : request.getParams()) {
-                nameValuePair.setValue(nameValuePair.getValue().replace(target, value));
-            }
+            replacementMap.put(target, value);
         }
+        replace(request, replacementMap);
     }
 
     /**
@@ -187,6 +218,23 @@ public class Mapper {
             }
             HEADER_ANNOTATIONS.entrySet().stream().filter(entry -> annotationType == entry.getValue()).forEach(entry -> request.getHeaders().add(new NameValuePair(entry.getKey(), (String) arg)));
         }
+    }
+
+    private void replace(Request request, Map<String, String> replacementMap) {
+        replacementMap.forEach((target, replacement) -> {
+            //替换URL
+            request.setUrl(StringUtils.replace(request.getUrl(), target, replacement));
+            //替换Body
+            request.setBody(StringUtils.replace(request.getBody(), target, replacement));
+            //替换请求头
+            for (NameValuePair nameValuePair : request.getHeaders()) {
+                nameValuePair.setValue(StringUtils.replace(nameValuePair.getValue(), target, replacement));
+            }
+            //替换请求参数
+            for (NameValuePair nameValuePair : request.getParams()) {
+                nameValuePair.setValue(StringUtils.replace(nameValuePair.getValue(), target, replacement));
+            }
+        });
     }
 
     private String buildUrl(String a, String b) {

@@ -33,4 +33,5 @@ public class MapperMethod {
 
     //自动生成的参数
     private Annotation[] generate;
+
 }

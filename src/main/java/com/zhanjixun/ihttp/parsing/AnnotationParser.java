@@ -12,8 +12,6 @@ import com.zhanjixun.ihttp.utils.ReflectUtils;
 import com.zhanjixun.ihttp.utils.StrUtils;
 import lombok.extern.log4j.Log4j;
 import org.apache.commons.collections.CollectionUtils;
-import org.apache.commons.lang3.RandomStringUtils;
-import org.apache.commons.lang3.StringUtils;
 
 import java.io.File;
 import java.lang.annotation.Annotation;
@@ -24,7 +22,6 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
-import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
 /**
@@ -39,6 +36,7 @@ public class AnnotationParser implements Parser {
     public static final Map<String, Class<? extends Annotation>> HEADER_ANNOTATIONS = Maps.newHashMap();
     public static final List<Class<? extends Annotation>> HTTP_METHOD_ANNOTATIONS = Lists.newArrayList();
     public static final List<Class<? extends Annotation>> PARAMETER_ANNOTATIONS = Lists.newArrayList();
+    public static final List<Class<? extends Annotation>> GENERATE_ANNOTATIONS = Lists.newArrayList();
 
     static {
         HEADER_ANNOTATIONS.put("Accept", Accept.class);
@@ -61,6 +59,11 @@ public class AnnotationParser implements Parser {
         PARAMETER_ANNOTATIONS.add(ParamMap.class);
         PARAMETER_ANNOTATIONS.add(Placeholder.class);
         PARAMETER_ANNOTATIONS.addAll(HEADER_ANNOTATIONS.values());
+
+        GENERATE_ANNOTATIONS.add(RandomParam.class);
+        GENERATE_ANNOTATIONS.add(TimestampParam.class);
+        GENERATE_ANNOTATIONS.add(RandomPlaceholder.class);
+        GENERATE_ANNOTATIONS.add(TimestampPlaceholder.class);
     }
 
     public AnnotationParser(Class<?> target) {
@@ -125,6 +128,8 @@ public class AnnotationParser implements Parser {
         }
         mapperMethod.setParamMapping(parameterAMapping);
 
+        mapperMethod.setGenerate(GENERATE_ANNOTATIONS.stream().flatMap(a -> ReflectUtils.getRepeatableAnnotation(method, a).stream()).toArray(Annotation[]::new));
+
         //请求头
         mapperMethod.getHeaders().addAll(parseHeader(method));
 
@@ -133,54 +138,13 @@ public class AnnotationParser implements Parser {
             String value = param.encode() ? StrUtils.URLEncoder(param.value(), mapperMethod.getCharset()) : param.value();
             mapperMethod.getParams().add(new NameValuePair(param.name(), value));
         }
-        //随机参数
-        for (RandomParam randomParam : ReflectUtils.getRepeatableAnnotation(method, RandomParam.class)) {
-            String value = RandomStringUtils.random(randomParam.length(), randomParam.chars());
-            value = randomParam.encode() ? StrUtils.URLEncoder(value, mapperMethod.getCharset()) : value;
-
-            mapperMethod.getParams().add(new NameValuePair(randomParam.name(), value));
-        }
-        //时间戳参数
-        for (TimestampParam timestampParam : ReflectUtils.getRepeatableAnnotation(method, TimestampParam.class)) {
-            String value = timestampParam.unit().convert(System.currentTimeMillis(), TimeUnit.MILLISECONDS) + "";
-            mapperMethod.getParams().add(new NameValuePair(timestampParam.name(), value));
-        }
-
         //文件上传
         for (FilePart filePart : ReflectUtils.getRepeatableAnnotation(method, FilePart.class)) {
             mapperMethod.getFileParts().add(new FileParts(filePart.name(), new File(filePart.value())));
         }
-
         //直接请求体
         mapperMethod.setStringBody(method.getAnnotation(StringBody.class) == null ? null : method.getAnnotation(StringBody.class).value());
 
-        //随机码占位符
-        Map<String, String> replacementMap = Maps.newHashMap();
-        for (RandomPlaceholder randomPlaceholder : ReflectUtils.getRepeatableAnnotation(method, RandomPlaceholder.class)) {
-            String target = String.format("#{%s}", randomPlaceholder.name());
-            String value = RandomStringUtils.random(randomPlaceholder.length(), randomPlaceholder.chars());
-            replacementMap.put(target, value);
-        }
-        //时间戳占位符
-        for (TimestampPlaceholder timestampPlaceholder : ReflectUtils.getRepeatableAnnotation(method, TimestampPlaceholder.class)) {
-            String target = String.format("#{%s}", timestampPlaceholder.name());
-            String value = timestampPlaceholder.unit().convert(System.currentTimeMillis(), TimeUnit.MILLISECONDS) + "";
-            replacementMap.put(target, value);
-        }
-        replacementMap.forEach((target, replacement) -> {
-            //替换URL
-            mapperMethod.setUrl(StringUtils.replace(mapperMethod.getUrl(), target, replacement));
-            //替换StringBody
-            mapperMethod.setStringBody(StringUtils.replace(mapperMethod.getStringBody(), target, replacement));
-            //替换请求头
-            for (NameValuePair nameValuePair : mapperMethod.getHeaders()) {
-                nameValuePair.setValue(StringUtils.replace(nameValuePair.getValue(), target, replacement));
-            }
-            //替换请求参数
-            for (NameValuePair nameValuePair : mapperMethod.getParams()) {
-                nameValuePair.setValue(StringUtils.replace(nameValuePair.getValue(), target, replacement));
-            }
-        });
         return mapperMethod;
     }
 
