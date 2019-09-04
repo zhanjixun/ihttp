@@ -12,7 +12,7 @@ import java.lang.annotation.Target;
  */
 @Target({ElementType.TYPE})
 @Retention(RetentionPolicy.RUNTIME)
-public @interface SwitchURL {
+public @interface BalanceURL {
 
     String[] value() default {};
 
