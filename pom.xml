@@ -4,11 +4,12 @@
     <groupId>com.github.zhanjixun</groupId>
     <artifactId>ihttp</artifactId>
     <version>1.0</version>
-    <name>ihttp</name>
     <packaging>jar</packaging>
-    <url>https://github.com/zhanjixun/ihttp</url>
+
+    <name>ihttp</name>
 
     <description>A http tool based on annotation.</description>
+    <url>https://github.com/zhanjixun/ihttp</url>
 
     <licenses>
         <license>
@@ -18,9 +19,9 @@
     </licenses>
 
     <scm>
-        <url>https://github.com/zhanjixun/ihttp</url>
-        <connection>https://github.com/zhanjixun/ihttp.git</connection>
-        <developerConnection>https://github.com/zhanjixun/ihttp</developerConnection>
+        <url>git@github.com:zhanjixun/ihttp.git</url>
+        <connection>scm:git:git@github.com:zhanjixun/ihttp.git</connection>
+        <developerConnection>scm:git:git@github.com:zhanjixun/ihttp.git</developerConnection>
     </scm>
 
     <developers>
@@ -55,7 +56,7 @@
         <dependency>
             <groupId>com.alibaba</groupId>
             <artifactId>fastjson</artifactId>
-            <version>1.2.31</version>
+            <version>1.2.60</version>
         </dependency>
         <dependency>
             <groupId>org.jsoup</groupId>
@@ -134,7 +135,6 @@
                 </configuration>
             </plugin>
             <plugin>
-                <!--一起install源码-->
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-source-plugin</artifactId>
                 <executions>
@@ -148,5 +148,16 @@
             </plugin>
         </plugins>
     </build>
+
+    <distributionManagement>
+        <snapshotRepository>
+            <id>oss</id>
+            <url>https://oss.sonatype.org/content/repositories/snapshots/</url>
+        </snapshotRepository>
+        <repository>
+            <id>oss</id>
+            <url>https://oss.sonatype.org/service/local/staging/deploy/maven2/</url>
+        </repository>
+    </distributionManagement>
 
 </project>
