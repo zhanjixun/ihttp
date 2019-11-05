@@ -1,8 +1,6 @@
 package com.zhanjixun.ihttp.annotations;
 
-import java.lang.annotation.Repeatable;
-import java.lang.annotation.Retention;
-import java.lang.annotation.RetentionPolicy;
+import java.lang.annotation.*;
 
 /**
  * 注解在参数上 参数类型必须为File或者String
@@ -11,10 +9,18 @@ import java.lang.annotation.RetentionPolicy;
  * @see com.zhanjixun.ihttp.domain.ByteArrayFile
  */
 @Retention(RetentionPolicy.RUNTIME)
-@Repeatable(FilePartRepeatable.class)
+@Repeatable(FilePart.List.class)
 public @interface FilePart {
 
-    String name();
+	String name();
 
-    String value() default "";
+	String value() default "";
+
+	//指定多个时使用
+	@Target({ElementType.METHOD})
+	@Retention(RetentionPolicy.RUNTIME)
+	@Documented
+	@interface List {
+		FilePart[] value();
+	}
 }

@@ -1,8 +1,6 @@
 package com.zhanjixun.ihttp.annotations;
 
-import java.lang.annotation.Repeatable;
-import java.lang.annotation.Retention;
-import java.lang.annotation.RetentionPolicy;
+import java.lang.annotation.*;
 import java.util.concurrent.TimeUnit;
 
 /**
@@ -13,19 +11,27 @@ import java.util.concurrent.TimeUnit;
  * @contact :zhanjixun@qq.com
  */
 @Retention(RetentionPolicy.RUNTIME)
-@Repeatable(TimestampParamRepeatable.class)
+@Repeatable(TimestampParam.List.class)
 public @interface TimestampParam {
-    /**
-     * 参数名称
-     *
-     * @return
-     */
-    String name();
+	/**
+	 * 参数名称
+	 *
+	 * @return
+	 */
+	String name();
 
-    /**
-     * 时间单位
-     *
-     * @return
-     */
-    TimeUnit unit() default TimeUnit.MILLISECONDS;
+	/**
+	 * 时间单位
+	 *
+	 * @return
+	 */
+	TimeUnit unit() default TimeUnit.MILLISECONDS;
+
+	//指定多个时使用
+	@Target({ElementType.METHOD})
+	@Retention(RetentionPolicy.RUNTIME)
+	@Documented
+	@interface List {
+		TimestampParam[] value();
+	}
 }

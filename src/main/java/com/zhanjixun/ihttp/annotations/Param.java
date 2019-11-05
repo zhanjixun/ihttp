@@ -1,8 +1,6 @@
 package com.zhanjixun.ihttp.annotations;
 
-import java.lang.annotation.Repeatable;
-import java.lang.annotation.Retention;
-import java.lang.annotation.RetentionPolicy;
+import java.lang.annotation.*;
 
 /**
  * 使用在参数上时 参数类型需为String
@@ -10,19 +8,27 @@ import java.lang.annotation.RetentionPolicy;
  * @author zhanjixun
  */
 @Retention(RetentionPolicy.RUNTIME)
-@Repeatable(ParamRepeatable.class)
+@Repeatable(Param.List.class)
 public @interface Param {
 
-    String name();
+	String name();
 
-    String value() default "";
+	String value() default "";
 
-    /**
-     * 是否进行编码
-     *
-     * @return
-     * @see GET#charset()
-     * @see POST#charset()
-     */
-    boolean encode() default false;
+	/**
+	 * 是否进行编码
+	 *
+	 * @return
+	 * @see GET#charset()
+	 * @see POST#charset()
+	 */
+	boolean encode() default false;
+
+	//指定多个时使用
+	@Target({ElementType.METHOD})
+	@Retention(RetentionPolicy.RUNTIME)
+	@Documented
+	@interface List {
+		Param[] value();
+	}
 }

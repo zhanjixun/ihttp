@@ -1,8 +1,6 @@
 package com.zhanjixun.ihttp.annotations;
 
-import java.lang.annotation.Repeatable;
-import java.lang.annotation.Retention;
-import java.lang.annotation.RetentionPolicy;
+import java.lang.annotation.*;
 import java.util.concurrent.TimeUnit;
 
 /**
@@ -12,19 +10,27 @@ import java.util.concurrent.TimeUnit;
  * @date : 2018/11/26 14:52
  */
 @Retention(RetentionPolicy.RUNTIME)
-@Repeatable(TimestampPlaceholderRepeatable.class)
+@Repeatable(TimestampPlaceholder.List.class)
 public @interface TimestampPlaceholder {
-    /**
-     * 需要替换字符的占位符#{name}
-     *
-     * @return
-     */
-    String name();
+	/**
+	 * 需要替换字符的占位符#{name}
+	 *
+	 * @return
+	 */
+	String name();
 
-    /**
-     * 时间单位
-     *
-     * @return
-     */
-    TimeUnit unit() default TimeUnit.MILLISECONDS;
+	/**
+	 * 时间单位
+	 *
+	 * @return
+	 */
+	TimeUnit unit() default TimeUnit.MILLISECONDS;
+
+	//指定多个时使用
+	@Target({ElementType.METHOD})
+	@Retention(RetentionPolicy.RUNTIME)
+	@Documented
+	@interface List {
+		TimestampPlaceholder[] value();
+	}
 }
