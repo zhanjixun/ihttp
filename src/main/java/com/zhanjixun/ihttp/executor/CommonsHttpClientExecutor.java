@@ -41,144 +41,154 @@ import java.util.stream.Stream;
 @Log4j
 public class CommonsHttpClientExecutor extends BaseExecutor {
 
-    private final HttpClient httpClient = new HttpClient();
+	private final HttpClient httpClient = new HttpClient();
 
-    public CommonsHttpClientExecutor(Configuration configuration, CookiesStore cookiesStore) {
-        super(configuration, cookiesStore);
-        httpClient.setState(new MyHttpState(cookiesStore));
-        //设置代理服务器
-        if (configuration.getProxy() != null) {
-            httpClient.getHostConfiguration().setProxy(configuration.getProxy().getHostName(), configuration.getProxy().getPort());
-        }
-    }
+	public CommonsHttpClientExecutor(Configuration configuration, CookiesStore cookiesStore) {
+		super(configuration, cookiesStore);
+		httpClient.setState(new MyHttpState(cookiesStore));
+		//设置代理服务器
+		if (configuration.getProxy() != null) {
+			httpClient.getHostConfiguration().setProxy(configuration.getProxy().getHostName(), configuration.getProxy().getPort());
+		}
+	}
 
-    @Override
-    protected Response doGetMethod(Request request) throws IOException {
-        GetMethod method = new GetMethod(StrUtils.addQuery(request.getUrl(), request.getParams()));
-        method.setFollowRedirects(request.isFollowRedirects());
-        request.getHeaders().forEach(h -> method.addRequestHeader(h.getName(), h.getValue()));
-        return executeMethod(method, request);
-    }
+	@Override
+	protected Response doGetMethod(Request request) throws IOException {
+		GetMethod method = new GetMethod(StrUtils.addQuery(request.getUrl(), request.getParams()));
+		method.setFollowRedirects(request.isFollowRedirects());
+		request.getHeaders().forEach(h -> method.addRequestHeader(h.getName(), h.getValue()));
+		return executeMethod(method, request);
+	}
 
-    @Override
-    protected Response doPostMethod(Request request) throws IOException {
-        PostMethod method = new PostMethod(request.getUrl());
-        request.getHeaders().forEach(h -> method.addRequestHeader(h.getName(), h.getValue()));
-        request.getParams().forEach(p -> method.addParameter(p.getName(), p.getValue()));
+	@Override
+	protected Response doPostMethod(Request request) throws IOException {
+		PostMethod method = new PostMethod(request.getUrl());
+		request.getHeaders().forEach(h -> method.addRequestHeader(h.getName(), h.getValue()));
+		request.getParams().forEach(p -> method.addParameter(p.getName(), p.getValue()));
 
-        //直接请求体
-        if (StringUtils.isNotBlank(request.getBody())) {
-            String contentType = Optional.ofNullable(method.getRequestHeader("Content-Type"))
-                    .orElse(new Header("", "application/json")).getValue();
-            try {
-                method.setRequestEntity(new StringRequestEntity(request.getBody(), contentType, request.getCharset()));
-            } catch (UnsupportedEncodingException e) {
-                e.printStackTrace();
-            }
-        }
+		//直接请求体
+		if (StringUtils.isNotBlank(request.getBody())) {
+			String contentType = Optional.ofNullable(method.getRequestHeader("Content-Type"))
+					.orElse(new Header("", "application/json")).getValue();
+			try {
+				method.setRequestEntity(new StringRequestEntity(request.getBody(), contentType, request.getCharset()));
+			} catch (UnsupportedEncodingException e) {
+				e.printStackTrace();
+			}
+		}
 
-        //文件上传
-        if (CollectionUtils.isNotEmpty(request.getFileParts())) {
-            Part[] parts = new Part[request.getFileParts().size() + request.getParams().size()];
-            int index = 0;
-            for (FileParts fileParts : request.getFileParts()) {
-                try {
-                    parts[index++] = new FilePart(fileParts.getName(), fileParts.getFilePart());
-                } catch (FileNotFoundException e) {
-                    throw new RuntimeException(String.format("文件不存在：%s[%s]", fileParts.getName(), fileParts.getFilePart().getAbsolutePath()), e);
-                }
-            }
-            for (NameValuePair nameValuePair : request.getParams()) {
-                parts[index++] = new StringPart(nameValuePair.getName(), nameValuePair.getValue(), request.getCharset());
-            }
-            method.setRequestEntity(new MultipartRequestEntity(parts, method.getParams()));
-        }
+		//文件上传
+		if (CollectionUtils.isNotEmpty(request.getFileParts())) {
+			Part[] parts = new Part[request.getFileParts().size() + request.getParams().size()];
+			int index = 0;
+			for (FileParts fileParts : request.getFileParts()) {
+				try {
+					parts[index++] = new FilePart(fileParts.getName(), fileParts.getFilePart());
+				} catch (FileNotFoundException e) {
+					throw new RuntimeException(String.format("文件不存在：%s[%s]", fileParts.getName(), fileParts.getFilePart().getAbsolutePath()), e);
+				}
+			}
+			for (NameValuePair nameValuePair : request.getParams()) {
+				parts[index++] = new StringPart(nameValuePair.getName(), nameValuePair.getValue(), request.getCharset());
+			}
+			method.setRequestEntity(new MultipartRequestEntity(parts, method.getParams()));
+		}
 
-        return executeMethod(method, request);
-    }
+		return executeMethod(method, request);
+	}
 
-    private Response executeMethod(HttpMethodBase httpMethod, Request request) throws IOException {
-        try {
-            long startTime = System.currentTimeMillis();
-            int status = httpClient.executeMethod(httpMethod);
-            long endTime = System.currentTimeMillis();
+	@Override
+	protected Response doDeleteMethod(Request request) throws IOException {
+		return null;
+	}
 
-            Response response = new Response();
-            response.setRequest(request);
-            response.setStatus(status);
-            response.setCharset(request.getResponseCharset());
-            response.setBody(Okio.buffer(Okio.source(httpMethod.getResponseBodyAsStream())).readByteArray());
-            Stream.of(httpMethod.getResponseHeaders()).forEach(h -> response.getHeaders().add(new NameValuePair(h.getName(), h.getValue())));
+	@Override
+	protected Response doPutMethod(Request request) throws IOException {
+		return null;
+	}
 
-            //log.info(buildConnectionInfo(startTime, endTime, status, httpMethod).toChromeStyleLog());
-            return response;
-        } finally {
-            httpMethod.releaseConnection();
-        }
-    }
+	private Response executeMethod(HttpMethodBase httpMethod, Request request) throws IOException {
+		try {
+			long startTime = System.currentTimeMillis();
+			int status = httpClient.executeMethod(httpMethod);
+			long endTime = System.currentTimeMillis();
 
-    private ConnectionInfo buildConnectionInfo(long startTime, long endTime, int status, HttpMethodBase httpMethod) {
-        try {
-            ConnectionInfo connectionInfo = ConnectionInfo.builder()
-                    .url(httpMethod.getURI().getURI())
-                    .statusCode(status)
-                    .statusLine(httpMethod.getStatusLine().toString())
-                    .statusText(httpMethod.getStatusText())
-                    .requestHeaders(Arrays.stream(httpMethod.getRequestHeaders()).map(d -> new NameValuePair(d.getName(), d.getValue())).collect(Collectors.toList()))
-                    .responseHeaders(Arrays.stream(httpMethod.getResponseHeaders()).map(d -> new NameValuePair(d.getName(), d.getValue())).collect(Collectors.toList()))
-                    .startTime(startTime)
-                    .endTime(endTime)
-                    .build();
+			Response response = new Response();
+			response.setRequest(request);
+			response.setStatus(status);
+			response.setCharset(request.getResponseCharset());
+			response.setBody(Okio.buffer(Okio.source(httpMethod.getResponseBodyAsStream())).readByteArray());
+			Stream.of(httpMethod.getResponseHeaders()).forEach(h -> response.getHeaders().add(new NameValuePair(h.getName(), h.getValue())));
 
-            if (httpMethod instanceof GetMethod) {
-                connectionInfo.setMethod("GET");
-                if (StringUtils.isNotBlank(httpMethod.getQueryString())) {
-                    Stream.of(httpMethod.getQueryString().split("&")).forEach(s -> connectionInfo.getParams().add(new NameValuePair(s.split("=")[0], s.split("=")[1])));
-                }
-            }
-            if (httpMethod instanceof PostMethod) {
-                PostMethod postMethod = (PostMethod) httpMethod;
-                connectionInfo.setMethod("POST");
-                RequestEntity requestEntity = postMethod.getRequestEntity();
-                if (requestEntity instanceof StringRequestEntity) {
-                    connectionInfo.setStringBody(((StringRequestEntity) requestEntity).getContent());
-                }
-                Stream.of(postMethod.getParameters()).forEach(h -> connectionInfo.getParams().add(new NameValuePair(h.getName(), h.getValue())));
-            }
-            return connectionInfo;
-        } catch (URIException e) {
-            e.printStackTrace();
-        }
-        return null;
-    }
+			//log.info(buildConnectionInfo(startTime, endTime, status, httpMethod).toChromeStyleLog());
+			return response;
+		} finally {
+			httpMethod.releaseConnection();
+		}
+	}
 
-    class MyHttpState extends HttpState {
+	private ConnectionInfo buildConnectionInfo(long startTime, long endTime, int status, HttpMethodBase httpMethod) {
+		try {
+			ConnectionInfo connectionInfo = ConnectionInfo.builder()
+					.url(httpMethod.getURI().getURI())
+					.statusCode(status)
+					.statusLine(httpMethod.getStatusLine().toString())
+					.statusText(httpMethod.getStatusText())
+					.requestHeaders(Arrays.stream(httpMethod.getRequestHeaders()).map(d -> new NameValuePair(d.getName(), d.getValue())).collect(Collectors.toList()))
+					.responseHeaders(Arrays.stream(httpMethod.getResponseHeaders()).map(d -> new NameValuePair(d.getName(), d.getValue())).collect(Collectors.toList()))
+					.startTime(startTime)
+					.endTime(endTime)
+					.build();
 
-        private CookiesStore cookiesStore;
+			if (httpMethod instanceof GetMethod) {
+				connectionInfo.setMethod("GET");
+				if (StringUtils.isNotBlank(httpMethod.getQueryString())) {
+					Stream.of(httpMethod.getQueryString().split("&")).forEach(s -> connectionInfo.getParams().add(new NameValuePair(s.split("=")[0], s.split("=")[1])));
+				}
+			}
+			if (httpMethod instanceof PostMethod) {
+				PostMethod postMethod = (PostMethod) httpMethod;
+				connectionInfo.setMethod("POST");
+				RequestEntity requestEntity = postMethod.getRequestEntity();
+				if (requestEntity instanceof StringRequestEntity) {
+					connectionInfo.setStringBody(((StringRequestEntity) requestEntity).getContent());
+				}
+				Stream.of(postMethod.getParameters()).forEach(h -> connectionInfo.getParams().add(new NameValuePair(h.getName(), h.getValue())));
+			}
+			return connectionInfo;
+		} catch (URIException e) {
+			e.printStackTrace();
+		}
+		return null;
+	}
 
-        MyHttpState(CookiesStore cookiesStore) {
-            this.cookiesStore = cookiesStore;
-        }
+	class MyHttpState extends HttpState {
 
-        @Override
-        public void addCookie(Cookie cookie) {
-            cookiesStore.addCookie(CookieUtils.commonsConvert(cookie));
-        }
+		private CookiesStore cookiesStore;
 
-        @Override
-        public void addCookies(Cookie[] cookies) {
-            cookiesStore.addCookies(Arrays.stream(cookies).map(CookieUtils::commonsConvert).collect(Collectors.toList()));
-        }
+		MyHttpState(CookiesStore cookiesStore) {
+			this.cookiesStore = cookiesStore;
+		}
 
-        @Override
-        public Cookie[] getCookies() {
-            return cookiesStore.getCookies().stream().map(CookieUtils::commonsConvert).toArray(Cookie[]::new);
-        }
+		@Override
+		public void addCookie(Cookie cookie) {
+			cookiesStore.addCookie(CookieUtils.commonsConvert(cookie));
+		}
 
-        @Override
-        public boolean purgeExpiredCookies(Date date) {
-            return cookiesStore.clearExpired(date);
-        }
-    }
+		@Override
+		public void addCookies(Cookie[] cookies) {
+			cookiesStore.addCookies(Arrays.stream(cookies).map(CookieUtils::commonsConvert).collect(Collectors.toList()));
+		}
+
+		@Override
+		public Cookie[] getCookies() {
+			return cookiesStore.getCookies().stream().map(CookieUtils::commonsConvert).toArray(Cookie[]::new);
+		}
+
+		@Override
+		public boolean purgeExpiredCookies(Date date) {
+			return cookiesStore.clearExpired(date);
+		}
+	}
 
 }

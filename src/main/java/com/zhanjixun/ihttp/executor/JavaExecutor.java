@@ -33,109 +33,119 @@ import java.util.stream.Collectors;
 @Log4j
 public class JavaExecutor extends BaseExecutor {
 
-    private final CookieManager cookieManager = new CookieManager();
+	private final CookieManager cookieManager = new CookieManager();
 
-    public JavaExecutor(Configuration configuration, CookiesStore cookiesStore) {
-        super(configuration, cookiesStore);
-        CookieHandler.setDefault(cookieManager);
-    }
+	public JavaExecutor(Configuration configuration, CookiesStore cookiesStore) {
+		super(configuration, cookiesStore);
+		CookieHandler.setDefault(cookieManager);
+	}
 
 
-    @Override
-    protected Response doPostMethod(Request request) throws IOException {
-        HttpURLConnection connection = (HttpURLConnection) new URL(request.getUrl()).openConnection();
-        connection.setRequestMethod("POST");
-        connection.setDoOutput(true);
-        connection.setDoInput(true);
-        //请求头
-        request.getHeaders().forEach(h -> connection.addRequestProperty(h.getName(), h.getValue()));
+	@Override
+	protected Response doPostMethod(Request request) throws IOException {
+		HttpURLConnection connection = (HttpURLConnection) new URL(request.getUrl()).openConnection();
+		connection.setRequestMethod("POST");
+		connection.setDoOutput(true);
+		connection.setDoInput(true);
+		//请求头
+		request.getHeaders().forEach(h -> connection.addRequestProperty(h.getName(), h.getValue()));
 
-        //参数
-        String paramString = request.getParams().stream().map(p -> p.getName() + "=" + p.getValue()).collect(Collectors.joining("&"));
-        if (StringUtils.isNotBlank(paramString)) {
-            OutputStream outputStream = connection.getOutputStream();
-            outputStream.write(paramString.getBytes());
-            outputStream.flush();
-            outputStream.close();
-        }
-        //发送JSON
-        if (StringUtils.isNotBlank(request.getBody())) {
-            OutputStream outputStream = connection.getOutputStream();
-            outputStream.write(request.getBody().getBytes());
-            outputStream.flush();
-            outputStream.close();
-        }
-        //文件上传
-        if (CollectionUtils.isNotEmpty(request.getFileParts())) {
-            OutputStream outputStream = connection.getOutputStream();
-            String prefix = "----", boundary = UUID.randomUUID().toString(), lineEnd = "\r\n";
-            String oneLine = prefix + boundary + lineEnd;
+		//参数
+		String paramString = request.getParams().stream().map(p -> p.getName() + "=" + p.getValue()).collect(Collectors.joining("&"));
+		if (StringUtils.isNotBlank(paramString)) {
+			OutputStream outputStream = connection.getOutputStream();
+			outputStream.write(paramString.getBytes());
+			outputStream.flush();
+			outputStream.close();
+		}
+		//发送JSON
+		if (StringUtils.isNotBlank(request.getBody())) {
+			OutputStream outputStream = connection.getOutputStream();
+			outputStream.write(request.getBody().getBytes());
+			outputStream.flush();
+			outputStream.close();
+		}
+		//文件上传
+		if (CollectionUtils.isNotEmpty(request.getFileParts())) {
+			OutputStream outputStream = connection.getOutputStream();
+			String prefix = "----", boundary = UUID.randomUUID().toString(), lineEnd = "\r\n";
+			String oneLine = prefix + boundary + lineEnd;
 
-            connection.addRequestProperty("Content-Type", "multipart/form-data; boundary=" + prefix + boundary);
+			connection.addRequestProperty("Content-Type", "multipart/form-data; boundary=" + prefix + boundary);
 
-            for (NameValuePair nameValuePair : request.getParams()) {
-                outputStream.write(oneLine.getBytes());
-                outputStream.write(String.format("Content-Disposition: form-data; name=\"%s\"%s", nameValuePair.getName(), lineEnd).getBytes());
+			for (NameValuePair nameValuePair : request.getParams()) {
+				outputStream.write(oneLine.getBytes());
+				outputStream.write(String.format("Content-Disposition: form-data; name=\"%s\"%s", nameValuePair.getName(), lineEnd).getBytes());
 
-                outputStream.write(lineEnd.getBytes());
-                outputStream.write(String.format("%s%s", nameValuePair.getValue(), lineEnd).getBytes());
-            }
-            for (FileParts fileParts : request.getFileParts()) {
-                String mimeType = new MimetypesFileTypeMap().getContentType(fileParts.getFilePart());
-                String contentType = Optional.ofNullable(mimeType).orElse("application/octet-stream");
+				outputStream.write(lineEnd.getBytes());
+				outputStream.write(String.format("%s%s", nameValuePair.getValue(), lineEnd).getBytes());
+			}
+			for (FileParts fileParts : request.getFileParts()) {
+				String mimeType = new MimetypesFileTypeMap().getContentType(fileParts.getFilePart());
+				String contentType = Optional.ofNullable(mimeType).orElse("application/octet-stream");
 
-                outputStream.write(oneLine.getBytes());
-                outputStream.write(String.format("Content-Disposition: form-data; name=\"%s\"; filename=\"%s\"", fileParts.getName(), fileParts.getFilePart().getName()).getBytes());
-                outputStream.write(String.format("Content-Type: %s%s", contentType, lineEnd).getBytes());
-                outputStream.write(lineEnd.getBytes());
+				outputStream.write(oneLine.getBytes());
+				outputStream.write(String.format("Content-Disposition: form-data; name=\"%s\"; filename=\"%s\"", fileParts.getName(), fileParts.getFilePart().getName()).getBytes());
+				outputStream.write(String.format("Content-Type: %s%s", contentType, lineEnd).getBytes());
+				outputStream.write(lineEnd.getBytes());
 
-                outputStream.write(Okio.buffer(Okio.source(fileParts.getFilePart())).readByteArray());
-            }
-            outputStream.write(oneLine.getBytes());
-            outputStream.flush();
-            outputStream.close();
-        }
-        return executeMethod(request, connection);
-    }
+				outputStream.write(Okio.buffer(Okio.source(fileParts.getFilePart())).readByteArray());
+			}
+			outputStream.write(oneLine.getBytes());
+			outputStream.flush();
+			outputStream.close();
+		}
+		return executeMethod(request, connection);
+	}
 
-    @Override
-    protected Response doGetMethod(Request request) throws IOException {
-        URL url = new URL(StrUtils.addQuery(request.getUrl(), request.getParams()));
-        HttpURLConnection connection = (HttpURLConnection) url.openConnection();
-        connection.setRequestMethod("GET");
-        connection.setInstanceFollowRedirects(request.isFollowRedirects());
+	@Override
+	protected Response doDeleteMethod(Request request) throws IOException {
+		return null;
+	}
 
-        connection.setDoOutput(false);
-        connection.setDoInput(true);
+	@Override
+	protected Response doPutMethod(Request request) throws IOException {
+		return null;
+	}
 
-        request.getHeaders().forEach(h -> connection.addRequestProperty(h.getName(), h.getValue()));
-        return executeMethod(request, connection);
-    }
+	@Override
+	protected Response doGetMethod(Request request) throws IOException {
+		URL url = new URL(StrUtils.addQuery(request.getUrl(), request.getParams()));
+		HttpURLConnection connection = (HttpURLConnection) url.openConnection();
+		connection.setRequestMethod("GET");
+		connection.setInstanceFollowRedirects(request.isFollowRedirects());
 
-    private Response executeMethod(Request request, HttpURLConnection connection) throws IOException {
-        try {
-            connection.setConnectTimeout(3000);
-            connection.setReadTimeout(3000);
-            //发送请求
-            connection.connect();
+		connection.setDoOutput(false);
+		connection.setDoInput(true);
 
-            Response response = new Response();
-            response.setRequest(request);
-            response.setCharset(request.getResponseCharset());
-            response.setStatus(connection.getResponseCode());
-            //返回请求头
-            connection.getHeaderFields().entrySet().stream()
-                    .flatMap(entry -> entry.getValue().stream().map(value -> new NameValuePair(entry.getKey(), value)))
-                    .forEach(h -> response.getHeaders().add(h));
+		request.getHeaders().forEach(h -> connection.addRequestProperty(h.getName(), h.getValue()));
+		return executeMethod(request, connection);
+	}
 
-            response.setBody(Okio.buffer(Okio.source(connection.getInputStream())).readByteArray());
-            return response;
-        } finally {
-            if (connection != null) {
-                connection.disconnect();
-            }
-        }
-    }
+	private Response executeMethod(Request request, HttpURLConnection connection) throws IOException {
+		try {
+			connection.setConnectTimeout(3000);
+			connection.setReadTimeout(3000);
+			//发送请求
+			connection.connect();
+
+			Response response = new Response();
+			response.setRequest(request);
+			response.setCharset(request.getResponseCharset());
+			response.setStatus(connection.getResponseCode());
+			//返回请求头
+			connection.getHeaderFields().entrySet().stream()
+					.flatMap(entry -> entry.getValue().stream().map(value -> new NameValuePair(entry.getKey(), value)))
+					.forEach(h -> response.getHeaders().add(h));
+
+			response.setBody(Okio.buffer(Okio.source(connection.getInputStream())).readByteArray());
+			return response;
+		} finally {
+			if (connection != null) {
+				connection.disconnect();
+			}
+		}
+	}
 
 //    @Override
 //    public void addCookie(Cookie cookie) {
