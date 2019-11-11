@@ -30,9 +30,11 @@ import org.springframework.util.SystemPropertyUtils;
 import java.io.IOException;
 import java.util.Arrays;
 import java.util.HashSet;
+import java.util.Objects;
 import java.util.Set;
 import java.util.stream.Collectors;
 
+import static com.zhanjixun.ihttp.parsing.AnnotationParser.HTTP_METHOD_ANNOTATIONS;
 import static org.springframework.util.Assert.notNull;
 
 /**
@@ -100,13 +102,17 @@ public class MapperScanner implements BeanDefinitionRegistryPostProcessor, Appli
 	public void postProcessBeanDefinitionRegistry(BeanDefinitionRegistry registry) throws BeansException {
 		Set<Class> classes = scan(StringUtils.tokenizeToStringArray(basePackage, ConfigurableApplicationContext.CONFIG_LOCATION_DELIMITERS));
 		for (Class mapper : classes.stream().filter(Class::isInterface).collect(Collectors.toSet())) {
-			if (IHTTP.isMapper(mapper)) {
+			if (isMapper(mapper)) {
 				Object obj = IHTTP.getMapper(mapper);
 				applicationContext.getAutowireCapableBeanFactory().applyBeanPostProcessorsAfterInitialization(obj, obj.getClass().getName());
 				DefaultListableBeanFactory beanFactory = (DefaultListableBeanFactory) applicationContext.getAutowireCapableBeanFactory();
 				beanFactory.registerSingleton(obj.getClass().getName(), obj);
 			}
 		}
+	}
+
+	private boolean isMapper(Class<?> mapperClass) {
+		return Arrays.stream(mapperClass.getDeclaredMethods()).parallel().anyMatch(m -> HTTP_METHOD_ANNOTATIONS.stream().anyMatch(a -> Objects.nonNull(m.getAnnotation(a))));
 	}
 
 	@Override

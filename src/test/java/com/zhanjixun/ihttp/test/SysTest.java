@@ -8,9 +8,9 @@ import org.junit.Test;
  */
 public class SysTest {
 
-    @Test
-    public void name() throws Exception {
+	@Test
+	public void name() {
 
-    }
+	}
 
 }

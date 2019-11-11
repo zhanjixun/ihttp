@@ -10,15 +10,14 @@ import com.zhanjixun.ihttp.annotations.*;
  */
 @CookieShare("id")
 @UserAgent("zhanjixun@qq.com")
-//@HttpExecutor(JavaExecutor.class)
 public interface Hao6v extends CookiesStore {
 
-    @GET
-    @URL("http://www.hao6v.com/gvod/zx.html")
-    @TimestampParam(name = "a")
-    @RandomParam(name = "b", length = 6)
-    @AssertStatusCode(200)
-    @ResponseCharset("GB2312")
-    Response gvod();
+	@GET
+	@URL("http://www.hao6v.com/gvod/zx.html")
+	@TimestampParam(name = "a")
+	@RandomParam(name = "b", length = 6)
+	@AssertStatusCode(200)
+	@ResponseCharset("GB2312")
+	Response gvod();
 
 }

@@ -14,19 +14,18 @@ import java.util.Map;
  */
 @Slf4j
 public class CookiesStoreFactory {
-	/**
-	 * 这里存放系统中所有的CookiesStore
-	 */
-	private final static Map<String, CookiesStore> sMap = Maps.newConcurrentMap();
+
+	//这里存放系统中所有的CookiesStore
+	private final static Map<String, CookiesStore> cookiesStoreMap = Maps.newConcurrentMap();
 
 	public CookiesStore createCookiesStore(Class<?> mapperClass) {
 		CookieShare cookieShare = mapperClass.getAnnotation(CookieShare.class);
 		String key = cookieShare == null ? "selfuse:" + mapperClass.getName() : "share:" + cookieShare.value();
 
-		CookiesStore cookiesStore = sMap.get(key);
+		CookiesStore cookiesStore = cookiesStoreMap.get(key);
 		if (cookiesStore == null) {
 			cookiesStore = new CookiesStoreImpl();
-			sMap.put(key, cookiesStore);
+			cookiesStoreMap.put(key, cookiesStore);
 		}
 		return cookiesStore;
 	}
