@@ -7,37 +7,28 @@ import lombok.NoArgsConstructor;
 
 import java.util.Date;
 
-/**
- * @author :zhanjixun
- * @date : 2018/9/28 10:13
- */
 @Data
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
 public class Cookie {
 
-    private String name;
-    private String value;
+	private String name;
+	private String value;
 
-    private String domain;
-    private String path;
+	private String domain;
+	private String path;
 
-    private Date expiryDate;
+	private Date expiryDate;
 
-    private String comment;
+	private String comment;
 
-    private boolean isSecure;
-    private int version = 0;
+	private boolean isSecure;
+	private int version = 0;
 
-    private boolean httpOnly;
+	private boolean httpOnly;
 
-    /**
-     * 是否已经过期
-     *
-     * @return
-     */
-    public boolean isExpired() {
-        return expiryDate != null && expiryDate.before(new Date());
-    }
+	public boolean isExpired() {
+		return expiryDate != null && expiryDate.before(new Date());
+	}
 }

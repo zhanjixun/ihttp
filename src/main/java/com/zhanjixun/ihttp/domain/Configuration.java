@@ -15,16 +15,15 @@ import lombok.Data;
 @Builder
 public class Configuration {
 
-    private HttpProxy proxy;
+	private HttpProxy proxy;
 
-    private boolean cookieEnable = true;
+	private boolean cookieEnable = true;
 
-    private Class<? extends Executor> executor;
+	private Class<? extends Executor> executor;
 
-    public static Configuration getDefault() {
-        return builder().proxy(null)
-                .cookieEnable(true)
-                .executor(ComponentsHttpClientExecutor.class)
-                .build();
-    }
+	public static Configuration getDefault() {
+		return builder().proxy(null).cookieEnable(true)
+				.executor(ComponentsHttpClientExecutor.class)
+				.build();
+	}
 }

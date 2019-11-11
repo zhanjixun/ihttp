@@ -1,12 +1,14 @@
 package com.zhanjixun.ihttp.annotations;
 
+import com.zhanjixun.ihttp.domain.ByteArrayFile;
+
 import java.lang.annotation.*;
 
 /**
  * 注解在参数上 参数类型必须为File或者String
  *
  * @author zhanjixun
- * @see com.zhanjixun.ihttp.domain.ByteArrayFile
+ * @see ByteArrayFile
  */
 @Retention(RetentionPolicy.RUNTIME)
 @Repeatable(FilePart.List.class)
