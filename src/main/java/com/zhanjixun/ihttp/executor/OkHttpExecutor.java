@@ -8,6 +8,7 @@ import com.zhanjixun.ihttp.domain.HttpProxy;
 import com.zhanjixun.ihttp.domain.NameValuePair;
 import com.zhanjixun.ihttp.utils.CookieUtils;
 import com.zhanjixun.ihttp.utils.StrUtils;
+import lombok.extern.slf4j.Slf4j;
 import okhttp3.*;
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
@@ -24,6 +25,7 @@ import java.util.stream.Collectors;
  * @author :zhanjixun
  * @date : 2018/11/28 23:35
  */
+@Slf4j
 public class OkHttpExecutor extends BaseExecutor {
 
 	private final OkHttpClient okHttpClient;

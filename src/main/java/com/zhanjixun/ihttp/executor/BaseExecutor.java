@@ -5,12 +5,12 @@ import com.zhanjixun.ihttp.Request;
 import com.zhanjixun.ihttp.Response;
 import com.zhanjixun.ihttp.domain.Configuration;
 import lombok.Getter;
-import lombok.extern.log4j.Log4j;
+import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 
 import java.io.IOException;
 
-@Log4j
+@Slf4j
 public abstract class BaseExecutor implements Executor {
 
 	protected final Configuration configuration;
@@ -42,7 +42,6 @@ public abstract class BaseExecutor implements Executor {
 				throw new RuntimeException("未能识别的HTTP请求方法：" + request.getMethod());
 		}
 		log.debug(String.join(" ", StringUtils.rightPad(request.getMethod(), 4), String.valueOf(response.getStatus()), request.getUrl()));
-		//do something after http execute
 		return response;
 	}
 

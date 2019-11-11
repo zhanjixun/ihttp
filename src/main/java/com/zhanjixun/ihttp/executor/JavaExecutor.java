@@ -7,7 +7,7 @@ import com.zhanjixun.ihttp.domain.Configuration;
 import com.zhanjixun.ihttp.domain.FileParts;
 import com.zhanjixun.ihttp.domain.NameValuePair;
 import com.zhanjixun.ihttp.utils.StrUtils;
-import lombok.extern.log4j.Log4j;
+import lombok.extern.slf4j.Slf4j;
 import okio.Okio;
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
@@ -30,7 +30,7 @@ import java.util.stream.Collectors;
  * @author :zhanjixun
  * @date : 2018/10/9 16:02
  */
-@Log4j
+@Slf4j
 public class JavaExecutor extends BaseExecutor {
 
 	private final CookieManager cookieManager = new CookieManager();

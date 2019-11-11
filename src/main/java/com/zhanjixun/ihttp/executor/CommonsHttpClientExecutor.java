@@ -9,7 +9,7 @@ import com.zhanjixun.ihttp.domain.NameValuePair;
 import com.zhanjixun.ihttp.logging.ConnectionInfo;
 import com.zhanjixun.ihttp.utils.CookieUtils;
 import com.zhanjixun.ihttp.utils.StrUtils;
-import lombok.extern.log4j.Log4j;
+import lombok.extern.slf4j.Slf4j;
 import okio.Okio;
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.httpclient.*;
@@ -38,7 +38,7 @@ import java.util.stream.Stream;
  * @author zhanjixun
  * @see HttpClient
  */
-@Log4j
+@Slf4j
 public class CommonsHttpClientExecutor extends BaseExecutor {
 
 	private final HttpClient httpClient = new HttpClient();

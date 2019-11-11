@@ -3,6 +3,7 @@ package com.zhanjixun.ihttp.spring;
 import com.zhanjixun.ihttp.IHTTP;
 import lombok.Getter;
 import lombok.Setter;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.BeansException;
 import org.springframework.beans.factory.BeanDefinitionStoreException;
 import org.springframework.beans.factory.InitializingBean;
@@ -39,77 +40,78 @@ import static org.springframework.util.Assert.notNull;
  *
  * @author zhanjixun
  */
+@Slf4j
 public class MapperScanner implements BeanDefinitionRegistryPostProcessor, ApplicationContextAware, InitializingBean, ResourceLoaderAware {
 
-    @Getter
-    @Setter
-    private String basePackage;
-    @Getter
-    private ApplicationContext applicationContext;
-    private ResourcePatternResolver resourcePatternResolver = new PathMatchingResourcePatternResolver();
-    private MetadataReaderFactory metadataReaderFactory = new CachingMetadataReaderFactory(resourcePatternResolver);
+	@Getter
+	@Setter
+	private String basePackage;
+	@Getter
+	private ApplicationContext applicationContext;
+	private ResourcePatternResolver resourcePatternResolver = new PathMatchingResourcePatternResolver();
+	private MetadataReaderFactory metadataReaderFactory = new CachingMetadataReaderFactory(resourcePatternResolver);
 
-    @Override
-    public void setApplicationContext(ApplicationContext applicationContext) throws BeansException {
-        this.applicationContext = applicationContext;
-    }
+	@Override
+	public void setApplicationContext(ApplicationContext applicationContext) throws BeansException {
+		this.applicationContext = applicationContext;
+	}
 
-    @Override
-    public void afterPropertiesSet() throws Exception {
-        notNull(basePackage, "Property 'basePackage' is required");
-    }
+	@Override
+	public void afterPropertiesSet() throws Exception {
+		notNull(basePackage, "Property 'basePackage' is required");
+	}
 
-    @Override
-    public void setResourceLoader(ResourceLoader resourceLoader) {
-        resourcePatternResolver = ResourcePatternUtils.getResourcePatternResolver(resourceLoader);
-        metadataReaderFactory = new CachingMetadataReaderFactory(resourceLoader);
-    }
+	@Override
+	public void setResourceLoader(ResourceLoader resourceLoader) {
+		resourcePatternResolver = ResourcePatternUtils.getResourcePatternResolver(resourceLoader);
+		metadataReaderFactory = new CachingMetadataReaderFactory(resourceLoader);
+	}
 
-    private Set<Class> scan(String[] basePackages) {
-        return Arrays.stream(basePackages)
-                .flatMap(p -> doScan(p).stream())
-                .collect(Collectors.toSet());
-    }
+	private Set<Class> scan(String[] basePackages) {
+		return Arrays.stream(basePackages)
+				.flatMap(p -> doScan(p).stream())
+				.collect(Collectors.toSet());
+	}
 
-    private Set<Class> doScan(String basePackage) {
-        Set<Class> classes = new HashSet<>();
-        try {
-            String packageSearchPath = ResourcePatternResolver.CLASSPATH_ALL_URL_PREFIX + ClassUtils.convertClassNameToResourcePath(SystemPropertyUtils.resolvePlaceholders(basePackage)) + "/**/*.class";
-            Resource[] resources = resourcePatternResolver.getResources(packageSearchPath);
+	private Set<Class> doScan(String basePackage) {
+		Set<Class> classes = new HashSet<>();
+		try {
+			String packageSearchPath = ResourcePatternResolver.CLASSPATH_ALL_URL_PREFIX + ClassUtils.convertClassNameToResourcePath(SystemPropertyUtils.resolvePlaceholders(basePackage)) + "/**/*.class";
+			Resource[] resources = resourcePatternResolver.getResources(packageSearchPath);
 
-            for (Resource resource : resources) {
-                if (resource.isReadable()) {
-                    MetadataReader metadataReader = metadataReaderFactory.getMetadataReader(resource);
-                    try {
-                        classes.add(Class.forName(metadataReader.getClassMetadata().getClassName()));
-                    } catch (ClassNotFoundException e) {
-                        e.printStackTrace();
-                    }
-                }
-            }
-        } catch (IOException ex) {
-            throw new BeanDefinitionStoreException("I/O failure during classpath scanning", ex);
-        }
-        return classes;
-    }
+			for (Resource resource : resources) {
+				if (resource.isReadable()) {
+					MetadataReader metadataReader = metadataReaderFactory.getMetadataReader(resource);
+					try {
+						classes.add(Class.forName(metadataReader.getClassMetadata().getClassName()));
+					} catch (ClassNotFoundException e) {
+						e.printStackTrace();
+					}
+				}
+			}
+		} catch (IOException ex) {
+			throw new BeanDefinitionStoreException("I/O failure during classpath scanning", ex);
+		}
+		return classes;
+	}
 
-    @Override
-    @SuppressWarnings("unchecked")
-    public void postProcessBeanDefinitionRegistry(BeanDefinitionRegistry registry) throws BeansException {
-        Set<Class> classes = scan(StringUtils.tokenizeToStringArray(basePackage, ConfigurableApplicationContext.CONFIG_LOCATION_DELIMITERS));
-        for (Class mapper : classes.stream().filter(Class::isInterface).collect(Collectors.toSet())) {
-            if (IHTTP.isMapper(mapper)) {
-                Object obj = IHTTP.getMapper(mapper);
-                applicationContext.getAutowireCapableBeanFactory().applyBeanPostProcessorsAfterInitialization(obj, obj.getClass().getName());
-                DefaultListableBeanFactory beanFactory = (DefaultListableBeanFactory) applicationContext.getAutowireCapableBeanFactory();
-                beanFactory.registerSingleton(obj.getClass().getName(), obj);
-            }
-        }
-    }
+	@Override
+	@SuppressWarnings("unchecked")
+	public void postProcessBeanDefinitionRegistry(BeanDefinitionRegistry registry) throws BeansException {
+		Set<Class> classes = scan(StringUtils.tokenizeToStringArray(basePackage, ConfigurableApplicationContext.CONFIG_LOCATION_DELIMITERS));
+		for (Class mapper : classes.stream().filter(Class::isInterface).collect(Collectors.toSet())) {
+			if (IHTTP.isMapper(mapper)) {
+				Object obj = IHTTP.getMapper(mapper);
+				applicationContext.getAutowireCapableBeanFactory().applyBeanPostProcessorsAfterInitialization(obj, obj.getClass().getName());
+				DefaultListableBeanFactory beanFactory = (DefaultListableBeanFactory) applicationContext.getAutowireCapableBeanFactory();
+				beanFactory.registerSingleton(obj.getClass().getName(), obj);
+			}
+		}
+	}
 
-    @Override
-    public void postProcessBeanFactory(ConfigurableListableBeanFactory beanFactory) throws BeansException {
+	@Override
+	public void postProcessBeanFactory(ConfigurableListableBeanFactory beanFactory) throws BeansException {
 
-    }
+	}
 
 }

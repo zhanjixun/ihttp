@@ -10,7 +10,7 @@ import com.zhanjixun.ihttp.domain.HttpProxy;
 import com.zhanjixun.ihttp.domain.NameValuePair;
 import com.zhanjixun.ihttp.utils.ReflectUtils;
 import com.zhanjixun.ihttp.utils.StrUtils;
-import lombok.extern.log4j.Log4j;
+import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections.CollectionUtils;
 
 import java.io.File;
@@ -29,7 +29,7 @@ import java.util.stream.Collectors;
  *
  * @author zhanjixun
  */
-@Log4j
+@Slf4j
 public class AnnotationParser implements Parser {
 
 	private Class<?> target;
