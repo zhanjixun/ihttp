@@ -4,7 +4,8 @@
 
 [ihttp]( https://github.com/zhanjixun/ihttp ) 使用注解方式配置Java网络编程，避免大量编写构造请求的代码，更优雅的编码。
 
-[![Maven Central](https://maven-badges.herokuapp.com/maven-central/com.github.zhanjixun/ihttp/badge.svg)](https://mvnrepository.com/artifact/com.github.zhanjixun/ihttp)[![License](http://img.shields.io/:license-apache-brightgreen.svg)](http://www.apache.org/licenses/LICENSE-2.0.html)
+[![Maven Central](https://maven-badges.herokuapp.com/maven-central/com.github.zhanjixun/ihttp/badge.svg)](https://mvnrepository.com/artifact/com.github.zhanjixun/ihttp)
+[![License](http://img.shields.io/:license-apache-brightgreen.svg)](http://www.apache.org/licenses/LICENSE-2.0.html)
 
 ## 快速开始
 
