@@ -73,6 +73,8 @@ Response response = mapper.openBaidu();
 @StringBodyObject
 ```
 
+> 使用IHTTP就是这么简单，不需要关注如何构建和发送HTTP请求，只需要几个注解本框架帮你通通搞定这些，让你可以专注于接口返回的处理。
+
 ## 关于Cookie的使用
 
 IHTTP中默认开启为每个Mapper启用Cookie，Mapper接口继承`CookiesStore`将获取Cookie操作的能力。如下：
