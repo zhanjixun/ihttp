@@ -43,7 +43,7 @@ public class ReflectUtils {
 		try {
 			return annotation.annotationType().getMethod(method).invoke(annotation);
 		} catch (Exception e) {
-			throw new RuntimeException("Could not invoke value method.  Cause: " + e, e);
+			throw new RuntimeException("Could not invoke " + method + " method.  Cause: " + e, e);
 		}
 	}
 }
