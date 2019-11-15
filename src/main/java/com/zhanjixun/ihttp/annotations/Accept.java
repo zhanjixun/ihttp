@@ -9,7 +9,7 @@ import java.lang.annotation.*;
  * Accept = $value
  */
 @Documented
-@Target({ElementType.METHOD, ElementType.TYPE, ElementType.PARAMETER})
+@Target({ElementType.TYPE, ElementType.METHOD, ElementType.PARAMETER})
 @Retention(RetentionPolicy.RUNTIME)
 public @interface Accept {
 

@@ -14,8 +14,8 @@ import java.lang.annotation.Target;
 @Retention(RetentionPolicy.RUNTIME)
 public @interface BalanceURL {
 
-    String[] value() default {};
+	String[] value() default {};
 
-    SwitchType switchType() default SwitchType.ORDER;
+	SwitchType switchType() default SwitchType.ORDER;
 
 }

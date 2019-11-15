@@ -15,12 +15,12 @@ import java.lang.annotation.Target;
 @Target({ElementType.TYPE})
 @Retention(RetentionPolicy.RUNTIME)
 public @interface CookieShare {
-    /**
-     * 指定一个shareID
-     * 同一个ID的Mapper之间共享Cookie
-     *
-     * @return
-     */
-    String value();
+	/**
+	 * 指定一个shareID
+	 * 同一个ID的Mapper之间共享Cookie
+	 *
+	 * @return
+	 */
+	String value();
 
 }
