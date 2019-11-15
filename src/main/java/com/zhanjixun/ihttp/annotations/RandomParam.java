@@ -9,6 +9,8 @@ import java.lang.annotation.*;
  * @date : 2019/04/19 09:52
  * @contact :zhanjixun@qq.com
  */
+@Documented
+@Target({ElementType.TYPE, ElementType.METHOD})
 @Retention(RetentionPolicy.RUNTIME)
 @Repeatable(RandomParam.List.class)
 public @interface RandomParam {

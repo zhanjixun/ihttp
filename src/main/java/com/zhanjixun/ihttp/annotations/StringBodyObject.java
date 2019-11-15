@@ -1,9 +1,6 @@
 package com.zhanjixun.ihttp.annotations;
 
-import java.lang.annotation.ElementType;
-import java.lang.annotation.Retention;
-import java.lang.annotation.RetentionPolicy;
-import java.lang.annotation.Target;
+import java.lang.annotation.*;
 
 /**
  * 在方法参数中指定一个对象来动态生成json字符串，作为http请求体
@@ -13,17 +10,18 @@ import java.lang.annotation.Target;
  * @date : 2018/10/24 11:25
  * @see com.alibaba.fastjson.JSON#toJSONString(Object)
  */
+@Documented
 @Target({ElementType.PARAMETER})
 @Retention(RetentionPolicy.RUNTIME)
 public @interface StringBodyObject {
 
-    /**
-     * 是否进行编码
-     *
-     * @return
-     * @see GET#charset()
-     * @see POST#charset()
-     */
-    boolean encode() default false;
-    
+	/**
+	 * 是否进行编码
+	 *
+	 * @return
+	 * @see GET#charset()
+	 * @see POST#charset()
+	 */
+	boolean encode() default false;
+
 }

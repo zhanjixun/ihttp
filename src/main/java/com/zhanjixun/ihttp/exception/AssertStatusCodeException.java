@@ -7,4 +7,19 @@ package com.zhanjixun.ihttp.exception;
  */
 public class AssertStatusCodeException extends Exception {
 
+	public AssertStatusCodeException() {
+
+	}
+
+	public AssertStatusCodeException(String message) {
+		super(message);
+	}
+
+	public AssertStatusCodeException(String message, Throwable cause) {
+		super(message, cause);
+	}
+
+	public AssertStatusCodeException(Throwable cause) {
+		super(cause);
+	}
 }

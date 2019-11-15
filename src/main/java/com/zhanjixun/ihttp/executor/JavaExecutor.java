@@ -33,10 +33,9 @@ import java.util.stream.Collectors;
 @Slf4j
 public class JavaExecutor extends BaseExecutor {
 
-	private final CookieManager cookieManager = new CookieManager();
-
 	public JavaExecutor(Configuration configuration, CookiesStore cookiesStore) {
 		super(configuration, cookiesStore);
+		CookieManager cookieManager = new CookieManager();
 		CookieHandler.setDefault(cookieManager);
 	}
 

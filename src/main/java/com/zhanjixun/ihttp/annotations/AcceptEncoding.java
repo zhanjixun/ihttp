@@ -1,12 +1,22 @@
 package com.zhanjixun.ihttp.annotations;
 
-import java.lang.annotation.ElementType;
-import java.lang.annotation.Retention;
-import java.lang.annotation.RetentionPolicy;
-import java.lang.annotation.Target;
+import java.lang.annotation.*;
 
+/**
+ * 为请求添加 Accept-Encoding 请求头
+ * <p>
+ * 请求头添加：
+ * Accept-Encoding = $value
+ */
+@Documented
 @Target({ElementType.METHOD, ElementType.TYPE, ElementType.PARAMETER})
 @Retention(RetentionPolicy.RUNTIME)
 public @interface AcceptEncoding {
-    String value() default "";
+
+	/**
+	 * 请求头Accept-Encoding的值
+	 *
+	 * @return
+	 */
+	String value() default "";
 }

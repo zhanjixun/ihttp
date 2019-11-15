@@ -17,7 +17,7 @@ public class Configuration {
 
 	private HttpProxy proxy;
 
-	private boolean cookieEnable = true;
+	private boolean cookieEnable;
 
 	private Class<? extends Executor> executor;
 

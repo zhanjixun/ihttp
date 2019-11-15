@@ -9,6 +9,8 @@ import java.lang.annotation.*;
  * @author :zhanjixun
  * @date : 2018/10/21 0:01
  */
+@Documented
+@Target({ElementType.TYPE, ElementType.METHOD})
 @Retention(RetentionPolicy.RUNTIME)
 @Repeatable(RandomPlaceholder.List.class)
 public @interface RandomPlaceholder {

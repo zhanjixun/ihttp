@@ -206,7 +206,7 @@ public class ComponentsHttpClientExecutor extends BaseExecutor {
 
 	class MyCookieStore implements CookieStore {
 
-		private CookiesStore cookiesStore;
+		private final CookiesStore cookiesStore;
 
 		MyCookieStore(CookiesStore cookiesStore) {
 			this.cookiesStore = cookiesStore;

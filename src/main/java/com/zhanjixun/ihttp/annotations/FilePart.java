@@ -10,6 +10,8 @@ import java.lang.annotation.*;
  * @author zhanjixun
  * @see ByteArrayFile
  */
+@Documented
+@Target({ElementType.METHOD, ElementType.PARAMETER})
 @Retention(RetentionPolicy.RUNTIME)
 @Repeatable(FilePart.List.class)
 public @interface FilePart {

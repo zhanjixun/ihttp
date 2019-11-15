@@ -104,7 +104,7 @@ public class AnnotationParser implements Parser {
 			throw new RuntimeException(String.format("没有找到HTTP请求方法 %s", target.getName() + "." + method.getName()));
 		}
 		if (httpMethod.size() > 1) {
-			throw new RuntimeException(String.format("重复设置HTTP请求方法 %s[%s]", target.getName() + "." + method.getName(), String.join(",", httpMethod.stream().map(d -> d.annotationType().getSimpleName()).collect(Collectors.toList()))));
+			throw new RuntimeException(String.format("重复设置HTTP请求方法 %s[%s]", target.getName() + "." + method.getName(), httpMethod.stream().map(d -> d.annotationType().getSimpleName()).collect(Collectors.joining(","))));
 		}
 		Annotation annotation = httpMethod.get(0);
 		mapperMethod.setMethod(annotation.annotationType().getSimpleName());

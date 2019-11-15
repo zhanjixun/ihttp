@@ -1,9 +1,6 @@
 package com.zhanjixun.ihttp.annotations;
 
-import java.lang.annotation.ElementType;
-import java.lang.annotation.Retention;
-import java.lang.annotation.RetentionPolicy;
-import java.lang.annotation.Target;
+import java.lang.annotation.*;
 
 /**
  * 标识一个方法使用DELETE请求
@@ -11,7 +8,11 @@ import java.lang.annotation.Target;
  * @author :zhanjixun
  * @date : 2019/11/06 11:53
  * @contact :zhanjixun@qq.com
+ * @see GET
+ * @see POST
+ * @see PUT
  */
+@Documented
 @Target({ElementType.METHOD})
 @Retention(RetentionPolicy.RUNTIME)
 public @interface DELETE {

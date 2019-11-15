@@ -10,6 +10,8 @@ import java.util.concurrent.TimeUnit;
  * @date : 2019/04/19 09:36
  * @contact :zhanjixun@qq.com
  */
+@Documented
+@Target({ElementType.METHOD, ElementType.TYPE})
 @Retention(RetentionPolicy.RUNTIME)
 @Repeatable(TimestampParam.List.class)
 public @interface TimestampParam {

@@ -7,4 +7,12 @@ package com.zhanjixun.ihttp.domain;
  * @date : 2018/11/28 23:51
  */
 public class Header extends NameValuePair {
+
+	public Header() {
+
+	}
+
+	public Header(String name, String value) {
+		super(name, value);
+	}
 }

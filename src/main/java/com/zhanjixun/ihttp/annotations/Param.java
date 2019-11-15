@@ -7,6 +7,8 @@ import java.lang.annotation.*;
  *
  * @author zhanjixun
  */
+@Documented
+@Target({ElementType.METHOD, ElementType.PARAMETER})
 @Retention(RetentionPolicy.RUNTIME)
 @Repeatable(Param.List.class)
 public @interface Param {

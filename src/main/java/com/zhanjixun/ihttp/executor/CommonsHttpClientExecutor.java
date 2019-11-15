@@ -164,7 +164,7 @@ public class CommonsHttpClientExecutor extends BaseExecutor {
 
 	class MyHttpState extends HttpState {
 
-		private CookiesStore cookiesStore;
+		private final CookiesStore cookiesStore;
 
 		MyHttpState(CookiesStore cookiesStore) {
 			this.cookiesStore = cookiesStore;

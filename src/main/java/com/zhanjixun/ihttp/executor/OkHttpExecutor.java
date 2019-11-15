@@ -109,7 +109,7 @@ public class OkHttpExecutor extends BaseExecutor {
 	//https://github.com/franmontiel/PersistentCookieJar
 	class MyCookieJar implements CookieJar {
 
-		private CookiesStore cookiesStore;
+		private final CookiesStore cookiesStore;
 
 		public MyCookieJar(CookiesStore cookiesStore) {
 			this.cookiesStore = cookiesStore;

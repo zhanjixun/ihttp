@@ -9,6 +9,8 @@ import java.util.concurrent.TimeUnit;
  * @author :zhanjixun
  * @date : 2018/11/26 14:52
  */
+@Documented
+@Target({ElementType.METHOD, ElementType.TYPE})
 @Retention(RetentionPolicy.RUNTIME)
 @Repeatable(TimestampPlaceholder.List.class)
 public @interface TimestampPlaceholder {

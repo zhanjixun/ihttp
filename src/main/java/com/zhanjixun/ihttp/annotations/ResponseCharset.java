@@ -1,9 +1,6 @@
 package com.zhanjixun.ihttp.annotations;
 
-import java.lang.annotation.ElementType;
-import java.lang.annotation.Retention;
-import java.lang.annotation.RetentionPolicy;
-import java.lang.annotation.Target;
+import java.lang.annotation.*;
 
 /**
  * 手动指定解析Response时候使用的字符编码
@@ -15,10 +12,11 @@ import java.lang.annotation.Target;
  * @date : 2019/05/05 10:35
  * @contact :zhanjixun@qq.com
  */
+@Documented
 @Target({ElementType.METHOD})
 @Retention(RetentionPolicy.RUNTIME)
 public @interface ResponseCharset {
 
-    String value();
+	String value();
 
 }
