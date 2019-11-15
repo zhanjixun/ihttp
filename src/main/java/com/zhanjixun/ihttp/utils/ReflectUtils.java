@@ -1,15 +1,8 @@
 package com.zhanjixun.ihttp.utils;
 
-import com.google.common.collect.Lists;
-
 import java.lang.annotation.Annotation;
-import java.lang.annotation.Repeatable;
 import java.lang.reflect.AnnotatedElement;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.List;
 import java.util.function.Consumer;
-import java.util.stream.Collectors;
 
 /**
  * @author :zhanjixun
@@ -25,8 +18,8 @@ public class ReflectUtils {
 	 * @param consumer
 	 * @param <T>
 	 */
-	public static <T extends Annotation> void containsAnnotation(AnnotatedElement target, Class<T> annotationClass, Consumer<T> consumer) {
-		if (target.getAnnotation(annotationClass) != null) {
+	public static <T extends Annotation> void ifAnnotationPresent(AnnotatedElement target, Class<T> annotationClass, Consumer<T> consumer) {
+		if (target.isAnnotationPresent(annotationClass)) {
 			consumer.accept(target.getAnnotation(annotationClass));
 		}
 	}
@@ -44,37 +37,6 @@ public class ReflectUtils {
 		} catch (Exception e) {
 			return false;
 		}
-	}
-
-	/**
-	 * 获取Repeatable注解
-	 *
-	 * @param <T>
-	 * @param target
-	 * @param annotationClass
-	 * @return
-	 */
-	@SuppressWarnings("unchecked")
-	public static <T extends Annotation> List<T> getRepeatableAnnotation(AnnotatedElement target, Class<T> annotationClass) {
-		T annotation = target.getAnnotation(annotationClass);
-		//当可重复注解只使用一次的时候
-		if (annotation != null) {
-			return Lists.newArrayList(annotation);
-		}
-		//重复使用多次的时候
-		Repeatable repeatable = annotationClass.getAnnotation(Repeatable.class);
-		Annotation repeatableAnnotation = target.getAnnotation(repeatable.value());
-		if (repeatableAnnotation == null) {
-			return Collections.emptyList();
-		}
-
-		try {
-			Object[] objects = (Object[]) invokeAnnotationMethod(repeatableAnnotation, "value");
-			return Arrays.stream(objects).map(o -> (T) o).collect(Collectors.toList());
-		} catch (Exception e) {
-			e.printStackTrace();
-		}
-		return Collections.emptyList();
 	}
 
 	public static Object invokeAnnotationMethod(Annotation annotation, String method) {

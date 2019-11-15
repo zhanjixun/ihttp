@@ -83,11 +83,11 @@ public class AnnotationParser implements Parser {
 	}
 
 	private void parseClassAnnotation(Mapper mapper) {
-		ReflectUtils.containsAnnotation(target, Proxy.class, p -> mapper.getConfiguration().setProxy(new HttpProxy(p.hostName(), p.port(), p.trustSSL())));
-		ReflectUtils.containsAnnotation(target, HttpExecutor.class, e -> mapper.getConfiguration().setExecutor(e.value()));
-		ReflectUtils.containsAnnotation(target, DisableCookie.class, e -> mapper.getConfiguration().setCookieEnable(false));
+		ReflectUtils.ifAnnotationPresent(target, Proxy.class, p -> mapper.getConfiguration().setProxy(new HttpProxy(p.hostName(), p.port(), p.trustSSL())));
+		ReflectUtils.ifAnnotationPresent(target, HttpExecutor.class, e -> mapper.getConfiguration().setExecutor(e.value()));
+		ReflectUtils.ifAnnotationPresent(target, DisableCookie.class, e -> mapper.getConfiguration().setCookieEnable(false));
 
-		ReflectUtils.containsAnnotation(target, URL.class, e -> mapper.setCommonUrl(e.value()));
+		ReflectUtils.ifAnnotationPresent(target, URL.class, e -> mapper.setCommonUrl(e.value()));
 		//解析请求头
 		mapper.getCommonHeaders().addAll(parseHeader(target));
 	}
@@ -96,7 +96,7 @@ public class AnnotationParser implements Parser {
 		MapperMethod mapperMethod = new MapperMethod();
 		mapperMethod.setName(method.getName());
 		//URL
-		ReflectUtils.containsAnnotation(method, URL.class, annotation -> mapperMethod.setUrl(annotation.value()));
+		ReflectUtils.ifAnnotationPresent(method, URL.class, annotation -> mapperMethod.setUrl(annotation.value()));
 
 		//http方法
 		List<? extends Annotation> httpMethod = HTTP_METHOD_ANNOTATIONS.stream().map(method::getAnnotation).filter(Objects::nonNull).collect(Collectors.toList());
@@ -116,7 +116,7 @@ public class AnnotationParser implements Parser {
 			mapperMethod.setCharset(((POST) httpMethod.get(0)).charset());
 		}
 		//返回值编码
-		ReflectUtils.containsAnnotation(method, ResponseCharset.class, a -> mapperMethod.setResponseCharset(a.value()));
+		ReflectUtils.ifAnnotationPresent(method, ResponseCharset.class, a -> mapperMethod.setResponseCharset(a.value()));
 
 		//解析方法形参
 		Parameter[] parameters = method.getParameters();
@@ -132,18 +132,19 @@ public class AnnotationParser implements Parser {
 		}
 		mapperMethod.setParamMapping(parameterAMapping);
 
-		mapperMethod.setGenerate(GENERATE_ANNOTATIONS.stream().flatMap(a -> ReflectUtils.getRepeatableAnnotation(method, a).stream()).toArray(Annotation[]::new));
+		mapperMethod.setGenerate(GENERATE_ANNOTATIONS.stream().flatMap(a -> Arrays.stream(method.getAnnotationsByType(a))).toArray(Annotation[]::new));
 
 		//请求头
 		mapperMethod.getHeaders().addAll(parseHeader(method));
 
 		//固定参数
-		for (Param param : ReflectUtils.getRepeatableAnnotation(method, Param.class)) {
+
+		for (Param param : method.getAnnotationsByType(Param.class)) {
 			String value = param.encode() ? StrUtils.URLEncoder(param.value(), mapperMethod.getCharset()) : param.value();
 			mapperMethod.getParams().add(new NameValuePair(param.name(), value));
 		}
 		//文件上传
-		for (FilePart filePart : ReflectUtils.getRepeatableAnnotation(method, FilePart.class)) {
+		for (FilePart filePart : method.getAnnotationsByType(FilePart.class)) {
 			mapperMethod.getFileParts().add(new FileParts(filePart.name(), new File(filePart.value())));
 		}
 		//直接请求体
@@ -155,12 +156,12 @@ public class AnnotationParser implements Parser {
 	private List<NameValuePair> parseHeader(AnnotatedElement element) {
 		List<NameValuePair> headers = Lists.newArrayList();
 
-		for (Header header : ReflectUtils.getRepeatableAnnotation(element, Header.class)) {
+		for (Header header : element.getAnnotationsByType(Header.class)) {
 			headers.add(new NameValuePair(header.name(), header.value()));
 		}
 
 		for (Map.Entry<String, Class<? extends Annotation>> entry : HEADER_ANNOTATIONS.entrySet()) {
-			ReflectUtils.containsAnnotation(element, entry.getValue(), annotation -> {
+			ReflectUtils.ifAnnotationPresent(element, entry.getValue(), annotation -> {
 				String value = (String) ReflectUtils.invokeAnnotationMethod(annotation, "value");
 				headers.add(new NameValuePair(entry.getKey(), value));
 			});
