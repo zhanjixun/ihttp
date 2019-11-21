@@ -1,7 +1,5 @@
 package com.zhanjixun.ihttp.parsing;
 
-import com.google.common.collect.Lists;
-import com.google.common.collect.Maps;
 import com.zhanjixun.ihttp.annotations.*;
 import com.zhanjixun.ihttp.binding.Mapper;
 import com.zhanjixun.ihttp.binding.MapperMethod;
@@ -10,18 +8,15 @@ import com.zhanjixun.ihttp.domain.HttpProxy;
 import com.zhanjixun.ihttp.domain.NameValuePair;
 import com.zhanjixun.ihttp.utils.ReflectUtils;
 import com.zhanjixun.ihttp.utils.StrUtils;
+import com.zhanjixun.ihttp.utils.Util;
 import lombok.extern.slf4j.Slf4j;
-import org.apache.commons.collections.CollectionUtils;
 
 import java.io.File;
 import java.lang.annotation.Annotation;
 import java.lang.reflect.AnnotatedElement;
 import java.lang.reflect.Method;
 import java.lang.reflect.Parameter;
-import java.util.Arrays;
-import java.util.List;
-import java.util.Map;
-import java.util.Objects;
+import java.util.*;
 import java.util.stream.Collectors;
 
 /**
@@ -33,10 +28,10 @@ import java.util.stream.Collectors;
 public class AnnotationParser implements Parser {
 
 	private Class<?> target;
-	public static final Map<String, Class<? extends Annotation>> HEADER_ANNOTATIONS = Maps.newHashMap();
-	public static final List<Class<? extends Annotation>> HTTP_METHOD_ANNOTATIONS = Lists.newArrayList();
-	public static final List<Class<? extends Annotation>> PARAMETER_ANNOTATIONS = Lists.newArrayList();
-	public static final List<Class<? extends Annotation>> GENERATE_ANNOTATIONS = Lists.newArrayList();
+	public static final Map<String, Class<? extends Annotation>> HEADER_ANNOTATIONS = new HashMap<>();
+	public static final List<Class<? extends Annotation>> HTTP_METHOD_ANNOTATIONS = new ArrayList<>();
+	public static final List<Class<? extends Annotation>> PARAMETER_ANNOTATIONS = new ArrayList<>();
+	public static final List<Class<? extends Annotation>> GENERATE_ANNOTATIONS = new ArrayList<>();
 
 	static {
 		HEADER_ANNOTATIONS.put("Accept", Accept.class);
@@ -100,7 +95,7 @@ public class AnnotationParser implements Parser {
 
 		//http方法
 		List<? extends Annotation> httpMethod = HTTP_METHOD_ANNOTATIONS.stream().map(method::getAnnotation).filter(Objects::nonNull).collect(Collectors.toList());
-		if (CollectionUtils.isEmpty(httpMethod)) {
+		if (Util.isEmpty(httpMethod)) {
 			throw new RuntimeException(String.format("没有找到HTTP请求方法 %s", target.getName() + "." + method.getName()));
 		}
 		if (httpMethod.size() > 1) {
@@ -125,7 +120,7 @@ public class AnnotationParser implements Parser {
 			List<Annotation> annotations = Arrays.stream(parameters[i].getAnnotations())
 					.filter(a -> PARAMETER_ANNOTATIONS.contains(a.annotationType()))
 					.collect(Collectors.toList());
-			if (CollectionUtils.isEmpty(annotations)) {
+			if (Util.isEmpty(annotations)) {
 				continue;
 			}
 			parameterAMapping[i] = annotations.get(0);
@@ -154,7 +149,7 @@ public class AnnotationParser implements Parser {
 	}
 
 	private List<NameValuePair> parseHeader(AnnotatedElement element) {
-		List<NameValuePair> headers = Lists.newArrayList();
+		List<NameValuePair> headers = new ArrayList<>();
 
 		for (Header header : element.getAnnotationsByType(Header.class)) {
 			headers.add(new NameValuePair(header.name(), header.value()));

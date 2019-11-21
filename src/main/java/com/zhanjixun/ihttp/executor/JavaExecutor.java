@@ -7,10 +7,9 @@ import com.zhanjixun.ihttp.domain.Configuration;
 import com.zhanjixun.ihttp.domain.FileParts;
 import com.zhanjixun.ihttp.domain.NameValuePair;
 import com.zhanjixun.ihttp.utils.StrUtils;
+import com.zhanjixun.ihttp.utils.Util;
 import lombok.extern.slf4j.Slf4j;
 import okio.Okio;
-import org.apache.commons.collections.CollectionUtils;
-import org.apache.commons.lang3.StringUtils;
 
 import javax.activation.MimetypesFileTypeMap;
 import java.io.IOException;
@@ -51,21 +50,21 @@ public class JavaExecutor extends BaseExecutor {
 
 		//参数
 		String paramString = request.getParams().stream().map(p -> p.getName() + "=" + p.getValue()).collect(Collectors.joining("&"));
-		if (StringUtils.isNotBlank(paramString)) {
+		if (Util.isNotBlank(paramString)) {
 			OutputStream outputStream = connection.getOutputStream();
 			outputStream.write(paramString.getBytes());
 			outputStream.flush();
 			outputStream.close();
 		}
 		//发送JSON
-		if (StringUtils.isNotBlank(request.getBody())) {
+		if (Util.isNotBlank(request.getBody())) {
 			OutputStream outputStream = connection.getOutputStream();
 			outputStream.write(request.getBody().getBytes());
 			outputStream.flush();
 			outputStream.close();
 		}
 		//文件上传
-		if (CollectionUtils.isNotEmpty(request.getFileParts())) {
+		if (Util.isNotEmpty(request.getFileParts())) {
 			OutputStream outputStream = connection.getOutputStream();
 			String prefix = "----", boundary = UUID.randomUUID().toString(), lineEnd = "\r\n";
 			String oneLine = prefix + boundary + lineEnd;

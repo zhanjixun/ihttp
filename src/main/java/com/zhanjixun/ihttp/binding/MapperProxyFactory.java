@@ -1,17 +1,17 @@
 package com.zhanjixun.ihttp.binding;
 
 
-import com.google.common.collect.Maps;
 import com.zhanjixun.ihttp.CookiesStore;
 import com.zhanjixun.ihttp.cookie.CookiesStoreFactory;
 import com.zhanjixun.ihttp.domain.Configuration;
 import com.zhanjixun.ihttp.executor.ComponentsHttpClientExecutor;
 import com.zhanjixun.ihttp.executor.Executor;
 import com.zhanjixun.ihttp.parsing.AnnotationParser;
+import com.zhanjixun.ihttp.utils.Util;
 import lombok.Getter;
-import org.apache.commons.lang3.ObjectUtils;
 
 import java.lang.reflect.Proxy;
+import java.util.HashMap;
 import java.util.Map;
 
 /**
@@ -24,7 +24,7 @@ public class MapperProxyFactory<T> {
 	@Getter
 	private final Class<T> mapperInterface;
 
-	private final Map<Class<T>, Mapper> mapperCache = Maps.newHashMap();
+	private final Map<Class<T>, Mapper> mapperCache = new HashMap<>();
 
 	public MapperProxyFactory(Class<T> mapperInterface) {
 		this.mapperInterface = mapperInterface;
@@ -34,7 +34,7 @@ public class MapperProxyFactory<T> {
 		Mapper mapper = cachedMapper(mapperInterface);
 		Configuration configuration = mapper.getConfiguration();
 
-		Class<? extends Executor> executorClass = ObjectUtils.defaultIfNull(configuration.getExecutor(), ComponentsHttpClientExecutor.class);
+		Class<? extends Executor> executorClass = Util.defaultIfNull(configuration.getExecutor(), ComponentsHttpClientExecutor.class);
 
 		try {
 			CookiesStore cookiesStore = new CookiesStoreFactory().createCookiesStore(mapperInterface);

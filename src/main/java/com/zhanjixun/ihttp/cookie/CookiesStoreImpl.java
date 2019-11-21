@@ -1,12 +1,11 @@
 package com.zhanjixun.ihttp.cookie;
 
 import com.alibaba.fastjson.JSON;
-import com.google.common.collect.Lists;
 import com.zhanjixun.ihttp.CookiesStore;
 import com.zhanjixun.ihttp.domain.Cookie;
+import com.zhanjixun.ihttp.utils.Util;
 import lombok.extern.slf4j.Slf4j;
 import okio.Okio;
-import org.apache.commons.collections.CollectionUtils;
 
 import java.io.File;
 import java.io.IOException;
@@ -27,13 +26,13 @@ import java.util.stream.Collectors;
 @Slf4j
 public class CookiesStoreImpl implements CookiesStore {
 
-	private final List<Cookie> cookies = Lists.newArrayList();
+	private final List<Cookie> cookies = new ArrayList<>();
 	//读写锁
 	private final ReadWriteLock lock = new ReentrantReadWriteLock();
 
 	@Override
 	public void addCookies(List<Cookie> cookie) {
-		if (CollectionUtils.isNotEmpty(cookie)) {
+		if (Util.isNotEmpty(cookie)) {
 			lock.writeLock().lock();
 			try {
 				cookies.addAll(cookie);
@@ -92,7 +91,7 @@ public class CookiesStoreImpl implements CookiesStore {
 		try {
 			List<Cookie> waitRemove = cookies.stream().filter(Cookie::isExpired).collect(Collectors.toList());
 			waitRemove.forEach(cookies::remove);
-			return CollectionUtils.isNotEmpty(waitRemove);
+			return Util.isNotEmpty(waitRemove);
 		} finally {
 			lock.writeLock().unlock();
 		}
@@ -110,7 +109,7 @@ public class CookiesStoreImpl implements CookiesStore {
 
 	@Override
 	public void cacheCookie(File cacheFile) {
-		if (CollectionUtils.isNotEmpty(getCookies())) {
+		if (Util.isNotEmpty(getCookies())) {
 			try {
 				String string = JSON.toJSONString(getCookies());
 				//log.info("cache cookie " + string);

@@ -9,10 +9,9 @@ import com.zhanjixun.ihttp.domain.HttpProxy;
 import com.zhanjixun.ihttp.domain.NameValuePair;
 import com.zhanjixun.ihttp.utils.CookieUtils;
 import com.zhanjixun.ihttp.utils.StrUtils;
+import com.zhanjixun.ihttp.utils.Util;
 import lombok.extern.slf4j.Slf4j;
 import okio.Okio;
-import org.apache.commons.collections.CollectionUtils;
-import org.apache.commons.lang3.StringUtils;
 import org.apache.http.HttpHost;
 import org.apache.http.HttpResponse;
 import org.apache.http.client.CookieStore;
@@ -87,11 +86,11 @@ public class ComponentsHttpClientExecutor extends BaseExecutor {
 		//带参数
 		String charset = Optional.ofNullable(request.getCharset()).orElse("UTF-8");
 		String paramString = request.getParams().stream().map(p -> p.getName() + "=" + p.getValue()).collect(Collectors.joining("&"));
-		if (StringUtils.isNotBlank(paramString)) {
+		if (Util.isNotBlank(paramString)) {
 			method.setEntity(new StringEntity(paramString, ContentType.create("application/x-www-form-urlencoded", charset)));
 		}
 		//直接请求体
-		if (StringUtils.isNotBlank(request.getBody())) {
+		if (Util.isNotBlank(request.getBody())) {
 			try {
 				Optional<String> contentType = Optional.ofNullable(method.getFirstHeader("Content-Type")).map(org.apache.http.NameValuePair::getValue);
 				if (contentType.isPresent()) {
@@ -106,7 +105,7 @@ public class ComponentsHttpClientExecutor extends BaseExecutor {
 			}
 		}
 		//带文件
-		if (CollectionUtils.isNotEmpty(request.getFileParts())) {
+		if (Util.isNotEmpty(request.getFileParts())) {
 			MultipartEntityBuilder builder = MultipartEntityBuilder.create();
 			request.getParams().forEach(p -> builder.addTextBody(p.getName(), p.getValue()));
 
@@ -142,11 +141,11 @@ public class ComponentsHttpClientExecutor extends BaseExecutor {
 		//带参数
 		String charset = Optional.ofNullable(request.getCharset()).orElse("UTF-8");
 		String paramString = request.getParams().stream().map(p -> p.getName() + "=" + p.getValue()).collect(Collectors.joining("&"));
-		if (StringUtils.isNotBlank(paramString)) {
+		if (Util.isNotBlank(paramString)) {
 			method.setEntity(new StringEntity(paramString, ContentType.create("application/x-www-form-urlencoded", charset)));
 		}
 		//直接请求体
-		if (StringUtils.isNotBlank(request.getBody())) {
+		if (Util.isNotBlank(request.getBody())) {
 			try {
 				Optional<String> contentType = Optional.ofNullable(method.getFirstHeader("Content-Type")).map(org.apache.http.NameValuePair::getValue);
 				if (contentType.isPresent()) {
@@ -161,7 +160,7 @@ public class ComponentsHttpClientExecutor extends BaseExecutor {
 			}
 		}
 		//带文件
-		if (CollectionUtils.isNotEmpty(request.getFileParts())) {
+		if (Util.isNotEmpty(request.getFileParts())) {
 			MultipartEntityBuilder builder = MultipartEntityBuilder.create();
 			request.getParams().forEach(p -> builder.addTextBody(p.getName(), p.getValue()));
 

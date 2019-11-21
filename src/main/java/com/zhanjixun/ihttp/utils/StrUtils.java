@@ -1,7 +1,6 @@
 package com.zhanjixun.ihttp.utils;
 
 import com.zhanjixun.ihttp.domain.NameValuePair;
-import org.apache.commons.lang3.StringUtils;
 
 import java.io.UnsupportedEncodingException;
 import java.net.URLEncoder;
@@ -24,7 +23,7 @@ public class StrUtils {
 
 	public static String addQuery(String url, List<NameValuePair> params) {
 		String queryString = params.stream().map(pair -> pair.getName() + "=" + pair.getValue()).collect(Collectors.joining("&"));
-		if (StringUtils.isNotBlank(queryString)) {
+		if (Util.isNotBlank(queryString)) {
 			url += url.contains("?") ? "&" + queryString : "?" + queryString;
 		}
 		return url;

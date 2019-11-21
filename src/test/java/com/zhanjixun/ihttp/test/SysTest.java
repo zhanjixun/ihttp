@@ -1,5 +1,6 @@
 package com.zhanjixun.ihttp.test;
 
+import com.zhanjixun.ihttp.utils.Util;
 import org.junit.Test;
 
 /**
@@ -10,7 +11,7 @@ public class SysTest {
 
 	@Test
 	public void name() {
-
+		System.out.println(Util.randomString(12, "123456789"));
 	}
 
 }

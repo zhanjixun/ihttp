@@ -8,10 +8,9 @@ import com.zhanjixun.ihttp.domain.HttpProxy;
 import com.zhanjixun.ihttp.domain.NameValuePair;
 import com.zhanjixun.ihttp.utils.CookieUtils;
 import com.zhanjixun.ihttp.utils.StrUtils;
+import com.zhanjixun.ihttp.utils.Util;
 import lombok.extern.slf4j.Slf4j;
 import okhttp3.*;
-import org.apache.commons.collections.CollectionUtils;
-import org.apache.commons.lang3.StringUtils;
 
 import java.io.IOException;
 import java.net.InetSocketAddress;
@@ -54,17 +53,17 @@ public class OkHttpExecutor extends BaseExecutor {
 
 		String charset = Optional.ofNullable(request.getCharset()).orElse("utf-8");
 		//参数
-		if (CollectionUtils.isNotEmpty(request.getParams())) {
+		if (Util.isNotEmpty(request.getParams())) {
 			FormBody.Builder bodyBuilder = new FormBody.Builder();
 			request.getParams().forEach(p -> bodyBuilder.add(p.getName(), p.getValue()));
 			builder.post(bodyBuilder.build());
 		}
 		//请求体
-		if (StringUtils.isNotBlank(request.getBody())) {
+		if (Util.isNotBlank(request.getBody())) {
 			builder.post(FormBody.create(MediaType.parse(String.format("application/json;charset=%s", charset)), request.getBody()));
 		}
 		//文件
-		if (CollectionUtils.isNotEmpty(request.getFileParts())) {
+		if (Util.isNotEmpty(request.getFileParts())) {
 
 
 		}

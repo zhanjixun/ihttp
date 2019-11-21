@@ -1,11 +1,11 @@
 package com.zhanjixun.ihttp.binding;
 
-import com.google.common.collect.Lists;
 import com.zhanjixun.ihttp.domain.FileParts;
 import com.zhanjixun.ihttp.domain.NameValuePair;
 import lombok.Data;
 
 import java.lang.annotation.Annotation;
+import java.util.ArrayList;
 import java.util.List;
 
 /**
@@ -16,22 +16,22 @@ import java.util.List;
 @Data
 public class MapperMethod {
 
-    private String name;
-    private String url;
-    private String method;
-    private String charset;
-    private String responseCharset;
-    private String stringBody;
+	private String name;
+	private String url;
+	private String method;
+	private String charset;
+	private String responseCharset;
+	private String stringBody;
 
-    private boolean followRedirects = true;
+	private boolean followRedirects = true;
 
-    private List<NameValuePair> headers = Lists.newArrayList();
-    private List<NameValuePair> params = Lists.newArrayList();
-    private List<FileParts> fileParts = Lists.newArrayList();
+	private List<NameValuePair> headers = new ArrayList<>();
+	private List<NameValuePair> params = new ArrayList<>();
+	private List<FileParts> fileParts = new ArrayList<>();
 
-    //自动生成的参数
-    private Annotation[] generate;
+	//自动生成的参数
+	private Annotation[] generate;
 
-    //动态参数
-    private Annotation[] paramMapping;
+	//动态参数
+	private Annotation[] paramMapping;
 }

@@ -3,7 +3,6 @@ package com.zhanjixun.ihttp;
 import com.zhanjixun.ihttp.domain.FileParts;
 import com.zhanjixun.ihttp.domain.NameValuePair;
 import lombok.Data;
-import org.apache.commons.lang3.StringUtils;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -39,6 +38,6 @@ public class Request {
 
 	@Override
 	public String toString() {
-		return StringUtils.rightPad(getMethod(), 5) + " " + url;
+		return getMethod() + " " + url;
 	}
 }

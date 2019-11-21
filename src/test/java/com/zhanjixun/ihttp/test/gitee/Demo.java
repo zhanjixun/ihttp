@@ -1,6 +1,5 @@
 package com.zhanjixun.ihttp.test.gitee;
 
-import com.google.common.collect.Maps;
 import com.zhanjixun.ihttp.Response;
 import lombok.extern.slf4j.Slf4j;
 import org.junit.Test;
@@ -10,6 +9,7 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 
+import java.util.HashMap;
 import java.util.Map;
 
 @Slf4j
@@ -35,7 +35,7 @@ public class Demo {
 		Response index = gitee.index();
 		String token = index.getDocument().select("[name='authenticity_token']").get(0).val();
 
-		Map<String, String> map = Maps.newHashMap();
+		Map<String, String> map = new HashMap<>();
 		map.put("user[login]", email);
 		map.put("user[password]", password);
 

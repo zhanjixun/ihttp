@@ -9,9 +9,9 @@ import com.zhanjixun.ihttp.domain.NameValuePair;
 import com.zhanjixun.ihttp.logging.ConnectionInfo;
 import com.zhanjixun.ihttp.utils.CookieUtils;
 import com.zhanjixun.ihttp.utils.StrUtils;
+import com.zhanjixun.ihttp.utils.Util;
 import lombok.extern.slf4j.Slf4j;
 import okio.Okio;
-import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.httpclient.*;
 import org.apache.commons.httpclient.methods.GetMethod;
 import org.apache.commons.httpclient.methods.PostMethod;
@@ -21,7 +21,6 @@ import org.apache.commons.httpclient.methods.multipart.FilePart;
 import org.apache.commons.httpclient.methods.multipart.MultipartRequestEntity;
 import org.apache.commons.httpclient.methods.multipart.Part;
 import org.apache.commons.httpclient.methods.multipart.StringPart;
-import org.apache.commons.lang3.StringUtils;
 
 import java.io.FileNotFoundException;
 import java.io.IOException;
@@ -67,7 +66,7 @@ public class CommonsHttpClientExecutor extends BaseExecutor {
 		request.getParams().forEach(p -> method.addParameter(p.getName(), p.getValue()));
 
 		//直接请求体
-		if (StringUtils.isNotBlank(request.getBody())) {
+		if (Util.isNotBlank(request.getBody())) {
 			String contentType = Optional.ofNullable(method.getRequestHeader("Content-Type"))
 					.orElse(new Header("", "application/json")).getValue();
 			try {
@@ -78,7 +77,7 @@ public class CommonsHttpClientExecutor extends BaseExecutor {
 		}
 
 		//文件上传
-		if (CollectionUtils.isNotEmpty(request.getFileParts())) {
+		if (Util.isNotEmpty(request.getFileParts())) {
 			Part[] parts = new Part[request.getFileParts().size() + request.getParams().size()];
 			int index = 0;
 			for (FileParts fileParts : request.getFileParts()) {
@@ -142,7 +141,7 @@ public class CommonsHttpClientExecutor extends BaseExecutor {
 
 			if (httpMethod instanceof GetMethod) {
 				connectionInfo.setMethod("GET");
-				if (StringUtils.isNotBlank(httpMethod.getQueryString())) {
+				if (Util.isNotBlank(httpMethod.getQueryString())) {
 					Stream.of(httpMethod.getQueryString().split("&")).forEach(s -> connectionInfo.getParams().add(new NameValuePair(s.split("=")[0], s.split("=")[1])));
 				}
 			}

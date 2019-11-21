@@ -1,9 +1,6 @@
 package com.zhanjixun.ihttp.binding;
 
 import com.alibaba.fastjson.JSON;
-import com.google.common.base.Preconditions;
-import com.google.common.collect.Lists;
-import com.google.common.collect.Maps;
 import com.zhanjixun.ihttp.Request;
 import com.zhanjixun.ihttp.annotations.*;
 import com.zhanjixun.ihttp.domain.Configuration;
@@ -11,17 +8,13 @@ import com.zhanjixun.ihttp.domain.FileParts;
 import com.zhanjixun.ihttp.domain.NameValuePair;
 import com.zhanjixun.ihttp.utils.ReflectUtils;
 import com.zhanjixun.ihttp.utils.StrUtils;
+import com.zhanjixun.ihttp.utils.Util;
 import lombok.Data;
 import lombok.Getter;
-import org.apache.commons.lang3.ArrayUtils;
-import org.apache.commons.lang3.RandomStringUtils;
-import org.apache.commons.lang3.StringUtils;
 
 import java.io.File;
 import java.lang.annotation.Annotation;
-import java.util.Arrays;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.concurrent.TimeUnit;
 
 import static com.zhanjixun.ihttp.parsing.AnnotationParser.HEADER_ANNOTATIONS;
@@ -38,10 +31,10 @@ public class Mapper {
 	//Mapper定义类
 	private final Class<?> mapperInterface;
 	//存放所有方法
-	private final Map<String, MapperMethod> methods = Maps.newHashMap();
+	private final Map<String, MapperMethod> methods = new HashMap<>();
 
 	private String commonUrl;
-	private List<NameValuePair> commonHeaders = Lists.newArrayList();
+	private List<NameValuePair> commonHeaders = new ArrayList<>();
 
 	public Mapper(Class<?> mapperInterface) {
 		this.mapperInterface = mapperInterface;
@@ -81,12 +74,12 @@ public class Mapper {
 
 	private void bingGenerate(Request request, Annotation[] generate) {
 		//随机码占位符
-		Map<String, String> replacementMap = Maps.newHashMap();
+		Map<String, String> replacementMap = new HashMap<>();
 		for (Annotation annotation : generate) {
 			//随机参数
 			if (annotation.annotationType() == RandomParam.class) {
 				RandomParam randomParam = (RandomParam) annotation;
-				String value = RandomStringUtils.random(randomParam.length(), randomParam.chars());
+				String value = Util.randomString(randomParam.length(), randomParam.chars());
 				value = randomParam.encode() ? StrUtils.URLEncoder(value, request.getCharset()) : value;
 
 				request.getParams().add(new NameValuePair(randomParam.name(), value));
@@ -102,7 +95,7 @@ public class Mapper {
 			if (annotation.annotationType() == RandomPlaceholder.class) {
 				RandomPlaceholder randomPlaceholder = (RandomPlaceholder) annotation;
 				String target = String.format("#{%s}", randomPlaceholder.name());
-				String value = RandomStringUtils.random(randomPlaceholder.length(), randomPlaceholder.chars());
+				String value = Util.randomString(randomPlaceholder.length(), randomPlaceholder.chars());
 				replacementMap.put(target, value);
 			}
 			//时间戳占位符
@@ -132,7 +125,7 @@ public class Mapper {
 		if (Arrays.stream(parameterMapping).noneMatch(d -> d.annotationType() == Placeholder.class)) {
 			return;
 		}
-		Map<String, String> replacementMap = Maps.newHashMap();
+		Map<String, String> replacementMap = new HashMap<>();
 		for (int i = 0; i < parameterMapping.length; i++) {
 			Annotation annotation = parameterMapping[i];
 			Class<? extends Annotation> annotationType = annotation.annotationType();
@@ -143,9 +136,8 @@ public class Mapper {
 			}
 
 			String placeholder = ((Placeholder) annotation).value();
-			Preconditions.checkArgument(StringUtils.isNotBlank(placeholder), String.format("占位符为空 %s 参数索引 %d", request.getId(), i));
 
-			String target = String.format("#{%s}", placeholder);
+			String target = "#{" + placeholder + "}";
 			String value = null;
 			if (ReflectUtils.isPrimitive(arg)) {
 				value = arg.toString();
@@ -172,7 +164,7 @@ public class Mapper {
 	 * @param args
 	 */
 	private void bindingParameter(Request request, Annotation[] parameterMapping, Object... args) {
-		if (ArrayUtils.isEmpty(parameterMapping)) {
+		if (Util.isEmpty(parameterMapping)) {
 			return;
 		}
 		for (int i = 0; i < parameterMapping.length; i++) {
@@ -212,7 +204,7 @@ public class Mapper {
 			}
 			if (annotationType == ParamMap.class) {
 				if (arg instanceof Map) {
-					((Map<String, ?>) arg).forEach((k, v) -> request.getParams().add(new NameValuePair(k, String.valueOf(v))));
+					((Map<String, Object>) arg).forEach((k, v) -> request.getParams().add(new NameValuePair(k, String.valueOf(v))));
 				} else {
 					throw new IllegalArgumentException("在方法的参数中使用" + ParamMap.class.getName() + "时，被注解的参数类型必须为java.util.Map");
 				}
@@ -224,23 +216,23 @@ public class Mapper {
 	private void replace(Request request, Map<String, String> replacementMap) {
 		replacementMap.forEach((target, replacement) -> {
 			//替换URL
-			request.setUrl(StringUtils.replace(request.getUrl(), target, replacement));
+			request.setUrl(Util.replace(request.getUrl(), target, replacement));
 			//替换Body
-			request.setBody(StringUtils.replace(request.getBody(), target, replacement));
+			request.setBody(Util.replace(request.getBody(), target, replacement));
 			//替换请求头
 			for (NameValuePair nameValuePair : request.getHeaders()) {
-				nameValuePair.setValue(StringUtils.replace(nameValuePair.getValue(), target, replacement));
+				nameValuePair.setValue(Util.replace(nameValuePair.getValue(), target, replacement));
 			}
 			//替换请求参数
 			for (NameValuePair nameValuePair : request.getParams()) {
-				nameValuePair.setValue(StringUtils.replace(nameValuePair.getValue(), target, replacement));
+				nameValuePair.setValue(Util.replace(nameValuePair.getValue(), target, replacement));
 			}
 		});
 	}
 
 	private String buildUrl(String a, String b) {
-		a = StringUtils.isEmpty(a) ? "" : a;
-		b = StringUtils.isEmpty(b) ? "" : b;
+		a = Util.isEmpty(a) ? "" : a;
+		b = Util.isEmpty(b) ? "" : b;
 
 		return b.startsWith("http") ? b : a + b;
 	}
