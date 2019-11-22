@@ -1,8 +1,8 @@
 package com.zhanjixun.ihttp.binding;
 
 import com.zhanjixun.ihttp.domain.Configuration;
-import com.zhanjixun.ihttp.domain.HttpProxy;
 import com.zhanjixun.ihttp.executor.Executor;
+import com.zhanjixun.ihttp.parsing.HttpProxy;
 import com.zhanjixun.ihttp.parsing.Random;
 import com.zhanjixun.ihttp.parsing.Retryable;
 import com.zhanjixun.ihttp.parsing.Timestamp;

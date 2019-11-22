@@ -2,6 +2,7 @@ package com.zhanjixun.ihttp.domain;
 
 import com.zhanjixun.ihttp.executor.ComponentsHttpClientExecutor;
 import com.zhanjixun.ihttp.executor.Executor;
+import com.zhanjixun.ihttp.parsing.HttpProxy;
 import lombok.Builder;
 import lombok.Data;
 
@@ -15,15 +16,15 @@ import lombok.Data;
 @Builder
 public class Configuration {
 
-	private HttpProxy proxy;
+    private HttpProxy proxy;
 
-	private boolean cookieEnable;
+    private boolean cookieEnable;
 
-	private Class<? extends Executor> executor;
+    private Class<? extends Executor> executor;
 
-	public static Configuration getDefault() {
-		return builder().proxy(null).cookieEnable(true)
-				.executor(ComponentsHttpClientExecutor.class)
-				.build();
-	}
+    public static Configuration getDefault() {
+        return builder().proxy(null).cookieEnable(true)
+                .executor(ComponentsHttpClientExecutor.class)
+                .build();
+    }
 }
