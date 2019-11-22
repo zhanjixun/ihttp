@@ -1,4 +1,4 @@
-package com.zhanjixun.ihttp.binding;
+package com.zhanjixun.ihttp.parsing;
 
 /**
  * 可编码的
@@ -9,12 +9,12 @@ package com.zhanjixun.ihttp.binding;
  */
 public interface Encodable {
 
-	/**
-	 * 是否需要编码
-	 *
-	 * @return
-	 */
-	boolean encode();
+    /**
+     * 是否需要编码
+     *
+     * @return
+     */
+    boolean encode();
 
 
 }

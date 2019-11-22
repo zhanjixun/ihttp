@@ -1,4 +1,4 @@
-package com.zhanjixun.ihttp.binding;
+package com.zhanjixun.ihttp.parsing;
 
 import lombok.Data;
 
@@ -12,11 +12,11 @@ import lombok.Data;
 @Data
 public class EncodableString implements Encodable {
 
-	private String name;
+    private String name;
 
-	@Override
-	public boolean encode() {
-		return false;
-	}
+    @Override
+    public boolean encode() {
+        return false;
+    }
 
 }

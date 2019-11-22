@@ -1,6 +1,6 @@
 package com.zhanjixun.ihttp.annotations;
 
-import com.zhanjixun.ihttp.constant.SwitchType;
+import com.zhanjixun.ihttp.spring.SwitchType;
 
 import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;
@@ -14,8 +14,8 @@ import java.lang.annotation.Target;
 @Retention(RetentionPolicy.RUNTIME)
 public @interface BalanceURL {
 
-	String[] value() default {};
+    String[] value() default {};
 
-	SwitchType switchType() default SwitchType.ORDER;
+    SwitchType switchType() default SwitchType.ORDER;
 
 }

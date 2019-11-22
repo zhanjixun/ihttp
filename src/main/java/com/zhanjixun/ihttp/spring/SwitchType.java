@@ -1,4 +1,4 @@
-package com.zhanjixun.ihttp.constant;
+package com.zhanjixun.ihttp.spring;
 
 /**
  * @author :zhanjixun
