@@ -9,6 +9,8 @@ package com.zhanjixun.ihttp.parsing;
  */
 public interface Encodable {
 
+    void setEncode(boolean encode);
+
     /**
      * 是否需要编码
      *

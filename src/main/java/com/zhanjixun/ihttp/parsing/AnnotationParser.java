@@ -123,8 +123,16 @@ public class AnnotationParser implements Parser {
     }
 
     private void handleParameterAnnotation(Parameter parameter, MapperParameter mapperParameter) {
+        ReflectUtils.ifPresent(parameter, URL.class, e -> mapperParameter.setURLAnnotated(true));
 
+        //HTTP请求头类注解
+        mapperParameter.setRequestHeaderNames(new ArrayList<>(handlerRequestHeader(parameter).keySet()));
 
+        ReflectUtils.ifPresentMulti(parameter, Param.class, e -> mapperParameter.setRequestParamNames(Arrays.stream(e).map(a -> new EncodableString(a.name(), a.encode())).collect(Collectors.toList())));
+        ReflectUtils.ifPresentMulti(parameter, FilePart.class, e -> mapperParameter.setRequestMultiPartNames(Arrays.stream(e).map(FilePart::name).collect(Collectors.toList())));
+        ReflectUtils.ifPresent(parameter, StringBody.class, e -> mapperParameter.setRequestBody(new EncodableObject(e.encode())));
+
+        ReflectUtils.ifPresent(parameter, Placeholder.class, e -> mapperParameter.setPlaceholder(new EncodableString(e.value(), e.encode())));
     }
 
     private Map<String, String> handlerRequestHeader(AnnotatedElement annotatedElement) {
