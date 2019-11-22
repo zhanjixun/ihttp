@@ -37,7 +37,7 @@ public class Mapper {
     private String balanceURL;
 
     //TODO 此处有bug 不支持重复key
-    private Map<String, String> headers;
+    private Map<String, String> requestParams;
 
     private String cookieJar;
 

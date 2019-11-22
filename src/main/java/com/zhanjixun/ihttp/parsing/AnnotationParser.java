@@ -7,14 +7,13 @@ import com.zhanjixun.ihttp.binding.MapperMethod;
 import com.zhanjixun.ihttp.binding.MapperParameter;
 import com.zhanjixun.ihttp.domain.HttpProxy;
 import com.zhanjixun.ihttp.utils.ReflectUtils;
+import com.zhanjixun.ihttp.utils.StrUtils;
 import lombok.extern.slf4j.Slf4j;
 
+import java.lang.reflect.AnnotatedElement;
 import java.lang.reflect.Method;
 import java.lang.reflect.Parameter;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.HashMap;
-import java.util.List;
+import java.util.*;
 import java.util.stream.Collectors;
 
 /**
@@ -39,13 +38,17 @@ public class AnnotationParser implements Parser {
             //1.解析方法上的注解
             handleMethodAnnotation(method, mapperMethod);
 
-            List<MapperParameter> mapperParameters = new ArrayList<>();
+            MapperParameter[] mapperParameters = new MapperParameter[method.getParameterCount()];
             for (int i = 0; i < method.getParameterCount(); i++) {
                 Parameter parameter = method.getParameters()[i];
                 MapperParameter mapperParameter = new MapperParameter(parameter.getName(), i);
                 //2.解析参数上的注解
                 handleParameterAnnotation(parameter, mapperParameter);
+                mapperParameters[i] = mapperParameter;
             }
+            mapperMethod.setParameters(mapperParameters);
+
+            mapperMethods.add(mapperMethod);
         }
 
         //3.解析类上面的注解
@@ -67,37 +70,73 @@ public class AnnotationParser implements Parser {
         ReflectUtils.ifPresent(target, Proxy.class, e -> mapper.setProxy(new HttpProxy(e.hostName(), e.port(), e.trustSSL())));
 
         //请求头类注解
-        mapper.setHeaders(new HashMap<>());
-        ReflectUtils.ifPresent(target, Accept.class, e -> mapper.getHeaders().put("Accept", e.value()));
-        ReflectUtils.ifPresent(target, AcceptEncoding.class, e -> mapper.getHeaders().put("Accept-Encoding", e.value()));
-        ReflectUtils.ifPresent(target, AcceptLanguage.class, e -> mapper.getHeaders().put("Accept-Language", e.value()));
-        ReflectUtils.ifPresent(target, ContentType.class, e -> mapper.getHeaders().put("Content-Type", e.value()));
-        ReflectUtils.ifPresent(target, Origin.class, e -> mapper.getHeaders().put("Origin", e.value()));
-        ReflectUtils.ifPresent(target, Referer.class, e -> mapper.getHeaders().put("Referer", e.value()));
-        ReflectUtils.ifPresent(target, UserAgent.class, e -> mapper.getHeaders().put("User-Agent", e.value()));
-        ReflectUtils.ifPresentMulti(target, Header.class, e -> Arrays.stream(e).forEach(a -> mapper.getHeaders().put(a.name(), a.value())));
+        mapper.setRequestParams(handlerRequestHeader(target));
 
         //生成类注解
-        ReflectUtils.ifPresentMulti(target, RandomParam.class, e -> {
-            mapper.setRandomParams(Arrays.stream(e).map(a -> new Random(a.name(), a.length(), a.chars(), a.encode())).collect(Collectors.toList()));
-        });
-        ReflectUtils.ifPresentMulti(target, RandomPlaceholder.class, e -> {
-            mapper.setRandomPlaceholders(Arrays.stream(e).map(a -> new Random(a.name(), a.length(), a.chars(), a.encode())).collect(Collectors.toList()));
-        });
-        ReflectUtils.ifPresentMulti(target, TimestampParam.class, e -> {
-            mapper.setTimestampParams(Arrays.stream(e).map(a -> new Timestamp(a.name(), a.unit())).collect(Collectors.toList()));
-        });
-        ReflectUtils.ifPresentMulti(target, TimestampPlaceholder.class, e -> {
-            mapper.setTimestampParams(Arrays.stream(e).map(a -> new Timestamp(a.name(), a.unit())).collect(Collectors.toList()));
-        });
+        ReflectUtils.ifPresentMulti(target, RandomParam.class, e -> mapper.setRandomParams(Arrays.stream(e).map(a -> new Random(a.name(), a.length(), a.chars(), a.encode())).collect(Collectors.toList())));
+        ReflectUtils.ifPresentMulti(target, RandomPlaceholder.class, e -> mapper.setRandomPlaceholders(Arrays.stream(e).map(a -> new Random(a.name(), a.length(), a.chars(), a.encode())).collect(Collectors.toList())));
+        ReflectUtils.ifPresentMulti(target, TimestampParam.class, e -> mapper.setTimestampParams(Arrays.stream(e).map(a -> new Timestamp(a.name(), a.unit())).collect(Collectors.toList())));
+        ReflectUtils.ifPresentMulti(target, TimestampPlaceholder.class, e -> mapper.setTimestampParams(Arrays.stream(e).map(a -> new Timestamp(a.name(), a.unit())).collect(Collectors.toList())));
     }
 
     private void handleMethodAnnotation(Method method, MapperMethod mapperMethod) {
+        ReflectUtils.ifPresent(method, URL.class, e -> mapperMethod.setUrl(e.value()));
 
+        //HTTP方法类注解
+        ReflectUtils.ifPresent(method, GET.class, e -> {
+            mapperMethod.setRequestMethod(e.getClass().getSimpleName());
+            mapperMethod.setFollowRedirects(e.followRedirects());
+            mapperMethod.setRequestCharset(e.charset());
+        });
+        ReflectUtils.ifPresent(method, POST.class, e -> {
+            mapperMethod.setRequestMethod(e.getClass().getSimpleName());
+            mapperMethod.setRequestCharset(e.charset());
+        });
+        ReflectUtils.ifPresent(method, PUT.class, e -> {
+            mapperMethod.setRequestMethod(e.getClass().getSimpleName());
+            mapperMethod.setRequestCharset(e.charset());
+        });
+        ReflectUtils.ifPresent(method, DELETE.class, e -> {
+            mapperMethod.setRequestMethod(e.getClass().getSimpleName());
+            mapperMethod.setRequestCharset(e.charset());
+        });
+
+        //HTTP请求头类注解
+        mapperMethod.setRequestHeaders(handlerRequestHeader(method));
+
+        //HTTP参数
+        ReflectUtils.ifPresentMulti(method, Param.class, e -> mapperMethod.setRequestParams(Arrays.stream(e).collect(Collectors.toMap(Param::name, a -> a.encode() ? StrUtils.URLEncoder(a.value(), mapperMethod.getRequestCharset()) : a.value()))));
+        ReflectUtils.ifPresentMulti(method, FilePart.class, e -> mapperMethod.setRequestMultiParts(Arrays.stream(e).collect(Collectors.toMap(FilePart::name, FilePart::value))));
+        ReflectUtils.ifPresent(method, StringBody.class, e -> mapperMethod.setRequestBody(e.value()));
+
+        //配置类注解
+        ReflectUtils.ifPresent(method, DisableCookie.class, e -> mapperMethod.setDisableCookie(true));
+        ReflectUtils.ifPresent(method, ResponseCharset.class, e -> mapperMethod.setResponseCharset(e.value()));
+        ReflectUtils.ifPresent(method, Retryable.class, e -> mapperMethod.setRetryable(new com.zhanjixun.ihttp.parsing.Retryable(e.throwable(), e.policy(), e.maxAttempts(), e.delay(), e.multiplier())));
+        ReflectUtils.ifPresent(method, AssertStatusCode.class, e -> mapperMethod.setAssertStatusCode(e.value()));
+
+        //生成类注解
+        ReflectUtils.ifPresentMulti(method, RandomParam.class, e -> mapperMethod.setRandomParams(Arrays.stream(e).map(a -> new Random(a.name(), a.length(), a.chars(), a.encode())).collect(Collectors.toList())));
+        ReflectUtils.ifPresentMulti(method, RandomPlaceholder.class, e -> mapperMethod.setRandomPlaceholders(Arrays.stream(e).map(a -> new Random(a.name(), a.length(), a.chars(), a.encode())).collect(Collectors.toList())));
+        ReflectUtils.ifPresentMulti(method, TimestampParam.class, e -> mapperMethod.setTimestampParams(Arrays.stream(e).map(a -> new Timestamp(a.name(), a.unit())).collect(Collectors.toList())));
+        ReflectUtils.ifPresentMulti(method, TimestampPlaceholder.class, e -> mapperMethod.setTimestampParams(Arrays.stream(e).map(a -> new Timestamp(a.name(), a.unit())).collect(Collectors.toList())));
     }
 
     private void handleParameterAnnotation(Parameter parameter, MapperParameter mapperParameter) {
 
+
     }
 
+    private Map<String, String> handlerRequestHeader(AnnotatedElement annotatedElement) {
+        Map<String, String> requestHeaders = new HashMap<>();
+        ReflectUtils.ifPresent(annotatedElement, Accept.class, e -> requestHeaders.put("Accept", e.value()));
+        ReflectUtils.ifPresent(annotatedElement, AcceptEncoding.class, e -> requestHeaders.put("Accept-Encoding", e.value()));
+        ReflectUtils.ifPresent(annotatedElement, AcceptLanguage.class, e -> requestHeaders.put("Accept-Language", e.value()));
+        ReflectUtils.ifPresent(annotatedElement, ContentType.class, e -> requestHeaders.put("Content-Type", e.value()));
+        ReflectUtils.ifPresent(annotatedElement, Origin.class, e -> requestHeaders.put("Origin", e.value()));
+        ReflectUtils.ifPresent(annotatedElement, Referer.class, e -> requestHeaders.put("Referer", e.value()));
+        ReflectUtils.ifPresent(annotatedElement, UserAgent.class, e -> requestHeaders.put("User-Agent", e.value()));
+        ReflectUtils.ifPresentMulti(annotatedElement, Header.class, e -> Arrays.stream(e).forEach(a -> requestHeaders.put(a.name(), a.value())));
+        return requestHeaders;
+    }
 }

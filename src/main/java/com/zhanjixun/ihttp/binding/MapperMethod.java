@@ -29,11 +29,20 @@ public class MapperMethod {
 
     private String url;
 
-    private List<Map<String, String>> requestParams;
+    private String requestCharset;
 
-    private List<Map<String, String>> requestHeaders;
+    private String responseCharset;
 
-    private List<Map<String, String>> requestMultiParts;
+    private Boolean followRedirects;
+
+    //GET, HEAD, POST, PUT, PATCH, DELETE, OPTIONS, TRACE
+    private String requestMethod;
+
+    private Map<String, String> requestParams;
+
+    private Map<String, String> requestHeaders;
+
+    private Map<String, String> requestMultiParts;
 
     private int[] assertStatusCode;
 
