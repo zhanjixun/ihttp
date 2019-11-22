@@ -136,7 +136,7 @@ public class AnnotationParser implements Parser {
 
 		for (Param param : method.getAnnotationsByType(Param.class)) {
 			String value = param.encode() ? StrUtils.URLEncoder(param.value(), mapperMethod.getCharset()) : param.value();
-			mapperMethod.getParams().add(new NameValuePair(param.name(), value));
+			mapperMethod.getRequestParams().add(new NameValuePair(param.name(), value));
 		}
 		//文件上传
 		for (FilePart filePart : method.getAnnotationsByType(FilePart.class)) {

@@ -13,7 +13,7 @@ import java.lang.annotation.*;
  * @contact :zhanjixun@qq.com
  */
 @Documented
-@Target({ElementType.METHOD})
+@Target({ElementType.TYPE, ElementType.METHOD})
 @Retention(RetentionPolicy.RUNTIME)
 public @interface ResponseCharset {
 

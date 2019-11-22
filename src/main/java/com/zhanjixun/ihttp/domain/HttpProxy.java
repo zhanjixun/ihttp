@@ -13,9 +13,11 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 public class HttpProxy {
 
-    private String hostName;
+	private String hostName;
 
-    private int port;
+	private int port;
 
-    private boolean trustSSL;
+	private boolean trustSSL;
+
+
 }

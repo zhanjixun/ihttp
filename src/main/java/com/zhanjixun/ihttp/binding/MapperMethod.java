@@ -1,12 +1,11 @@
 package com.zhanjixun.ihttp.binding;
 
-import com.zhanjixun.ihttp.domain.FileParts;
-import com.zhanjixun.ihttp.domain.NameValuePair;
+import com.zhanjixun.ihttp.Request;
+import com.zhanjixun.ihttp.Response;
 import lombok.Data;
 
-import java.lang.annotation.Annotation;
-import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 
 /**
  * 对应一个Mapper中定义的方法
@@ -16,22 +15,49 @@ import java.util.List;
 @Data
 public class MapperMethod {
 
+	private Mapper declaringMapper;
+
 	private String name;
+
 	private String url;
-	private String method;
-	private String charset;
-	private String responseCharset;
-	private String stringBody;
 
-	private boolean followRedirects = true;
+	private List<Map<String, String>> requestParams;
 
-	private List<NameValuePair> headers = new ArrayList<>();
-	private List<NameValuePair> params = new ArrayList<>();
-	private List<FileParts> fileParts = new ArrayList<>();
+	private List<Map<String, String>> requestHeaders;
 
-	//自动生成的参数
-	private Annotation[] generate;
+	private List<Map<String, String>> requestMultiParts;
 
-	//动态参数
-	private Annotation[] paramMapping;
+	private int[] assertStatusCode;
+
+	private Boolean disableCookie;
+
+	private List<RandomParamValueProvider> randomParams;
+
+	private List<RandomPlaceholderValueProvider> randomPlaceholders;
+
+	private List<TimestampParamValueProvider> timestampParams;
+
+	private List<TimestampPlaceholderValueProvider> timestampPlaceholders;
+
+	private String requestBody;
+
+	private RetryableFunction retryable;
+
+	private MapperParameter[] parameters;
+
+	public MapperMethod(Mapper declaringMapper, String name) {
+		this.declaringMapper = declaringMapper;
+		this.name = name;
+	}
+
+	public Response execute(Object... args) throws Exception {
+
+		return null;
+	}
+
+	private Request buildRequest(Object... args) {
+
+		return null;
+	}
+
 }

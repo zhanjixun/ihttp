@@ -1,6 +1,9 @@
 package com.zhanjixun.ihttp.test;
 
-import com.zhanjixun.ihttp.utils.Util;
+import com.zhanjixun.ihttp.IHTTP;
+import com.zhanjixun.ihttp.Response;
+import com.zhanjixun.ihttp.annotations.GET;
+import com.zhanjixun.ihttp.annotations.URL;
 import org.junit.Test;
 
 /**
@@ -9,9 +12,18 @@ import org.junit.Test;
  */
 public class SysTest {
 
+	private Hao6vMapper mapper = IHTTP.getMapper(Hao6vMapper.class);
+
 	@Test
 	public void name() {
-		System.out.println(Util.randomString(12, "123456789"));
+		Response index = mapper.index();
+		System.out.println(index.getText());
 	}
 
+	interface Hao6vMapper {
+
+		@GET
+		@URL("http://www.hao6v.com/index.html")
+		Response index();
+	}
 }

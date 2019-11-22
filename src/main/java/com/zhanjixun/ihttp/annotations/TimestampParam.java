@@ -11,7 +11,7 @@ import java.util.concurrent.TimeUnit;
  * @contact :zhanjixun@qq.com
  */
 @Documented
-@Target({ElementType.METHOD, ElementType.TYPE})
+@Target({ElementType.TYPE, ElementType.METHOD})
 @Retention(RetentionPolicy.RUNTIME)
 @Repeatable(TimestampParam.List.class)
 public @interface TimestampParam {
