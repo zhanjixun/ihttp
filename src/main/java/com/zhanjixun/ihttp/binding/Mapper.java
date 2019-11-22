@@ -3,9 +3,9 @@ package com.zhanjixun.ihttp.binding;
 import com.zhanjixun.ihttp.domain.Configuration;
 import com.zhanjixun.ihttp.domain.HttpProxy;
 import com.zhanjixun.ihttp.executor.Executor;
-import com.zhanjixun.ihttp.parsing.RandomGenerator;
-import com.zhanjixun.ihttp.parsing.RetryableFunction;
-import com.zhanjixun.ihttp.parsing.TimestampGenerator;
+import com.zhanjixun.ihttp.parsing.Random;
+import com.zhanjixun.ihttp.parsing.Retryable;
+import com.zhanjixun.ihttp.parsing.Timestamp;
 import lombok.Data;
 
 import java.util.List;
@@ -34,8 +34,10 @@ public class Mapper {
 
     private String url;
 
+    private String balanceURL;
+
     //TODO 此处有bug 不支持重复key
-    private List<Map<String, String>> headers;
+    private Map<String, String> headers;
 
     private String cookieJar;
 
@@ -45,17 +47,17 @@ public class Mapper {
 
     private HttpProxy proxy;
 
-    private List<RandomGenerator> randomParams;
+    private List<Random> randomParams;
 
-    private List<RandomGenerator> randomPlaceholders;
+    private List<Random> randomPlaceholders;
 
     private String responseCharset;
 
-    private RetryableFunction retryable;
+    private Retryable retryable;
 
-    private List<TimestampGenerator> timestampParams;
+    private List<Timestamp> timestampParams;
 
-    private List<TimestampGenerator> timestampPlaceholders;
+    private List<Timestamp> timestampPlaceholders;
 
     public Mapper(Class<?> mapperInterface, List<MapperMethod> methods) {
         this.mapperInterface = mapperInterface;

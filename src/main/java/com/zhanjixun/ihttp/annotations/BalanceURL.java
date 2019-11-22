@@ -1,6 +1,6 @@
 package com.zhanjixun.ihttp.annotations;
 
-import com.zhanjixun.ihttp.spring.SwitchType;
+import com.zhanjixun.ihttp.parsing.SwitchType;
 
 import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;

@@ -21,12 +21,10 @@ public @interface Retryable {
     /**
      * 可重试的异常类型
      */
-    Class<? extends Throwable> throwable() default RuntimeException.class;
+    Class<? extends Throwable>[] throwable() default {};
 
     /**
      * 重试策略
-     *
-     * @return
      */
     Class<? extends RetryPolicy>[] policy() default {};
 

@@ -1,4 +1,4 @@
-package com.zhanjixun.ihttp.spring;
+package com.zhanjixun.ihttp.parsing;
 
 /**
  * @author :zhanjixun

@@ -12,7 +12,7 @@ import lombok.NoArgsConstructor;
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
-public class RandomGenerator implements ValueGenerator<String> {
+public class Random {
 
     private String name;
 
@@ -21,10 +21,5 @@ public class RandomGenerator implements ValueGenerator<String> {
     private String chars;
 
     private boolean encode;
-
-    @Override
-    public String value() {
-        return null;
-    }
 
 }

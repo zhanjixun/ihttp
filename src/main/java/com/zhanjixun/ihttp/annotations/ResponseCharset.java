@@ -16,7 +16,9 @@ import java.lang.annotation.*;
 @Target({ElementType.TYPE, ElementType.METHOD})
 @Retention(RetentionPolicy.RUNTIME)
 public @interface ResponseCharset {
-
-	String value();
+    /**
+     * 处理返回值的字符编码
+     */
+    String value();
 
 }

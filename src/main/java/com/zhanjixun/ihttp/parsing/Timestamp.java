@@ -1,5 +1,9 @@
 package com.zhanjixun.ihttp.parsing;
 
+import lombok.AllArgsConstructor;
+import lombok.Data;
+import lombok.NoArgsConstructor;
+
 import java.util.concurrent.TimeUnit;
 
 /**
@@ -7,16 +11,12 @@ import java.util.concurrent.TimeUnit;
  * @date : 2019/11/22 11:49
  * @contact :zhanjixun@qq.com
  */
-public class TimestampGenerator implements ValueGenerator<String> {
+@Data
+@NoArgsConstructor
+@AllArgsConstructor
+public class Timestamp {
 
     private String name;
 
     private TimeUnit unit;
-
-    @Override
-    public String value() {
-        return null;
-    }
-
-
 }

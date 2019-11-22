@@ -1,7 +1,9 @@
 package com.zhanjixun.ihttp.parsing;
 
 import com.zhanjixun.ihttp.RetryPolicy;
+import lombok.AllArgsConstructor;
 import lombok.Data;
+import lombok.NoArgsConstructor;
 
 /**
  * @author :zhanjixun
@@ -9,9 +11,11 @@ import lombok.Data;
  * @contact :zhanjixun@qq.com
  */
 @Data
-public class RetryableFunction {
+@NoArgsConstructor
+@AllArgsConstructor
+public class Retryable {
 
-    private Class<? extends Throwable> throwable;
+    private Class<? extends Throwable>[] throwable;
 
     private Class<? extends RetryPolicy>[] policy;
 

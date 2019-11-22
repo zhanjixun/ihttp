@@ -2,9 +2,9 @@ package com.zhanjixun.ihttp.binding;
 
 import com.zhanjixun.ihttp.Request;
 import com.zhanjixun.ihttp.Response;
-import com.zhanjixun.ihttp.parsing.RandomGenerator;
-import com.zhanjixun.ihttp.parsing.RetryableFunction;
-import com.zhanjixun.ihttp.parsing.TimestampGenerator;
+import com.zhanjixun.ihttp.parsing.Random;
+import com.zhanjixun.ihttp.parsing.Retryable;
+import com.zhanjixun.ihttp.parsing.Timestamp;
 import lombok.Data;
 
 import java.util.List;
@@ -22,6 +22,11 @@ public class MapperMethod {
 
     private String name;
 
+    //用于缓存Request,避免重复组装一些固定的属性
+    private Request cacheRequest;
+
+    //注解属性
+
     private String url;
 
     private List<Map<String, String>> requestParams;
@@ -34,17 +39,17 @@ public class MapperMethod {
 
     private Boolean disableCookie;
 
-    private List<RandomGenerator> randomParams;
+    private List<Random> randomParams;
 
-    private List<RandomGenerator> randomPlaceholders;
+    private List<Random> randomPlaceholders;
 
-    private List<TimestampGenerator> timestampParams;
+    private List<Timestamp> timestampParams;
 
-    private List<TimestampGenerator> timestampPlaceholders;
+    private List<Timestamp> timestampPlaceholders;
 
     private String requestBody;
 
-    private RetryableFunction retryable;
+    private Retryable retryable;
 
     private MapperParameter[] parameters;
 
@@ -59,6 +64,16 @@ public class MapperMethod {
     }
 
     private Request buildRequest(Object... args) {
+        if (cacheRequest == null) {
+
+        }
+
+        //生成实时内容
+
+        //替换占位符
+
+        //绑定运行参数
+
 
         return null;
     }
