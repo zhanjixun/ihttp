@@ -3,7 +3,7 @@ package com.zhanjixun.ihttp.executor;
 import com.zhanjixun.ihttp.CookiesStore;
 import com.zhanjixun.ihttp.Request;
 import com.zhanjixun.ihttp.Response;
-import com.zhanjixun.ihttp.domain.Configuration;
+import com.zhanjixun.ihttp.parsing.Configuration;
 import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
 

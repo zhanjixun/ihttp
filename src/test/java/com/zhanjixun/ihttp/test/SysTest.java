@@ -2,8 +2,7 @@ package com.zhanjixun.ihttp.test;
 
 import com.zhanjixun.ihttp.IHTTP;
 import com.zhanjixun.ihttp.Response;
-import com.zhanjixun.ihttp.annotations.GET;
-import com.zhanjixun.ihttp.annotations.URL;
+import com.zhanjixun.ihttp.annotations.*;
 import org.junit.Test;
 
 /**
@@ -20,10 +19,16 @@ public class SysTest {
 		System.out.println(index.getText());
 	}
 
+	@URL("http://www.hao6v.com")
+	@ResponseCharset("gbk2312")
 	interface Hao6vMapper {
 
 		@GET
-		@URL("http://www.hao6v.com/index.html")
+		@URL("/index.html")
+		@UserAgent("Mozilla/5.0 (Windows NT 10.0; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/78.0.3904.108 Safari/537.36")
+		@Header(name = "from", value = "zhanjixun@qq.com")
 		Response index();
+
+
 	}
 }

@@ -1,11 +1,10 @@
 package com.zhanjixun.ihttp;
 
-import com.zhanjixun.ihttp.domain.FileParts;
-import com.zhanjixun.ihttp.domain.NameValuePair;
 import lombok.Data;
 
-import java.util.ArrayList;
-import java.util.List;
+import java.io.File;
+import java.io.Serializable;
+import java.util.Map;
 
 /**
  * http请求实体
@@ -13,15 +12,17 @@ import java.util.List;
  * @author zhanjixun
  */
 @Data
-public class Request {
+public class Request implements Serializable {
 
-	private String id;
+	private static final long serialVersionUID = 3720684088323984812L;
+
+	private String name;
 	//请求地址
 	private String url;
 	//请求编码
 	private String method;
 	//跟随重定向
-	private boolean followRedirects = true;
+	private Boolean followRedirects;
 	//请求体
 	private String body;
 	//请求字符编码
@@ -30,14 +31,20 @@ public class Request {
 	private String responseCharset;
 
 	//请求头
-	private List<NameValuePair> headers = new ArrayList<>();
+	private Map<String, String> headers;
 	//请求参数
-	private List<NameValuePair> params = new ArrayList<>();
+	private Map<String, String> params;
 	//文件
-	private List<FileParts> fileParts = new ArrayList<>();
+	private Map<String, File> fileParts;
 
 	@Override
 	public String toString() {
 		return getMethod() + " " + url;
 	}
+
+	@Override
+	public Object clone() throws CloneNotSupportedException {
+		return super.clone();
+	}
+
 }

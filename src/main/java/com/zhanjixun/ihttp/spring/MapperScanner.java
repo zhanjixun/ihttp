@@ -1,6 +1,10 @@
 package com.zhanjixun.ihttp.spring;
 
 import com.zhanjixun.ihttp.IHTTP;
+import com.zhanjixun.ihttp.annotations.DELETE;
+import com.zhanjixun.ihttp.annotations.GET;
+import com.zhanjixun.ihttp.annotations.POST;
+import com.zhanjixun.ihttp.annotations.PUT;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
@@ -28,13 +32,12 @@ import org.springframework.util.StringUtils;
 import org.springframework.util.SystemPropertyUtils;
 
 import java.io.IOException;
+import java.lang.reflect.Method;
 import java.util.Arrays;
 import java.util.HashSet;
-import java.util.Objects;
 import java.util.Set;
 import java.util.stream.Collectors;
 
-import static com.zhanjixun.ihttp.parsing.AnnotationParser.HTTP_METHOD_ANNOTATIONS;
 import static org.springframework.util.Assert.notNull;
 
 /**
@@ -101,9 +104,9 @@ public class MapperScanner implements BeanDefinitionRegistryPostProcessor, Appli
 	@SuppressWarnings("unchecked")
 	public void postProcessBeanDefinitionRegistry(BeanDefinitionRegistry registry) throws BeansException {
 		Set<Class> classes = scan(StringUtils.tokenizeToStringArray(basePackage, ConfigurableApplicationContext.CONFIG_LOCATION_DELIMITERS));
-		for (Class mapper : classes.stream().filter(Class::isInterface).collect(Collectors.toSet())) {
-			if (isMapper(mapper)) {
-				Object obj = IHTTP.getMapper(mapper);
+		for (Class clazz : classes.stream().filter(Class::isInterface).collect(Collectors.toSet())) {
+			if (isMapper(clazz)) {
+				Object obj = IHTTP.getMapper(clazz);
 				applicationContext.getAutowireCapableBeanFactory().applyBeanPostProcessorsAfterInitialization(obj, obj.getClass().getName());
 				DefaultListableBeanFactory beanFactory = (DefaultListableBeanFactory) applicationContext.getAutowireCapableBeanFactory();
 				beanFactory.registerSingleton(obj.getClass().getName(), obj);
@@ -112,7 +115,15 @@ public class MapperScanner implements BeanDefinitionRegistryPostProcessor, Appli
 	}
 
 	private boolean isMapper(Class<?> mapperClass) {
-		return Arrays.stream(mapperClass.getDeclaredMethods()).parallel().anyMatch(m -> HTTP_METHOD_ANNOTATIONS.stream().anyMatch(a -> Objects.nonNull(m.getAnnotation(a))));
+		Class[] httpMethod = new Class[]{GET.class, POST.class, PUT.class, DELETE.class};
+		for (Method method : mapperClass.getDeclaredMethods()) {
+			for (Class httpMethodClazz : httpMethod) {
+				if (method.isAnnotationPresent(httpMethodClazz)) {
+					return true;
+				}
+			}
+		}
+		return false;
 	}
 
 	@Override

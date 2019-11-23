@@ -2,6 +2,7 @@ package com.zhanjixun.ihttp.utils;
 
 import java.util.Collection;
 import java.util.Random;
+import java.util.function.Consumer;
 
 /**
  * @author :zhanjixun
@@ -31,8 +32,12 @@ public class Util {
 		return str == null || str.trim().isEmpty();
 	}
 
-	public static boolean isEmpty(String coll) {
-		return coll == null || coll.isEmpty();
+	public static boolean isEmpty(String str) {
+		return str == null || str.isEmpty();
+	}
+
+	public static boolean isNotEmpty(String str) {
+		return !isEmpty(str);
 	}
 
 	public static String replace(String value, String target, String replacement) {
@@ -61,4 +66,12 @@ public class Util {
 		return array == null || array.length == 0;
 	}
 
+
+	//lambda
+
+	public static <T> void ifNotNull(T object, Consumer<T> consumer) {
+		if (object != null) {
+			consumer.accept(object);
+		}
+	}
 }

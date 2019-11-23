@@ -3,11 +3,9 @@ package com.zhanjixun.ihttp.binding;
 
 import com.zhanjixun.ihttp.CookiesStore;
 import com.zhanjixun.ihttp.cookie.CookiesStoreFactory;
-import com.zhanjixun.ihttp.domain.Configuration;
-import com.zhanjixun.ihttp.executor.ComponentsHttpClientExecutor;
 import com.zhanjixun.ihttp.executor.Executor;
 import com.zhanjixun.ihttp.parsing.AnnotationParser;
-import com.zhanjixun.ihttp.utils.Util;
+import com.zhanjixun.ihttp.parsing.Configuration;
 import lombok.Getter;
 
 import java.lang.reflect.Proxy;
@@ -32,14 +30,22 @@ public class MapperProxyFactory<T> {
 
 	public T newInstance() {
 		Mapper mapper = cachedMapper(mapperInterface);
-		Configuration configuration = mapper.getConfiguration();
-
-		Class<? extends Executor> executorClass = Util.defaultIfNull(configuration.getExecutor(), ComponentsHttpClientExecutor.class);
-
 		try {
-			CookiesStore cookiesStore = new CookiesStoreFactory().createCookiesStore(mapperInterface);
-			Executor executor = executorClass.getConstructor(Configuration.class, CookiesStore.class).newInstance(configuration, cookiesStore);
-			MapperProxy mapperProxy = new MapperProxy(mapper, executor);
+			Configuration configuration = Configuration.getDefault();
+			if (mapper.getHttpExecutor() != null) {
+				configuration.setExecutor(mapper.getHttpExecutor());
+			}
+			if (mapper.getHttpProxy() != null) {
+				configuration.setProxy(mapper.getHttpProxy());
+			}
+			if (mapper.getDisableCookie() != null) {
+				configuration.setCookieEnable(mapper.getDisableCookie());
+			}
+			CookiesStore cookiesStore = new CookiesStoreFactory().createCookiesStore(mapperInterface, mapper.getCookieJar());
+			Executor executor = configuration.getExecutor().getConstructor(Configuration.class, CookiesStore.class).newInstance(configuration, cookiesStore);
+			mapper.setExecutor(executor);
+
+			MapperProxy mapperProxy = new MapperProxy(mapper);
 			return newInstance(mapperProxy);
 		} catch (Exception e) {
 			throw new RuntimeException(e);

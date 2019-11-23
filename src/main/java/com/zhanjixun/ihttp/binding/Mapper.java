@@ -1,11 +1,10 @@
 package com.zhanjixun.ihttp.binding;
 
-import com.zhanjixun.ihttp.domain.Configuration;
 import com.zhanjixun.ihttp.executor.Executor;
 import com.zhanjixun.ihttp.parsing.HttpProxy;
-import com.zhanjixun.ihttp.parsing.Random;
+import com.zhanjixun.ihttp.parsing.RandomGenerator;
 import com.zhanjixun.ihttp.parsing.Retryable;
-import com.zhanjixun.ihttp.parsing.Timestamp;
+import com.zhanjixun.ihttp.parsing.TimestampGenerator;
 import lombok.Data;
 
 import java.util.List;
@@ -21,52 +20,49 @@ import java.util.stream.Collectors;
 @Data
 public class Mapper {
 
-    private final Class<?> mapperInterface;
+	private final Class<?> mapperInterface;
 
-    private final List<MapperMethod> methods;
+	private final List<MapperMethod> methods;
 
-    private Executor executor;
+	private Executor executor;
 
+	//注解属性
 
-    //注解属性
+	private String url;
 
-    private Configuration configuration;
+	//TODO 此处有bug 不支持重复key
+	private Map<String, String> requestParams;
 
-    private String url;
+	private Map<String, String> requestHeaders;
 
-    private String balanceURL;
+	private String cookieJar;
 
-    //TODO 此处有bug 不支持重复key
-    private Map<String, String> requestParams;
+	private Boolean disableCookie;
 
-    private String cookieJar;
+	private Class<? extends Executor> httpExecutor;
 
-    private Boolean disableCookie;
+	private HttpProxy httpProxy;
 
-    private Class<? extends Executor> httpExecutor;
+	private List<RandomGenerator> randomGeneratorParams;
 
-    private HttpProxy proxy;
+	private List<RandomGenerator> randomGeneratorPlaceholders;
 
-    private List<Random> randomParams;
+	private String responseCharset;
 
-    private List<Random> randomPlaceholders;
+	private Retryable retryable;
 
-    private String responseCharset;
+	private List<TimestampGenerator> timestampGeneratorParams;
 
-    private Retryable retryable;
+	private List<TimestampGenerator> timestampGeneratorPlaceholders;
 
-    private List<Timestamp> timestampParams;
+	public Mapper(Class<?> mapperInterface, List<MapperMethod> methods) {
+		this.mapperInterface = mapperInterface;
+		this.methods = methods;
+	}
 
-    private List<Timestamp> timestampPlaceholders;
-
-    public Mapper(Class<?> mapperInterface, List<MapperMethod> methods) {
-        this.mapperInterface = mapperInterface;
-        this.methods = methods;
-    }
-
-    public MapperMethod getMapperMethod(String name) {
-        return methods.stream().collect(Collectors.toMap(MapperMethod::getName, d -> d)).get(name);
-    }
+	public MapperMethod getMapperMethod(String name) {
+		return methods.stream().collect(Collectors.toMap(MapperMethod::getName, d -> d)).get(name);
+	}
 
 }
 

@@ -3,7 +3,6 @@ package com.zhanjixun.ihttp.binding;
 import com.zhanjixun.ihttp.CookiesStore;
 import com.zhanjixun.ihttp.Response;
 import com.zhanjixun.ihttp.exception.AssertStatusCodeException;
-import com.zhanjixun.ihttp.executor.Executor;
 
 import java.lang.reflect.InvocationHandler;
 import java.lang.reflect.Method;
@@ -17,11 +16,9 @@ import java.util.Arrays;
 public class MapperProxy implements InvocationHandler {
 
 	private final Mapper mapper;
-	private final Executor executor;
 
-	public MapperProxy(Mapper mapper, Executor executor) {
+	public MapperProxy(Mapper mapper) {
 		this.mapper = mapper;
-		this.executor = executor;
 	}
 
 	@Override
@@ -36,7 +33,7 @@ public class MapperProxy implements InvocationHandler {
 		}
 		//CookiesStore方法执行
 		if (CookiesStore.class.equals(method.getDeclaringClass())) {
-			return method.invoke(executor.getCookiesStore(), args);
+			return method.invoke(mapper.getExecutor().getCookiesStore(), args);
 		}
 
 		MapperMethod mapperMethod = mapper.getMapperMethod(method.getName());

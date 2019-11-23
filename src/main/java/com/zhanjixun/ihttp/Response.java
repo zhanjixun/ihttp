@@ -12,6 +12,7 @@ import javax.imageio.ImageIO;
 import java.awt.image.BufferedImage;
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
+import java.io.Serializable;
 import java.io.UnsupportedEncodingException;
 import java.util.ArrayList;
 import java.util.List;
@@ -22,7 +23,9 @@ import java.util.List;
  * @author zhanjixun
  */
 @Data
-public class Response {
+public class Response implements Serializable {
+
+	private static final long serialVersionUID = -4834694151773821099L;
 
 	private Request request;
 

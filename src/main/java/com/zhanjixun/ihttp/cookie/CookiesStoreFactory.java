@@ -1,7 +1,6 @@
 package com.zhanjixun.ihttp.cookie;
 
 import com.zhanjixun.ihttp.CookiesStore;
-import com.zhanjixun.ihttp.annotations.CookieShare;
 import lombok.extern.slf4j.Slf4j;
 
 import java.util.Map;
@@ -18,10 +17,8 @@ public class CookiesStoreFactory {
 	//这里存放系统中所有的CookiesStore
 	private final static Map<String, CookiesStore> cookiesStoreMap = new ConcurrentHashMap<>();
 
-	public CookiesStore createCookiesStore(Class<?> mapperClass) {
-		CookieShare cookieShare = mapperClass.getAnnotation(CookieShare.class);
-		String key = cookieShare == null ? "selfuse:" + mapperClass.getName() : "share:" + cookieShare.value();
-
+	public CookiesStore createCookiesStore(Class<?> mapperType, String cookieJarId) {
+		String key = cookieJarId == null ? "sys:" + mapperType.getName() : "common:" + cookieJarId;
 		CookiesStore cookiesStore = cookiesStoreMap.get(key);
 		if (cookiesStore == null) {
 			cookiesStore = new CookiesStoreImpl();

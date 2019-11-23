@@ -4,19 +4,22 @@ import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
-import java.util.concurrent.TimeUnit;
-
 /**
  * @author :zhanjixun
- * @date : 2019/11/22 11:49
+ * @date : 2019/11/22 11:38
  * @contact :zhanjixun@qq.com
  */
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
-public class Timestamp {
+public class RandomGenerator {
 
-    private String name;
+	private String name;
 
-    private TimeUnit unit;
+	private int length;
+
+	private String chars;
+
+	private boolean encode;
+
 }
