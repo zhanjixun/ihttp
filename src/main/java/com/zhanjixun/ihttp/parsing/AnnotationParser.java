@@ -5,14 +5,18 @@ import com.zhanjixun.ihttp.annotations.*;
 import com.zhanjixun.ihttp.binding.Mapper;
 import com.zhanjixun.ihttp.binding.MapperMethod;
 import com.zhanjixun.ihttp.binding.MapperParameter;
+import com.zhanjixun.ihttp.domain.FileParts;
 import com.zhanjixun.ihttp.utils.ReflectUtils;
 import com.zhanjixun.ihttp.utils.StrUtils;
 import lombok.extern.slf4j.Slf4j;
 
+import java.io.File;
 import java.lang.reflect.AnnotatedElement;
 import java.lang.reflect.Method;
 import java.lang.reflect.Parameter;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
 import java.util.stream.Collectors;
 
 /**
@@ -104,8 +108,16 @@ public class AnnotationParser implements Parser {
 		mapperMethod.setRequestHeaders(handlerRequestHeader(method));
 
 		//HTTP参数
-		ReflectUtils.ifPresentMulti(method, Param.class, e -> mapperMethod.setRequestParams(Arrays.stream(e).collect(Collectors.toMap(Param::name, a -> a.encode() ? StrUtils.URLEncoder(a.value(), mapperMethod.getRequestCharset()) : a.value()))));
-		ReflectUtils.ifPresentMulti(method, FilePart.class, e -> mapperMethod.setRequestMultiParts(Arrays.stream(e).collect(Collectors.toMap(FilePart::name, FilePart::value))));
+		ReflectUtils.ifPresentMulti(method, Param.class, e -> {
+			List<com.zhanjixun.ihttp.domain.Param> params = new ArrayList<>();
+			for (Param param : e) {
+				String value = param.encode() ? StrUtils.URLEncoder(param.value(), mapperMethod.getRequestCharset()) : param.value();
+				params.add(new com.zhanjixun.ihttp.domain.Param(param.name(), value));
+			}
+			mapperMethod.setRequestParams(params);
+		});
+
+		ReflectUtils.ifPresentMulti(method, FilePart.class, e -> mapperMethod.setRequestMultiParts(Arrays.stream(e).map(a -> new FileParts(a.name(), new File(a.value()))).collect(Collectors.toList())));
 		ReflectUtils.ifPresent(method, StringBody.class, e -> mapperMethod.setRequestBody(e.value()));
 
 		//配置类注解
@@ -125,7 +137,7 @@ public class AnnotationParser implements Parser {
 		ReflectUtils.ifPresent(parameter, URL.class, e -> mapperParameter.setURLAnnotated(true));
 
 		//HTTP请求头类注解
-		mapperParameter.setRequestHeaderNames(new ArrayList<>(handlerRequestHeader(parameter).keySet()));
+		mapperParameter.setRequestHeaderNames(handlerRequestHeader(parameter).stream().map(h -> h.getName()).collect(Collectors.toList()));
 
 		ReflectUtils.ifPresentMulti(parameter, Param.class, e -> mapperParameter.setRequestParamNames(Arrays.stream(e).map(a -> new EncodableString(a.name(), a.encode())).collect(Collectors.toList())));
 		ReflectUtils.ifPresentMulti(parameter, FilePart.class, e -> mapperParameter.setRequestMultiPartNames(Arrays.stream(e).map(FilePart::name).collect(Collectors.toList())));
@@ -134,16 +146,16 @@ public class AnnotationParser implements Parser {
 		ReflectUtils.ifPresent(parameter, Placeholder.class, e -> mapperParameter.setPlaceholder(new EncodableString(e.value(), e.encode())));
 	}
 
-	private Map<String, String> handlerRequestHeader(AnnotatedElement annotatedElement) {
-		Map<String, String> requestHeaders = new HashMap<>();
-		ReflectUtils.ifPresent(annotatedElement, Accept.class, e -> requestHeaders.put("Accept", e.value()));
-		ReflectUtils.ifPresent(annotatedElement, AcceptEncoding.class, e -> requestHeaders.put("Accept-Encoding", e.value()));
-		ReflectUtils.ifPresent(annotatedElement, AcceptLanguage.class, e -> requestHeaders.put("Accept-Language", e.value()));
-		ReflectUtils.ifPresent(annotatedElement, ContentType.class, e -> requestHeaders.put("Content-Type", e.value()));
-		ReflectUtils.ifPresent(annotatedElement, Origin.class, e -> requestHeaders.put("Origin", e.value()));
-		ReflectUtils.ifPresent(annotatedElement, Referer.class, e -> requestHeaders.put("Referer", e.value()));
-		ReflectUtils.ifPresent(annotatedElement, UserAgent.class, e -> requestHeaders.put("User-Agent", e.value()));
-		ReflectUtils.ifPresentMulti(annotatedElement, Header.class, e -> Arrays.stream(e).forEach(a -> requestHeaders.put(a.name(), a.value())));
-		return requestHeaders;
+	private List<com.zhanjixun.ihttp.domain.Header> handlerRequestHeader(AnnotatedElement annotatedElement) {
+		List<com.zhanjixun.ihttp.domain.Header> headers = new ArrayList<>();
+		ReflectUtils.ifPresent(annotatedElement, Accept.class, e -> headers.add(new com.zhanjixun.ihttp.domain.Header("Accept", e.value())));
+		ReflectUtils.ifPresent(annotatedElement, AcceptEncoding.class, e -> headers.add(new com.zhanjixun.ihttp.domain.Header("Accept-Encoding", e.value())));
+		ReflectUtils.ifPresent(annotatedElement, AcceptLanguage.class, e -> headers.add(new com.zhanjixun.ihttp.domain.Header("Accept-Language", e.value())));
+		ReflectUtils.ifPresent(annotatedElement, ContentType.class, e -> headers.add(new com.zhanjixun.ihttp.domain.Header("Content-Type", e.value())));
+		ReflectUtils.ifPresent(annotatedElement, Origin.class, e -> headers.add(new com.zhanjixun.ihttp.domain.Header("Origin", e.value())));
+		ReflectUtils.ifPresent(annotatedElement, Referer.class, e -> headers.add(new com.zhanjixun.ihttp.domain.Header("Referer", e.value())));
+		ReflectUtils.ifPresent(annotatedElement, UserAgent.class, e -> headers.add(new com.zhanjixun.ihttp.domain.Header("User-Agent", e.value())));
+		ReflectUtils.ifPresentMulti(annotatedElement, Header.class, e -> Arrays.stream(e).forEach(a -> headers.add(new com.zhanjixun.ihttp.domain.Header(a.name(), a.value()))));
+		return headers;
 	}
 }

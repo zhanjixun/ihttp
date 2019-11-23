@@ -1,18 +1,21 @@
 package com.zhanjixun.ihttp.domain;
 
+import lombok.AllArgsConstructor;
+import lombok.Data;
+import lombok.NoArgsConstructor;
+
 /**
  * 头部信息
  *
  * @author :zhanjixun
  * @date : 2018/11/28 23:51
  */
-public class Header extends NameValuePair {
+@Data
+@NoArgsConstructor
+@AllArgsConstructor
+public class Header {
 
-	public Header() {
+	private String name;
 
-	}
-
-	public Header(String name, String value) {
-		super(name, value);
-	}
+	private String value;
 }

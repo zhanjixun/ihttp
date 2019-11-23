@@ -1,4 +1,4 @@
-package com.zhanjixun.ihttp.domain;
+package com.zhanjixun.ihttp.cookie;
 
 import lombok.AllArgsConstructor;
 import lombok.Builder;

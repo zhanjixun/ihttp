@@ -4,7 +4,6 @@ import com.zhanjixun.ihttp.CookiesStore;
 import com.zhanjixun.ihttp.Request;
 import com.zhanjixun.ihttp.Response;
 import com.zhanjixun.ihttp.domain.FileParts;
-import com.zhanjixun.ihttp.domain.NameValuePair;
 import com.zhanjixun.ihttp.logging.ConnectionInfo;
 import com.zhanjixun.ihttp.parsing.Configuration;
 import com.zhanjixun.ihttp.utils.CookieUtils;
@@ -38,6 +37,7 @@ import java.util.stream.Stream;
  * @see HttpClient
  */
 @Slf4j
+@Deprecated
 public class CommonsHttpClientExecutor extends BaseExecutor {
 
 	private final HttpClient httpClient = new HttpClient();

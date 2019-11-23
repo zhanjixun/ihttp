@@ -4,6 +4,9 @@ import com.alibaba.fastjson.JSON;
 import com.zhanjixun.ihttp.Request;
 import com.zhanjixun.ihttp.Response;
 import com.zhanjixun.ihttp.annotations.FilePart;
+import com.zhanjixun.ihttp.domain.FileParts;
+import com.zhanjixun.ihttp.domain.Header;
+import com.zhanjixun.ihttp.domain.Param;
 import com.zhanjixun.ihttp.parsing.*;
 import com.zhanjixun.ihttp.utils.StrUtils;
 import com.zhanjixun.ihttp.utils.Util;
@@ -27,8 +30,6 @@ public class MapperMethod {
 
 	private String name;
 
-	//注解属性
-
 	private String url;
 
 	private String requestCharset;
@@ -37,14 +38,14 @@ public class MapperMethod {
 
 	private Boolean followRedirects;
 
-	//GET, HEAD, POST, PUT, PATCH, DELETE, OPTIONS, TRACE
+	//GET,POST,PUT,DELETE
 	private String requestMethod;
 
-	private Map<String, String> requestParams;
+	private List<Header> requestHeaders;
 
-	private Map<String, String> requestHeaders;
+	private List<Param> requestParams;
 
-	private Map<String, String> requestMultiParts;
+	private List<FileParts> requestMultiParts;
 
 	private int[] assertStatusCode;
 

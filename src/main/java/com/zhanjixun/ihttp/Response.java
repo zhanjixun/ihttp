@@ -3,7 +3,7 @@ package com.zhanjixun.ihttp;
 import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
-import com.zhanjixun.ihttp.domain.NameValuePair;
+import com.zhanjixun.ihttp.domain.Header;
 import lombok.Data;
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
@@ -30,7 +30,8 @@ public class Response implements Serializable {
 	private Request request;
 
 	private int status;
-	private List<NameValuePair> headers = new ArrayList<>();
+
+	private List<Header> headers = new ArrayList<>();
 
 	private byte[] body;
 	private String charset;

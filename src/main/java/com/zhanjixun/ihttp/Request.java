@@ -1,10 +1,12 @@
 package com.zhanjixun.ihttp;
 
+import com.zhanjixun.ihttp.domain.FileParts;
+import com.zhanjixun.ihttp.domain.Header;
+import com.zhanjixun.ihttp.domain.Param;
 import lombok.Data;
 
-import java.io.File;
 import java.io.Serializable;
-import java.util.Map;
+import java.util.List;
 
 /**
  * http请求实体
@@ -31,11 +33,11 @@ public class Request implements Serializable {
 	private String responseCharset;
 
 	//请求头
-	private Map<String, String> headers;
+	private List<Header> headers;
 	//请求参数
-	private Map<String, String> params;
+	private List<Param> params;
 	//文件
-	private Map<String, File> fileParts;
+	private List<FileParts> fileParts;
 
 	@Override
 	public String toString() {

@@ -17,8 +17,9 @@ import java.io.File;
 @AllArgsConstructor
 public class FileParts {
 
-    private String name;
+	private String name;
 
-    private File filePart;
+	private File filePart;
+
 
 }

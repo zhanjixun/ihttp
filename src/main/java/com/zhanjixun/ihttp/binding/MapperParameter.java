@@ -22,8 +22,6 @@ public class MapperParameter {
 
 	private final Class<?> parameterType;
 
-	//注解属性
-
 	private boolean isURLAnnotated;
 
 	private List<EncodableString> requestParamNames;
