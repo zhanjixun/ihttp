@@ -1,14 +1,15 @@
 package com.zhanjixun.ihttp.binding;
 
+import com.alibaba.fastjson.JSON;
 import com.zhanjixun.ihttp.Request;
 import com.zhanjixun.ihttp.Response;
-import com.zhanjixun.ihttp.parsing.RandomGenerator;
-import com.zhanjixun.ihttp.parsing.Retryable;
-import com.zhanjixun.ihttp.parsing.TimestampGenerator;
+import com.zhanjixun.ihttp.annotations.FilePart;
+import com.zhanjixun.ihttp.parsing.*;
 import com.zhanjixun.ihttp.utils.StrUtils;
 import com.zhanjixun.ihttp.utils.Util;
 import lombok.Data;
 
+import java.io.File;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -94,22 +95,68 @@ public class MapperMethod {
 		Util.ifNotNull(getRequestParams(), params -> request.getParams().putAll(params));
 
 		//2.生成实时内容
-		Util.ifNotNull(mapper.getRandomGeneratorParams(), l -> l.forEach(r -> request.getParams().put(r.getName(), randomString(r, request.getCharset()))));
-		Util.ifNotNull(getRandomGeneratorParams(), l -> l.forEach(r -> request.getParams().put(r.getName(), randomString(r, request.getCharset()))));
+		Util.ifNotNull(mapper.getRandomGeneratorParams(), l -> l.forEach(r -> request.getParams().put(r.getName(), random(r, request.getCharset()))));
+		Util.ifNotNull(getRandomGeneratorParams(), l -> l.forEach(r -> request.getParams().put(r.getName(), random(r, request.getCharset()))));
 
 		Util.ifNotNull(mapper.getTimestampGeneratorParams(), l -> l.forEach(t -> request.getParams().put(t.getName(), timestamp(t))));
 		Util.ifNotNull(getTimestampGeneratorParams(), l -> l.forEach(t -> request.getParams().put(t.getName(), timestamp(t))));
 
-		Util.ifNotNull(mapper.getRandomGeneratorPlaceholders(), l -> l.forEach(r -> replace(request, r.getName(), randomString(r, request.getCharset()))));
-		Util.ifNotNull(getRandomGeneratorPlaceholders(), l -> l.forEach(r -> replace(request, r.getName(), randomString(r, request.getCharset()))));
+		Util.ifNotNull(mapper.getRandomGeneratorPlaceholders(), l -> l.forEach(r -> replace(request, r.getName(), random(r, request.getCharset()))));
+		Util.ifNotNull(getRandomGeneratorPlaceholders(), l -> l.forEach(r -> replace(request, r.getName(), random(r, request.getCharset()))));
 
+		Util.ifNotNull(mapper.getTimestampGeneratorPlaceholders(), l -> l.forEach(r -> replace(request, r.getName(), timestamp(r))));
+		Util.ifNotNull(getTimestampGeneratorPlaceholders(), l -> l.forEach(r -> replace(request, r.getName(), timestamp(r))));
 
-		//---以下跟运行参数有关
+		//3.绑定运行参数
+		for (MapperParameter mapperParameter : parameters) {
+			Object arg = args[mapperParameter.getIndex()];
+			if (mapperParameter.isURLAnnotated()) {
+				request.setUrl(buildUrl(request.getUrl(), (String) arg));
+			}
+			if (Util.isNotEmpty(mapperParameter.getRequestParamNames())) {
+				for (EncodableString requestParamName : mapperParameter.getRequestParamNames()) {
+					Class<?> parameterType = mapperParameter.getParameterType();
+					if (parameterType == String.class) {
+						String value = requestParamName.encode() ? StrUtils.URLEncoder((String) arg, request.getCharset()) : (String) arg;
+						request.getParams().put(requestParamName.getName(), value);
+					} else if (parameterType == Map.class) {
+						Map<String, Object> map = (Map) arg;
+						String suffix = Util.isNotEmpty(requestParamName.getName()) ? requestParamName.getName() + "." : "";
+						for (Map.Entry<String, Object> entry : map.entrySet()) {
+							request.getParams().put(suffix + entry.getKey(), String.valueOf(entry.getValue()));
+						}
+					} else {
+						//todo 内省
 
-		//3.替换占位符
-
-
-		//4.绑定运行参数
+					}
+				}
+			}
+			if (Util.isNotEmpty(mapperParameter.getRequestHeaderNames())) {
+				for (String headerName : mapperParameter.getRequestHeaderNames()) {
+					request.getHeaders().put(headerName, (String) arg);
+				}
+			}
+			if (Util.isNotEmpty(mapperParameter.getRequestMultiPartNames())) {
+				for (String multiPartName : mapperParameter.getRequestMultiPartNames()) {
+					if (arg instanceof String) {
+						request.getFileParts().put(multiPartName, new File((String) arg));
+					} else if (arg instanceof File) {
+						request.getFileParts().put(multiPartName, (File) arg);
+					} else {
+						throw new IllegalArgumentException("在方法的参数中使用" + FilePart.class.getName() + "时，被注解的参数类型必须为java.lang.String或者java.io.File");
+					}
+				}
+			}
+			if (mapperParameter.getRequestBody() != null) {
+				EncodableObject requestBody = mapperParameter.getRequestBody();
+				if (arg instanceof String) {
+					request.setBody(requestBody.encode() ? StrUtils.URLEncoder((String) arg, request.getCharset()) : (String) arg);
+				} else {
+					String jsonBody = JSON.toJSONString(arg);
+					request.setBody(requestBody.encode() ? StrUtils.URLEncoder(jsonBody, request.getCharset()) : jsonBody);
+				}
+			}
+		}
 
 		return request;
 	}
@@ -138,7 +185,7 @@ public class MapperMethod {
 		}
 	}
 
-	private String randomString(RandomGenerator randomGenerator, String charset) {
+	private String random(RandomGenerator randomGenerator, String charset) {
 		String rawValue = Util.randomString(randomGenerator.getLength(), randomGenerator.getChars());
 		return randomGenerator.isEncode() ? StrUtils.URLEncoder(rawValue, charset) : rawValue;
 	}
@@ -150,7 +197,6 @@ public class MapperMethod {
 	private String buildUrl(String a, String b) {
 		a = Util.isEmpty(a) ? "" : a;
 		b = Util.isEmpty(b) ? "" : b;
-
 		return b.startsWith("http") ? b : a + b;
 	}
 }

@@ -16,26 +16,24 @@ import java.util.List;
 @Data
 public class MapperParameter {
 
-    private final String name;
+	private final String name;
 
-    private final int index;
+	private final int index;
 
-    //注解属性
+	private final Class<?> parameterType;
 
-    private boolean isURLAnnotated;
+	//注解属性
 
-    private List<EncodableString> requestParamNames;
+	private boolean isURLAnnotated;
 
-    private List<String> requestHeaderNames;
+	private List<EncodableString> requestParamNames;
 
-    private List<String> requestMultiPartNames;
+	private List<String> requestHeaderNames;
 
-    private EncodableObject requestBody;
+	private List<String> requestMultiPartNames;
 
-    private EncodableString placeholder;
+	private EncodableObject requestBody;
 
-    private EncodableObject paramMap;
-
-    private EncodableObject paramObject;
+	private EncodableString placeholder;
 
 }

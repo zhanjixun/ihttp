@@ -40,7 +40,7 @@ public class AnnotationParser implements Parser {
 			MapperParameter[] mapperParameters = new MapperParameter[method.getParameterCount()];
 			for (int i = 0; i < method.getParameterCount(); i++) {
 				Parameter parameter = method.getParameters()[i];
-				MapperParameter mapperParameter = new MapperParameter(parameter.getName(), i);
+				MapperParameter mapperParameter = new MapperParameter(parameter.getName(), i, parameter.getType());
 				//2.解析参数上的注解
 				handleParameterAnnotation(parameter, mapperParameter);
 				mapperParameters[i] = mapperParameter;

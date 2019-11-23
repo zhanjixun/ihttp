@@ -42,9 +42,4 @@ public class Request implements Serializable {
 		return getMethod() + " " + url;
 	}
 
-	@Override
-	public Object clone() throws CloneNotSupportedException {
-		return super.clone();
-	}
-
 }
