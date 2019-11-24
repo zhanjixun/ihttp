@@ -4,6 +4,7 @@ import com.zhanjixun.ihttp.domain.Header;
 import lombok.Data;
 
 import java.io.Serializable;
+import java.io.UnsupportedEncodingException;
 import java.util.List;
 
 /**
@@ -27,6 +28,17 @@ public class Response implements Serializable {
     private String charset;
 
     private String text;
+
+    public String getText() {
+        if (text == null) {
+            try {
+                text = new String(body, charset);
+            } catch (UnsupportedEncodingException e) {
+                throw new RuntimeException(e);
+            }
+        }
+        return text;
+    }
 
     @Override
     public String toString() {

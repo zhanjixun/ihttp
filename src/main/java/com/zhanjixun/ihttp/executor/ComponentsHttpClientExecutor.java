@@ -37,6 +37,8 @@ import java.util.Arrays;
 import java.util.Date;
 import java.util.List;
 import java.util.Optional;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
 /**
@@ -180,11 +182,19 @@ public class ComponentsHttpClientExecutor extends BaseExecutor {
         try {
             httpResponse = httpClient.execute(method);
             List<Header> headers = Arrays.stream(httpResponse.getAllHeaders()).map(h -> new Header(h.getName(), h.getValue())).collect(Collectors.toList());
-//            headers.stream().filter(h -> "Content-Type".equals(h.getName())).
+
+            String charset = request.getResponseCharset();
+            if (charset == null) {
+                Optional<String> contentType = headers.stream().filter(h -> "Content-Type".equals(h.getName())).map(Header::getValue).findFirst();
+                if (contentType.isPresent()) {
+                    Matcher matcher = Pattern.compile("charset=(.*)$").matcher(contentType.get());
+                    charset = matcher.find() ? matcher.group(1) : "UTF-8";
+                }
+            }
 
             Response response = new Response();
             response.setRequest(request);
-            response.setCharset(request.getResponseCharset());
+            response.setCharset(charset);
             response.setStatus(httpResponse.getStatusLine().getStatusCode());
             response.setBody(Okio.buffer(Okio.source(httpResponse.getEntity().getContent())).readByteArray());
             response.setHeaders(headers);
