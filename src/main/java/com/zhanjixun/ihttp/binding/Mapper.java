@@ -21,46 +21,50 @@ import java.util.stream.Collectors;
 @Data
 public class Mapper {
 
-	private final Class<?> mapperInterface;
+    private final Class<?> mapperInterface;
 
-	private final List<MapperMethod> methods;
+    private final List<MapperMethod> methods;
 
-	private Executor executor;
+    private Executor executor;
 
-	private String url;
+    private String url;
 
-	private List<Header> requestHeaders;
+    private List<Header> requestHeaders;
 
-	private List<Param> requestParams;
+    private List<Param> requestParams;
 
-	private String cookieJar;
+    private String cookieJar;
 
-	private Boolean disableCookie;
+    private Boolean disableCookie;
 
-	private Class<? extends Executor> httpExecutor;
+    private Class<? extends Executor> httpExecutor;
 
-	private HttpProxy httpProxy;
+    private HttpProxy httpProxy;
 
-	private List<RandomGenerator> randomGeneratorParams;
+    private List<RandomGenerator> randomGeneratorParams;
 
-	private List<RandomGenerator> randomGeneratorPlaceholders;
+    private List<RandomGenerator> randomGeneratorPlaceholders;
 
-	private String responseCharset;
+    private String responseCharset;
 
-	private Retryable retryable;
+    private Retryable retryable;
 
-	private List<TimestampGenerator> timestampGeneratorParams;
+    private List<TimestampGenerator> timestampGeneratorParams;
 
-	private List<TimestampGenerator> timestampGeneratorPlaceholders;
+    private List<TimestampGenerator> timestampGeneratorPlaceholders;
 
-	public Mapper(Class<?> mapperInterface, List<MapperMethod> methods) {
-		this.mapperInterface = mapperInterface;
-		this.methods = methods;
-	}
+    public Mapper(Class<?> mapperInterface, List<MapperMethod> methods) {
+        this.mapperInterface = mapperInterface;
+        this.methods = methods;
+    }
 
-	public MapperMethod getMapperMethod(String name) {
-		return methods.stream().collect(Collectors.toMap(MapperMethod::getName, d -> d)).get(name);
-	}
+    public MapperMethod getMapperMethod(String name) {
+        return methods.stream().collect(Collectors.toMap(MapperMethod::getName, d -> d)).get(name);
+    }
 
+    @Override
+    public String toString() {
+        return "Mapper{" + mapperInterface + '}';
+    }
 }
 

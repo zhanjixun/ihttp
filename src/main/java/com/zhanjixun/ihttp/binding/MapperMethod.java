@@ -311,4 +311,8 @@ public class MapperMethod {
         return response;
     }
 
+    @Override
+    public String toString() {
+        return "MapperMethod:" + mapper + "#" + name + '}';
+    }
 }

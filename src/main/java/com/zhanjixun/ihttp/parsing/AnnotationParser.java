@@ -56,6 +56,7 @@ public class AnnotationParser implements Parser {
 
         //3.解析类上面的注解
         Mapper mapper = new Mapper(target, mapperMethods);
+        mapperMethods.forEach(m -> m.setMapper(mapper));
         handleTypeAnnotation(target, mapper);
 
         return mapper;
