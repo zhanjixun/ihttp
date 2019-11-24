@@ -13,22 +13,25 @@ import java.util.Date;
 @AllArgsConstructor
 public class Cookie {
 
-	private String name;
-	private String value;
+    private String name;
 
-	private String domain;
-	private String path;
+    private String value;
 
-	private Date expiryDate;
+    private String domain;
 
-	private String comment;
+    private String path;
 
-	private boolean isSecure;
-	private int version = 0;
+    private Date expiryDate;
 
-	private boolean httpOnly;
+    private String comment;
 
-	public boolean isExpired() {
-		return expiryDate != null && expiryDate.before(new Date());
-	}
+    private boolean isSecure;
+
+    private int version;
+
+    private boolean httpOnly;
+
+    public boolean isExpired() {
+        return expiryDate != null && expiryDate.before(new Date());
+    }
 }

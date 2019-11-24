@@ -2,7 +2,6 @@ package com.zhanjixun.ihttp.utils;
 
 import java.lang.annotation.Annotation;
 import java.lang.reflect.AnnotatedElement;
-import java.lang.reflect.Method;
 import java.util.function.Consumer;
 
 /**
@@ -10,30 +9,6 @@ import java.util.function.Consumer;
  * @date : 2018/11/26 14:35
  */
 public class ReflectUtils {
-    /**
-     * 获取方法或类上面的注解
-     * 优先使用方法上
-     *
-     * @param type
-     * @param method
-     * @param annotationType
-     * @return
-     */
-    public static <T extends Annotation> T[] getAnnotationsMethodFirst(Class<?> type, Method method, Class<T> annotationType) {
-        //方法体上的注解
-        T[] annotationsOnMethod = method.getAnnotationsByType(annotationType);
-        if (annotationsOnMethod != null && annotationsOnMethod.length > 0) {
-            return annotationsOnMethod;
-        }
-
-        //类上面的注解
-        T[] annotationsOnClass = type.getAnnotationsByType(annotationType);
-        if (annotationsOnClass != null && annotationsOnClass.length > 0) {
-            return annotationsOnClass;
-        }
-
-        return null;
-    }
 
     /**
      * 如果有这个注解，则调用消费者

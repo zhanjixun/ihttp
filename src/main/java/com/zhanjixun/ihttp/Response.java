@@ -28,4 +28,9 @@ public class Response implements Serializable {
 
     private String text;
 
+    @Override
+    public String toString() {
+        return request.getMethod() + " " + getStatus() + " " + request.getUrl();
+    }
+
 }

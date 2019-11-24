@@ -40,7 +40,7 @@ public class Request implements Serializable {
 
     @Override
     public String toString() {
-        return getMethod() + " " + url;
+        return getMethod() + " " + getUrl();
     }
 
 }

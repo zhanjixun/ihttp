@@ -173,7 +173,8 @@ public class MapperMethod {
                         String value = requestParamName.encode() ? StrUtils.URLEncoder((String) arg, request.getCharset()) : (String) arg;
                         request.getParams().add(new Param(requestParamName.getName(), value));
                     } else if (parameterType == Map.class) {
-                        Map<String, Object> map = (Map) arg;
+                        @SuppressWarnings("unchecked")
+                        Map<String, Object> map = (Map<String, Object>) arg;
                         String suffix = Util.isNotEmpty(requestParamName.getName()) ? requestParamName.getName() + "." : "";
                         for (Map.Entry<String, Object> entry : map.entrySet()) {
                             request.getParams().add(new Param(suffix + entry.getKey(), String.valueOf(entry.getValue())));
@@ -208,6 +209,9 @@ public class MapperMethod {
                     request.setBody(requestBody.encode() ? StrUtils.URLEncoder(jsonBody, request.getCharset()) : jsonBody);
                 }
             }
+            if (mapperParameter.getPlaceholder() != null) {
+
+            }
         }
 
         return request;
@@ -237,11 +241,13 @@ public class MapperMethod {
         }
     }
 
+    //生成随机字符串
     private String generatorRandomValue(RandomGenerator randomGenerator, String charset) {
         String rawValue = Util.randomString(randomGenerator.getLength(), randomGenerator.getChars());
         return randomGenerator.isEncode() ? StrUtils.URLEncoder(rawValue, charset) : rawValue;
     }
 
+    //生成时间戳
     private String generatorTimestampValue(TimestampGenerator timestampGenerator) {
         return timestampGenerator.getUnit().convert(System.currentTimeMillis(), TimeUnit.MILLISECONDS) + "";
     }
@@ -273,6 +279,7 @@ public class MapperMethod {
                 exception = e;
             }
             long delayMillis = multiplier > 0 ? (delay * (int) Math.pow(multiplier, i)) : (delay > 0 ? delay : 0);
+
             //发生异常情况
             if (exception != null) {
                 Exception finalException = exception;
@@ -297,6 +304,8 @@ public class MapperMethod {
                     continue;
                 }
             }
+
+            //不触发重试
             break;
         }
         return response;
