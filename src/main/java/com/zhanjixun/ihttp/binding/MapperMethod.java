@@ -4,9 +4,9 @@ import com.alibaba.fastjson.JSON;
 import com.zhanjixun.ihttp.Request;
 import com.zhanjixun.ihttp.Response;
 import com.zhanjixun.ihttp.RetryPolicy;
-import com.zhanjixun.ihttp.annotations.FilePart;
+import com.zhanjixun.ihttp.annotations.RequestPart;
 import com.zhanjixun.ihttp.context.ApplicationContext;
-import com.zhanjixun.ihttp.domain.FileParts;
+import com.zhanjixun.ihttp.domain.FormData;
 import com.zhanjixun.ihttp.domain.Header;
 import com.zhanjixun.ihttp.domain.Param;
 import com.zhanjixun.ihttp.parsing.*;
@@ -50,7 +50,7 @@ public class MapperMethod {
 
 	private List<Param> requestParams;
 
-	private List<FileParts> requestMultiParts;
+	private List<FormData> requestMultiParts;
 
 	private int[] assertStatusCode;
 
@@ -192,11 +192,11 @@ public class MapperMethod {
 			if (Util.isNotEmpty(mapperParameter.getRequestMultiPartNames())) {
 				for (String multiPartName : mapperParameter.getRequestMultiPartNames()) {
 					if (arg instanceof String) {
-						request.getFileParts().add(new FileParts(multiPartName, new File((String) arg)));
+						request.getFileParts().add(new FormData(multiPartName, new File((String) arg)));
 					} else if (arg instanceof File) {
-						request.getFileParts().add(new FileParts(multiPartName, (File) arg));
+						request.getFileParts().add(new FormData(multiPartName, (File) arg));
 					} else {
-						throw new IllegalArgumentException("在方法的参数中使用" + FilePart.class.getName() + "时，被注解的参数类型必须为java.lang.String或者java.io.File");
+						throw new IllegalArgumentException("在方法的参数中使用" + RequestPart.class.getName() + "时，被注解的参数类型必须为java.lang.String或者java.io.File");
 					}
 				}
 			}

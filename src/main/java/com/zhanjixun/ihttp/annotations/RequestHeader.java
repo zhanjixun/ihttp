@@ -5,8 +5,8 @@ import java.lang.annotation.*;
 @Documented
 @Target({ElementType.TYPE, ElementType.METHOD, ElementType.PARAMETER})
 @Retention(RetentionPolicy.RUNTIME)
-@Repeatable(Header.List.class)
-public @interface Header {
+@Repeatable(RequestHeader.List.class)
+public @interface RequestHeader {
 
 	String name();
 
@@ -17,6 +17,6 @@ public @interface Header {
 	@Retention(RetentionPolicy.RUNTIME)
 	@Documented
 	@interface List {
-		Header[] value();
+		RequestHeader[] value();
 	}
 }

@@ -12,8 +12,8 @@ import java.lang.annotation.*;
 @Documented
 @Target({ElementType.TYPE, ElementType.METHOD})
 @Retention(RetentionPolicy.RUNTIME)
-@Repeatable(RandomParam.List.class)
-public @interface RandomParam {
+@Repeatable(RandomRequestParam.List.class)
+public @interface RandomRequestParam {
 	/**
 	 * 参数名
 	 *
@@ -49,6 +49,6 @@ public @interface RandomParam {
 	@Retention(RetentionPolicy.RUNTIME)
 	@Documented
 	@interface List {
-		RandomParam[] value();
+		RandomRequestParam[] value();
 	}
 }

@@ -3,7 +3,7 @@ package com.zhanjixun.ihttp.executor;
 import com.zhanjixun.ihttp.CookiesStore;
 import com.zhanjixun.ihttp.Request;
 import com.zhanjixun.ihttp.Response;
-import com.zhanjixun.ihttp.domain.FileParts;
+import com.zhanjixun.ihttp.domain.FormData;
 import com.zhanjixun.ihttp.domain.Header;
 import com.zhanjixun.ihttp.domain.Param;
 import com.zhanjixun.ihttp.parsing.Configuration;
@@ -92,16 +92,16 @@ public class JavaExecutor extends BaseExecutor {
 				outputStream.write(lineEnd.getBytes());
 				outputStream.write(String.format("%s%s", nameValuePair.getValue(), lineEnd).getBytes());
 			}
-			for (FileParts fileParts : request.getFileParts()) {
-				String mimeType = new MimetypesFileTypeMap().getContentType(fileParts.getFilePart());
+			for (FormData formData : request.getFileParts()) {
+				String mimeType = new MimetypesFileTypeMap().getContentType(formData.getFilePart());
 				String contentType = Optional.ofNullable(mimeType).orElse("application/octet-stream");
 
 				outputStream.write(oneLine.getBytes());
-				outputStream.write(String.format("Content-Disposition: form-data; name=\"%s\"; filename=\"%s\"", fileParts.getName(), fileParts.getFilePart().getName()).getBytes());
+				outputStream.write(String.format("Content-Disposition: form-data; name=\"%s\"; filename=\"%s\"", formData.getName(), formData.getFilePart().getName()).getBytes());
 				outputStream.write(String.format("Content-Type: %s%s", contentType, lineEnd).getBytes());
 				outputStream.write(lineEnd.getBytes());
 
-				outputStream.write(Okio.buffer(Okio.source(fileParts.getFilePart())).readByteArray());
+				outputStream.write(Okio.buffer(Okio.source(formData.getFilePart())).readByteArray());
 			}
 			outputStream.write(oneLine.getBytes());
 			outputStream.flush();

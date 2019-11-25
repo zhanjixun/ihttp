@@ -13,8 +13,8 @@ import java.util.concurrent.TimeUnit;
 @Documented
 @Target({ElementType.TYPE, ElementType.METHOD})
 @Retention(RetentionPolicy.RUNTIME)
-@Repeatable(TimestampParam.List.class)
-public @interface TimestampParam {
+@Repeatable(TimestampRequestParam.List.class)
+public @interface TimestampRequestParam {
 	/**
 	 * 参数名称
 	 *
@@ -34,6 +34,6 @@ public @interface TimestampParam {
 	@Retention(RetentionPolicy.RUNTIME)
 	@Documented
 	@interface List {
-		TimestampParam[] value();
+		TimestampRequestParam[] value();
 	}
 }

@@ -3,7 +3,7 @@ package com.zhanjixun.ihttp.executor;
 import com.zhanjixun.ihttp.CookiesStore;
 import com.zhanjixun.ihttp.Request;
 import com.zhanjixun.ihttp.Response;
-import com.zhanjixun.ihttp.domain.FileParts;
+import com.zhanjixun.ihttp.domain.FormData;
 import com.zhanjixun.ihttp.domain.Header;
 import com.zhanjixun.ihttp.parsing.Configuration;
 import com.zhanjixun.ihttp.parsing.HttpProxy;
@@ -140,7 +140,7 @@ public class ComponentsHttpClientExecutor extends BaseExecutor {
 			MultipartEntityBuilder builder = MultipartEntityBuilder.create();
 			request.getParams().forEach(p -> builder.addTextBody(p.getName(), p.getValue()));
 
-			for (FileParts parts : request.getFileParts()) {
+			for (FormData parts : request.getFileParts()) {
 				File file = parts.getFilePart();
 
 				String mimeType = new MimetypesFileTypeMap().getContentType(file.getName());

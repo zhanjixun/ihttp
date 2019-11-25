@@ -4,7 +4,7 @@ import java.lang.annotation.*;
 
 /**
  * 占位符:在其他注解中使用#{paramName} 然后在java方法参数在添加这个注解 为其他注解替换占位符内容
- * 可以替换URL、StringBody、所有请求头的value以及所有请求参数的value
+ * 可以替换URL、body、所有请求头的value以及所有请求参数的value
  * 支持类型：String和基本数据类型以及其封装类
  *
  * @author :zhanjixun
@@ -16,17 +16,11 @@ import java.lang.annotation.*;
 public @interface Placeholder {
 	/**
 	 * 占位符
-	 *
-	 * @return
 	 */
 	String value();
 
 	/**
 	 * 是否进行编码
-	 *
-	 * @return
-	 * @see GET#charset()
-	 * @see POST#charset()
 	 */
 	boolean encode() default false;
 

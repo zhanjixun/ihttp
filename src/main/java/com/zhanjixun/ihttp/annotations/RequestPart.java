@@ -10,8 +10,8 @@ import java.lang.annotation.*;
 @Documented
 @Target({ElementType.METHOD, ElementType.PARAMETER})
 @Retention(RetentionPolicy.RUNTIME)
-@Repeatable(FilePart.List.class)
-public @interface FilePart {
+@Repeatable(RequestPart.List.class)
+public @interface RequestPart {
 
 	String name();
 
@@ -22,6 +22,6 @@ public @interface FilePart {
 	@Retention(RetentionPolicy.RUNTIME)
 	@Documented
 	@interface List {
-		FilePart[] value();
+		RequestPart[] value();
 	}
 }
