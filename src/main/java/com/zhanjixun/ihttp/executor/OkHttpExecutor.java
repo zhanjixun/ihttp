@@ -81,6 +81,26 @@ public class OkHttpExecutor extends BaseExecutor {
 	}
 
 	@Override
+	protected Response doPatchMethod(Request request) throws IOException {
+		return null;
+	}
+
+	@Override
+	protected Response doTraceMethod(Request request) throws IOException {
+		return null;
+	}
+
+	@Override
+	protected Response doOptionsMethod(Request request) throws IOException {
+		return null;
+	}
+
+	@Override
+	protected Response doHeadMethod(Request request) throws IOException {
+		return null;
+	}
+
+	@Override
 	protected Response doGetMethod(Request request) throws IOException {
 		okhttp3.Request.Builder builder = new okhttp3.Request.Builder();
 		builder.url(StrUtils.addQuery(request.getUrl(), request.getParams()));

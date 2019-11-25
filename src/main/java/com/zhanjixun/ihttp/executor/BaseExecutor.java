@@ -22,8 +22,9 @@ public abstract class BaseExecutor implements Executor {
 	}
 
 	@Override
-	public Response execute(Request request) throws IOException {
+	public final Response execute(Request request) throws IOException {
 		Response response;
+
 		long startTime = System.currentTimeMillis();
 		switch (request.getMethod()) {
 			case "GET":
@@ -38,10 +39,23 @@ public abstract class BaseExecutor implements Executor {
 			case "PUT":
 				response = doPutMethod(request);
 				break;
+			case "HEAD":
+				response = doHeadMethod(request);
+				break;
+			case "OPTIONS":
+				response = doOptionsMethod(request);
+				break;
+			case "TRACE":
+				response = doTraceMethod(request);
+				break;
+			case "PATCH":
+				response = doPatchMethod(request);
+				break;
 			default:
 				throw new RuntimeException("未能识别的HTTP请求方法：" + request.getMethod());
 		}
 		long endTime = System.currentTimeMillis();
+
 		log.debug(request.getMethod() + " " + response.getStatus() + " [" + (endTime - startTime) + "s] " + request.getUrl());
 		return response;
 	}
@@ -53,5 +67,13 @@ public abstract class BaseExecutor implements Executor {
 	protected abstract Response doDeleteMethod(Request request) throws IOException;
 
 	protected abstract Response doPutMethod(Request request) throws IOException;
+
+	protected abstract Response doPatchMethod(Request request) throws IOException;
+
+	protected abstract Response doTraceMethod(Request request) throws IOException;
+
+	protected abstract Response doOptionsMethod(Request request) throws IOException;
+
+	protected abstract Response doHeadMethod(Request request) throws IOException;
 
 }

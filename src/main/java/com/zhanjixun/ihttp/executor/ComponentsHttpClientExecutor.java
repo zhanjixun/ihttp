@@ -29,7 +29,7 @@ import javax.activation.MimetypesFileTypeMap;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
-import java.io.UnsupportedEncodingException;
+import java.net.URI;
 import java.security.KeyManagementException;
 import java.security.KeyStoreException;
 import java.security.NoSuchAlgorithmException;
@@ -70,111 +70,88 @@ public class ComponentsHttpClientExecutor extends BaseExecutor {
 
 	@Override
 	protected Response doGetMethod(Request request) throws IOException {
-		request.setUrl(StrUtils.addQuery(request.getUrl(), request.getParams()));
-		request.getParams().clear();
-
-		HttpGet method = new HttpGet(request.getUrl());
-		method.setConfig(RequestConfig.custom().setRedirectsEnabled(request.getFollowRedirects()).build());
-		request.getHeaders().forEach(h -> method.addHeader(h.getName(), h.getValue()));
-		return executeMethod(method, request);
+		return executeMethod(buildRequestBase(request, new HttpGet()), request);
 	}
 
 	@Override
 	protected Response doPostMethod(Request request) throws IOException {
-		HttpPost method = new HttpPost(request.getUrl());
-		request.getHeaders().forEach(h -> method.addHeader(h.getName(), h.getValue()));
-		//带参数
-		String charset = Optional.ofNullable(request.getCharset()).orElse("UTF-8");
-		String paramString = request.getParams().stream().map(p -> p.getName() + "=" + p.getValue()).collect(Collectors.joining("&"));
-		if (Util.isNotBlank(paramString)) {
-			method.setEntity(new StringEntity(paramString, ContentType.create("application/x-www-form-urlencoded", charset)));
-		}
-		//直接请求体
-		if (Util.isNotBlank(request.getBody())) {
-			try {
-				Optional<String> contentType = Optional.ofNullable(method.getFirstHeader("Content-Type")).map(org.apache.http.NameValuePair::getValue);
-				if (contentType.isPresent()) {
-					StringEntity stringEntity = new StringEntity(request.getBody());
-					stringEntity.setContentType(contentType.get());
-					method.setEntity(stringEntity);
-				} else {
-					method.setEntity(new StringEntity(request.getBody(), ContentType.APPLICATION_JSON));
-				}
-			} catch (UnsupportedEncodingException e) {
-				throw new RuntimeException("构造请求体StringBody出错", e);
-			}
-		}
-		//带文件
-		if (Util.isNotEmpty(request.getFileParts())) {
-			MultipartEntityBuilder builder = MultipartEntityBuilder.create();
-			request.getParams().forEach(p -> builder.addTextBody(p.getName(), p.getValue()));
-
-			for (FileParts fileParts : request.getFileParts()) {
-				File file = fileParts.getFilePart();
-
-				String mimeType = new MimetypesFileTypeMap().getContentType(file.getName());
-				ContentType contentType = mimeType != null ? ContentType.create(mimeType) : ContentType.DEFAULT_BINARY;
-
-				builder.addBinaryBody(fileParts.getName(), file, contentType, file.getName());
-			}
-			method.setEntity(builder.build());
-		}
-		return executeMethod(method, request);
+		return executeMethod(buildEntityRequest(request, new HttpPost()), request);
 	}
 
 	@Override
 	protected Response doDeleteMethod(Request request) throws IOException {
-		request.setUrl(StrUtils.addQuery(request.getUrl(), request.getParams()));
-		request.getParams().clear();
-
-		HttpDelete method = new HttpDelete(request.getUrl());
-		method.setConfig(RequestConfig.custom().setRedirectsEnabled(request.getFollowRedirects()).build());
-		request.getHeaders().forEach(h -> method.addHeader(h.getName(), h.getValue()));
-		return executeMethod(method, request);
+		return executeMethod(buildRequestBase(request, new HttpDelete()), request);
 	}
 
 	@Override
 	protected Response doPutMethod(Request request) throws IOException {
-		HttpPut method = new HttpPut(request.getUrl());
+		return executeMethod(buildEntityRequest(request, new HttpPut()), request);
+	}
+
+	@Override
+	protected Response doPatchMethod(Request request) throws IOException {
+		return executeMethod(buildEntityRequest(request, new HttpPatch()), request);
+	}
+
+	@Override
+	protected Response doTraceMethod(Request request) throws IOException {
+		return executeMethod(buildRequestBase(request, new HttpTrace()), request);
+	}
+
+	@Override
+	protected Response doOptionsMethod(Request request) throws IOException {
+		return executeMethod(buildRequestBase(request, new HttpOptions()), request);
+	}
+
+	@Override
+	protected Response doHeadMethod(Request request) throws IOException {
+		return executeMethod(buildRequestBase(request, new HttpHead()), request);
+	}
+
+	private HttpRequestBase buildRequestBase(Request request, HttpRequestBase method) {
+		request.setUrl(StrUtils.addQuery(request.getUrl(), request.getParams()));
+		request.getParams().clear();
+
+		method.setURI(URI.create(request.getUrl()));
+		method.setConfig(RequestConfig.custom().setRedirectsEnabled(request.getFollowRedirects()).build());
 		request.getHeaders().forEach(h -> method.addHeader(h.getName(), h.getValue()));
+		return method;
+	}
+
+	private HttpEntityEnclosingRequestBase buildEntityRequest(Request request, HttpEntityEnclosingRequestBase method) {
+		method.setURI(URI.create(request.getUrl()));
+		request.getHeaders().forEach(h -> method.addHeader(h.getName(), h.getValue()));
+		String charset = Optional.ofNullable(request.getCharset()).orElse("UTF-8");
+		String contentType = Optional.ofNullable(method.getFirstHeader("Content-Type")).map(org.apache.http.NameValuePair::getValue).orElse(null);
 
 		//带参数
-		String charset = Optional.ofNullable(request.getCharset()).orElse("UTF-8");
 		String paramString = request.getParams().stream().map(p -> p.getName() + "=" + p.getValue()).collect(Collectors.joining("&"));
 		if (Util.isNotBlank(paramString)) {
-			method.setEntity(new StringEntity(paramString, ContentType.create("application/x-www-form-urlencoded", charset)));
+			ContentType contentTypeDefault = ContentType.create("application/x-www-form-urlencoded", charset);
+			method.setEntity(new StringEntity(paramString, contentType != null ? ContentType.create(contentType) : contentTypeDefault));
 		}
 		//直接请求体
 		if (Util.isNotBlank(request.getBody())) {
-			try {
-				Optional<String> contentType = Optional.ofNullable(method.getFirstHeader("Content-Type")).map(org.apache.http.NameValuePair::getValue);
-				if (contentType.isPresent()) {
-					StringEntity stringEntity = new StringEntity(request.getBody());
-					stringEntity.setContentType(contentType.get());
-					method.setEntity(stringEntity);
-				} else {
-					method.setEntity(new StringEntity(request.getBody(), ContentType.APPLICATION_JSON));
-				}
-			} catch (UnsupportedEncodingException e) {
-				throw new RuntimeException("构造请求体StringBody出错", e);
-			}
+			ContentType type = contentType != null ? ContentType.create(contentType) : ContentType.APPLICATION_JSON;
+			method.setEntity(new StringEntity(request.getBody(), type));
 		}
 		//带文件
 		if (Util.isNotEmpty(request.getFileParts())) {
 			MultipartEntityBuilder builder = MultipartEntityBuilder.create();
 			request.getParams().forEach(p -> builder.addTextBody(p.getName(), p.getValue()));
 
-			for (FileParts fileParts : request.getFileParts()) {
-				File file = fileParts.getFilePart();
+			for (FileParts parts : request.getFileParts()) {
+				File file = parts.getFilePart();
 
 				String mimeType = new MimetypesFileTypeMap().getContentType(file.getName());
-				ContentType contentType = mimeType != null ? ContentType.create(mimeType) : ContentType.DEFAULT_BINARY;
+				ContentType type = (mimeType != null) ? ContentType.create(mimeType) : ContentType.DEFAULT_BINARY;
 
-				builder.addBinaryBody(fileParts.getName(), file, contentType, file.getName());
+				builder.addBinaryBody(parts.getName(), file, type, file.getName());
 			}
+
 			method.setEntity(builder.build());
 		}
-		return executeMethod(method, request);
+		return method;
 	}
 
 	private Response executeMethod(HttpRequestBase method, Request request) throws IOException {
@@ -213,6 +190,7 @@ public class ComponentsHttpClientExecutor extends BaseExecutor {
 			}
 		}
 	}
+
 
 	static class MyCookieStore implements CookieStore {
 
