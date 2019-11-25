@@ -3,11 +3,8 @@ package com.zhanjixun.ihttp.annotations;
 import java.lang.annotation.*;
 
 /**
- * 标识一个方法使用GET请求
- *
- * @see POST
- * @see PUT
- * @see DELETE
+ * 标识一个方法使用GET请求:
+ * 请求指定的页面信息，并返回实体主体。
  */
 @Documented
 @Target({ElementType.METHOD})
