@@ -87,9 +87,9 @@ public class MapperMethod {
 		request.setMethod(getRequestMethod());
 
 		request.setCharset(getRequestCharset());
-		request.setResponseCharset(getResponseCharset());
+		request.setResponseCharset(Util.defaultIfNull(getResponseCharset(), mapper.getResponseCharset()));
 
-		request.setFollowRedirects(getFollowRedirects());
+		request.setFollowRedirects(Util.defaultIfNull(getFollowRedirects(), false));
 		request.setBody(getRequestBody());
 
 		request.setHeaders(new ArrayList<>());

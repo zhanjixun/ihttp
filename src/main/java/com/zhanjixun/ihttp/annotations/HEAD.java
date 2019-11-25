@@ -14,4 +14,19 @@ import java.lang.annotation.*;
 @Target({ElementType.METHOD})
 @Retention(RetentionPolicy.RUNTIME)
 public @interface HEAD {
+	/**
+	 * 设置HTTP方法是否应自动遵循HTTP重定向
+	 *
+	 * @return
+	 */
+	boolean followRedirects() default true;
+
+	/**
+	 * 定义用于编码内容体的字符集
+	 *
+	 * @return
+	 * @see Param#encode()
+	 * @see Placeholder#encode()
+	 */
+	String charset() default "UTF-8";
 }
