@@ -15,40 +15,40 @@ import java.util.Arrays;
  */
 public class MapperProxy implements InvocationHandler {
 
-	private final Mapper mapper;
+    private final Mapper mapper;
 
-	public MapperProxy(Mapper mapper) {
-		this.mapper = mapper;
-	}
+    public MapperProxy(Mapper mapper) {
+        this.mapper = mapper;
+    }
 
-	@Override
-	public Object invoke(Object proxy, Method method, Object[] args) throws Throwable {
-		//Object方法执行
-		if (Object.class.equals(method.getDeclaringClass())) {
-			try {
-				return method.invoke(this, args);
-			} catch (Throwable t) {
-				t.printStackTrace();
-			}
-		}
-		//CookiesStore方法执行
-		if (CookiesStore.class.equals(method.getDeclaringClass())) {
-			return method.invoke(mapper.getExecutor().getCookiesStore(), args);
-		}
+    @Override
+    public Object invoke(Object proxy, Method method, Object[] args) throws Throwable {
+        //Object方法执行
+        if (Object.class.equals(method.getDeclaringClass())) {
+            try {
+                return method.invoke(this, args);
+            } catch (Throwable t) {
+                t.printStackTrace();
+            }
+        }
+        //CookiesStore方法执行
+        if (CookiesStore.class.equals(method.getDeclaringClass())) {
+            return method.invoke(mapper.getExecutor().getCookiesStore(), args);
+        }
 
-		MapperMethod mapperMethod = mapper.getMapperMethod(method.getName());
+        MapperMethod mapperMethod = mapper.getMapperMethod(method.getName());
 
-		Response response = mapperMethod.execute(args);
+        Response response = mapperMethod.execute(args);
 
-		//断言状态码
-		int[] assertStatusCode = mapperMethod.getAssertStatusCode();
-		if (assertStatusCode != null && assertStatusCode.length > 0) {
-			if (Arrays.stream(assertStatusCode).noneMatch(num -> num == response.getStatus())) {
-				throw new AssertStatusCodeException("没有返回预期的状态码：" + response.getStatus());
-			}
-		}
+        //断言状态码
+        int[] assertStatusCode = mapperMethod.getAssertStatusCode();
+        if (assertStatusCode != null && assertStatusCode.length > 0) {
+            if (Arrays.stream(assertStatusCode).noneMatch(num -> num == response.getStatus())) {
+                throw new AssertStatusCodeException("没有返回预期的状态码：" + response.getStatus());
+            }
+        }
 
-		return response;
-	}
+        return mapperMethod.getResponseHandler().handle(method, mapperMethod, response);
+    }
 
 }

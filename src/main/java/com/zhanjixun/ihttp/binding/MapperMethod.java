@@ -5,9 +5,10 @@ import com.zhanjixun.ihttp.Request;
 import com.zhanjixun.ihttp.Response;
 import com.zhanjixun.ihttp.RetryPolicy;
 import com.zhanjixun.ihttp.context.ApplicationContext;
-import com.zhanjixun.ihttp.domain.FormData;
+import com.zhanjixun.ihttp.domain.FormDatas;
 import com.zhanjixun.ihttp.domain.Header;
 import com.zhanjixun.ihttp.domain.Param;
+import com.zhanjixun.ihttp.handler.ResponseHandler;
 import com.zhanjixun.ihttp.parsing.*;
 import com.zhanjixun.ihttp.utils.StrUtils;
 import com.zhanjixun.ihttp.utils.Util;
@@ -48,7 +49,7 @@ public class MapperMethod {
 
     private List<Param> requestParams;
 
-    private List<FormData> requestMultiParts;
+    private List<FormDatas> requestMultiParts;
 
     private int[] assertStatusCode;
 
@@ -67,6 +68,8 @@ public class MapperMethod {
     private Retryable retryable;
 
     private MapperParameter[] parameters;
+
+    private ResponseHandler responseHandler;
 
     public MapperMethod(String name) {
         this.name = name;
@@ -188,15 +191,15 @@ public class MapperMethod {
                 }
             }
             if (Util.isNotEmpty(mapperParameter.getRequestMultiPartNames())) {
-                for (String multiPartName : mapperParameter.getRequestMultiPartNames()) {
-                    if (arg instanceof String) {
-                        request.getFileParts().add(new FormData(multiPartName, new File((String) arg)));
-                    } else if (arg instanceof File) {
-                        request.getFileParts().add(new FormData(multiPartName, (File) arg));
-                    } else {
-                        throw new IllegalArgumentException("在方法的参数中使用" + RequestPart.class.getName() + "时，被注解的参数类型必须为java.lang.String或者java.io.File");
-                    }
-                }
+//                for (String multiPartName : mapperParameter.getRequestMultiPartNames()) {
+//                    if (arg instanceof String) {
+//                        request.getFileParts().add(new FormData(multiPartName, new File((String) arg)));
+//                    } else if (arg instanceof File) {
+//                        request.getFileParts().add(new FormData(multiPartName, (File) arg));
+//                    } else {
+//                        throw new IllegalArgumentException("在方法的参数中使用" + RequestPart.class.getName() + "时，被注解的参数类型必须为java.lang.String或者java.io.File");
+//                    }
+//                }
             }
             if (mapperParameter.getRequestBody() != null) {
                 EncodableObject requestBody = mapperParameter.getRequestBody();

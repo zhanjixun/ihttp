@@ -1,6 +1,6 @@
 package com.zhanjixun.ihttp;
 
-import com.zhanjixun.ihttp.domain.FormData;
+import com.zhanjixun.ihttp.domain.FormDatas;
 import com.zhanjixun.ihttp.domain.Header;
 import com.zhanjixun.ihttp.domain.Param;
 import lombok.Data;
@@ -16,31 +16,31 @@ import java.util.List;
 @Data
 public class Request implements Serializable {
 
-	private static final long serialVersionUID = 3720684088323984812L;
+    private static final long serialVersionUID = 3720684088323984812L;
 
-	private String name;
-	//请求地址
-	private String url;
-	//请求编码
-	private String method;
-	//跟随重定向
-	private Boolean followRedirects;
-	//请求体
-	private String body;
-	//请求字符编码
-	private String charset;
-	//指定响应字符编码
-	private String responseCharset;
-	//请求头
-	private List<Header> headers;
-	//请求参数
-	private List<Param> params;
-	//文件
-	private List<FormData> fileParts;
+    private String name;
+    //请求地址
+    private String url;
+    //请求编码
+    private String method;
+    //跟随重定向
+    private Boolean followRedirects;
+    //请求体
+    private String body;
+    //请求字符编码
+    private String charset;
+    //指定响应字符编码
+    private String responseCharset;
+    //请求头
+    private List<Header> headers;
+    //请求参数
+    private List<Param> params;
+    //文件
+    private List<FormDatas> fileParts;
 
-	@Override
-	public String toString() {
-		return getMethod() + " " + getUrl();
-	}
+    @Override
+    public String toString() {
+        return getMethod() + " " + getUrl();
+    }
 
 }

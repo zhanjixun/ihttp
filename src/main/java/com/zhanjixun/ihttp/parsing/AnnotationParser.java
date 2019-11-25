@@ -6,6 +6,7 @@ import com.zhanjixun.ihttp.binding.Mapper;
 import com.zhanjixun.ihttp.binding.MapperMethod;
 import com.zhanjixun.ihttp.binding.MapperParameter;
 import com.zhanjixun.ihttp.domain.FormData;
+import com.zhanjixun.ihttp.domain.FormDatas;
 import com.zhanjixun.ihttp.domain.Header;
 import com.zhanjixun.ihttp.domain.Param;
 import com.zhanjixun.ihttp.utils.ReflectUtils;
@@ -89,7 +90,9 @@ public class AnnotationParser implements Parser {
     }
 
     private void handleMethodAnnotation(Method method, MapperMethod mapperMethod) {
-        ReflectUtils.ifPresent(method, URL.class, e -> mapperMethod.setUrl(e.value()));
+        if (method.getAnnotation(URL.class) != null) {
+            mapperMethod.setUrl(method.getAnnotation(URL.class).value());
+        }
 
         //HTTP方法类注解
 
@@ -142,13 +145,13 @@ public class AnnotationParser implements Parser {
         });
 
         if (method.getAnnotationsByType(RequestPart.class) != null) {
-            List<FormData> requestMultiParts = new ArrayList<>();
+            List<FormDatas> requestMultiParts = new ArrayList<>();
             for (RequestPart requestPart : method.getAnnotationsByType(RequestPart.class)) {
                 try {
                     File file = new File(requestPart.value());
                     String mimeType = new MimetypesFileTypeMap().getContentType(file.getName());
                     byte[] bytes = Okio.buffer(Okio.source(file)).readByteArray();
-                    requestMultiParts.add(new FormData(mimeType, file.getName(), bytes));
+                    requestMultiParts.add(new FormDatas(requestPart.name(), new FormData(mimeType, file.getName(), bytes)));
                 } catch (IOException e) {
                     throw new RuntimeException(e);
                 }

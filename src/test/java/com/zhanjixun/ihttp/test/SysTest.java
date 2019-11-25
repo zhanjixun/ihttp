@@ -3,7 +3,6 @@ package com.zhanjixun.ihttp.test;
 import com.zhanjixun.ihttp.IHTTP;
 import com.zhanjixun.ihttp.Response;
 import com.zhanjixun.ihttp.annotations.GET;
-import com.zhanjixun.ihttp.annotations.ResponseCharset;
 import com.zhanjixun.ihttp.annotations.URL;
 import com.zhanjixun.ihttp.annotations.UserAgent;
 import org.jsoup.Jsoup;
@@ -24,8 +23,7 @@ public class SysTest {
         Document parse = Jsoup.parse(index.getText());
     }
 
-    @URL("http://www.hao6v.com")
-    @ResponseCharset("gbk2312")
+    @URL("http://localhost:8088")
     interface Hao6vMapper {
 
         @GET
