@@ -24,6 +24,7 @@ public abstract class BaseExecutor implements Executor {
 	@Override
 	public Response execute(Request request) throws IOException {
 		Response response;
+		long startTime = System.currentTimeMillis();
 		switch (request.getMethod()) {
 			case "GET":
 				response = doGetMethod(request);
@@ -40,7 +41,8 @@ public abstract class BaseExecutor implements Executor {
 			default:
 				throw new RuntimeException("未能识别的HTTP请求方法：" + request.getMethod());
 		}
-		log.debug(String.join(" ", request.getMethod(), String.valueOf(response.getStatus()), request.getUrl()));
+		long endTime = System.currentTimeMillis();
+		log.debug(request.getMethod() + " " + response.getStatus() + " [" + (endTime - startTime) + "s] " + request.getUrl());
 		return response;
 	}
 

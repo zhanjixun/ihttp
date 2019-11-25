@@ -15,34 +15,39 @@ import java.util.List;
 @Data
 public class Response implements Serializable {
 
-    private static final long serialVersionUID = -4834694151773821099L;
+	private static final long serialVersionUID = -4834694151773821099L;
 
-    private Request request;
+	//执行的请求
+	private Request request;
 
-    private int status;
+	//返回状态码
+	private int status;
 
-    private List<Header> headers;
+	//返回请求头
+	private List<Header> headers;
 
-    private byte[] body;
+	//返回值正文
+	private byte[] body;
 
-    private String charset;
+	//返回值正文字符编码
+	private String charset;
 
-    private String text;
+	private String text;
 
-    public String getText() {
-        if (text == null) {
-            try {
-                text = new String(body, charset);
-            } catch (UnsupportedEncodingException e) {
-                throw new RuntimeException(e);
-            }
-        }
-        return text;
-    }
+	public String getText() {
+		if (text == null) {
+			try {
+				text = new String(body, charset);
+			} catch (UnsupportedEncodingException e) {
+				throw new RuntimeException(e);
+			}
+		}
+		return text;
+	}
 
-    @Override
-    public String toString() {
-        return request.getMethod() + " " + getStatus() + " " + request.getUrl();
-    }
+	@Override
+	public String toString() {
+		return request.getMethod() + " " + getStatus() + " " + request.getUrl();
+	}
 
 }
