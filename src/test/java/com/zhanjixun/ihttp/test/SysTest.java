@@ -2,7 +2,10 @@ package com.zhanjixun.ihttp.test;
 
 import com.zhanjixun.ihttp.IHTTP;
 import com.zhanjixun.ihttp.Response;
-import com.zhanjixun.ihttp.annotations.*;
+import com.zhanjixun.ihttp.annotations.GET;
+import com.zhanjixun.ihttp.annotations.ResponseCharset;
+import com.zhanjixun.ihttp.annotations.URL;
+import com.zhanjixun.ihttp.annotations.UserAgent;
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
 import org.junit.Test;
@@ -13,24 +16,22 @@ import org.junit.Test;
  */
 public class SysTest {
 
-    private Hao6vMapper mapper = IHTTP.getMapper(Hao6vMapper.class);
+	private Hao6vMapper mapper = IHTTP.getMapper(Hao6vMapper.class);
 
-    @Test
-    public void name() {
-        Response index = mapper.index();
-        Document parse = Jsoup.parse(index.getText());
-        System.out.println(index.getText());
-    }
+	@Test
+	public void name() {
+		Response index = mapper.index();
+		Document parse = Jsoup.parse(index.getText());
+	}
 
-    @URL("http://www.hao6v.com")
-    @ResponseCharset("gbk2312")
-    interface Hao6vMapper {
+	@URL("http://www.hao6v.com")
+	@ResponseCharset("gbk2312")
+	interface Hao6vMapper {
 
-        @GET
-        @URL("/index.html")
-        @UserAgent("Mozilla/5.0 (Windows NT 10.0; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/78.0.3904.108 Safari/537.36")
-        @Header(name = "from", value = "zhanjixun@qq.com")
-        Response index();
-        
-    }
+		@GET
+		@URL("/index.html")
+		@UserAgent("Mozilla/5.0 (Windows NT 10.0; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/78.0.3904.108 Safari/537.36")
+		Response index();
+
+	}
 }
