@@ -6,7 +6,6 @@ import com.zhanjixun.ihttp.Response;
 import com.zhanjixun.ihttp.domain.Header;
 import com.zhanjixun.ihttp.parsing.Configuration;
 import com.zhanjixun.ihttp.parsing.HttpProxy;
-import com.zhanjixun.ihttp.utils.CookieUtils;
 import com.zhanjixun.ihttp.utils.StrUtils;
 import com.zhanjixun.ihttp.utils.Util;
 import lombok.extern.slf4j.Slf4j;
@@ -15,6 +14,7 @@ import okhttp3.*;
 import java.io.IOException;
 import java.net.InetSocketAddress;
 import java.net.Proxy;
+import java.util.Date;
 import java.util.List;
 import java.util.Optional;
 import java.util.concurrent.TimeUnit;
@@ -136,7 +136,17 @@ public class OkHttpExecutor extends BaseExecutor {
 
 		@Override
 		public void saveFromResponse(HttpUrl url, List<okhttp3.Cookie> cookies) {
-			cookiesStore.addCookies(cookies.stream().map(CookieUtils::okhttpConvert).collect(Collectors.toList()));
+			cookiesStore.addCookies(cookies.stream().map(originCookie -> {
+				com.zhanjixun.ihttp.cookie.Cookie iCookie = new com.zhanjixun.ihttp.cookie.Cookie();
+				iCookie.setDomain(originCookie.domain());
+				iCookie.setPath(originCookie.path());
+				iCookie.setName(originCookie.name());
+				iCookie.setValue(originCookie.value());
+				iCookie.setExpiryDate(new Date(originCookie.expiresAt()));
+				iCookie.setSecure(originCookie.secure());
+				iCookie.setHttpOnly(originCookie.httpOnly());
+				return iCookie;
+			}).collect(Collectors.toList()));
 		}
 
 		@Override
@@ -144,7 +154,21 @@ public class OkHttpExecutor extends BaseExecutor {
 			//清除过期cookie
 			cookiesStore.clearExpired();
 			//转换cookie类
-			List<Cookie> cookieList = cookiesStore.getCookies().stream().map(CookieUtils::okhttpConvert).collect(Collectors.toList());
+			List<Cookie> cookieList = cookiesStore.getCookies().stream().map(originCookie -> {
+				okhttp3.Cookie.Builder build = new okhttp3.Cookie.Builder();
+				build.domain(originCookie.getDomain());
+				build.path(originCookie.getPath());
+				build.name(originCookie.getName());
+				build.value(originCookie.getValue());
+				build.expiresAt(originCookie.getExpiryDate().getTime());
+				if (originCookie.isSecure()) {
+					build.secure();
+				}
+				if (originCookie.isHttpOnly()) {
+					build.httpOnly();
+				}
+				return build.build();
+			}).collect(Collectors.toList());
 			//过滤出符合url
 			return cookieList.stream().filter(d -> d.matches(url)).collect(Collectors.toList());
 		}

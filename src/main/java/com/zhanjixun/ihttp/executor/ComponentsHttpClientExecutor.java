@@ -3,12 +3,12 @@ package com.zhanjixun.ihttp.executor;
 import com.zhanjixun.ihttp.CookiesStore;
 import com.zhanjixun.ihttp.Request;
 import com.zhanjixun.ihttp.Response;
+import com.zhanjixun.ihttp.cookie.Cookie;
 import com.zhanjixun.ihttp.domain.FormData;
 import com.zhanjixun.ihttp.domain.FormDatas;
 import com.zhanjixun.ihttp.domain.Header;
 import com.zhanjixun.ihttp.parsing.Configuration;
 import com.zhanjixun.ihttp.parsing.HttpProxy;
-import com.zhanjixun.ihttp.utils.CookieUtils;
 import com.zhanjixun.ihttp.utils.StrUtils;
 import com.zhanjixun.ihttp.utils.Util;
 import lombok.extern.slf4j.Slf4j;
@@ -24,6 +24,7 @@ import org.apache.http.entity.StringEntity;
 import org.apache.http.entity.mime.MultipartEntityBuilder;
 import org.apache.http.impl.client.HttpClientBuilder;
 import org.apache.http.impl.client.HttpClients;
+import org.apache.http.impl.cookie.BasicClientCookie;
 import org.apache.http.ssl.SSLContextBuilder;
 
 import java.io.IOException;
@@ -197,13 +198,31 @@ public class ComponentsHttpClientExecutor extends BaseExecutor {
 		}
 
 		@Override
-		public void addCookie(org.apache.http.cookie.Cookie cookie) {
-			cookiesStore.addCookie(CookieUtils.componentsConvert(cookie));
+		public void addCookie(org.apache.http.cookie.Cookie originCookie) {
+			cookiesStore.addCookie(Cookie.builder()
+					.name(originCookie.getName())
+					.value(originCookie.getValue())
+					.domain(originCookie.getDomain())
+					.path(originCookie.getPath())
+					.expiryDate(originCookie.getExpiryDate())
+					.comment(originCookie.getComment())
+					.isSecure(originCookie.isSecure())
+					.version(originCookie.getVersion())
+					.build());
 		}
 
 		@Override
 		public List<org.apache.http.cookie.Cookie> getCookies() {
-			return cookiesStore.getCookies().stream().map(CookieUtils::componentsConvert).collect(Collectors.toList());
+			return cookiesStore.getCookies().stream().map(originCookie -> {
+				BasicClientCookie target = new BasicClientCookie(originCookie.getName(), originCookie.getValue());
+				target.setDomain(originCookie.getDomain());
+				target.setPath(originCookie.getPath());
+				target.setExpiryDate(originCookie.getExpiryDate());
+				target.setComment(originCookie.getComment());
+				target.setSecure(originCookie.isSecure());
+				target.setVersion(originCookie.getVersion());
+				return target;
+			}).collect(Collectors.toList());
 		}
 
 		@Override
