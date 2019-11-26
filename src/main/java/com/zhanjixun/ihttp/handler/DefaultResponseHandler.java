@@ -14,6 +14,15 @@ public class DefaultResponseHandler implements ResponseHandler {
 
 	@Override
 	public Object handle(Method method, MapperMethod mapperMethod, Response response) {
+		Class<?> returnType = method.getReturnType();
+		if (returnType.getName().equals("void")) {
+			return null;
+		}
+
+		if (returnType == Response.class) {
+			return response;
+		}
+
 		return response;
 	}
 

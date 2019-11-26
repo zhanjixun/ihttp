@@ -1,5 +1,6 @@
 package com.zhanjixun.ihttp.test;
 
+import com.alibaba.fastjson.JSON;
 import com.zhanjixun.ihttp.IHTTP;
 import com.zhanjixun.ihttp.Response;
 import org.junit.After;
@@ -46,4 +47,29 @@ public class SysTest {
 		URL resource = SysTest.class.getClassLoader().getResource("file.txt");
 		mapper.upload(new File(resource.toURI()));
 	}
+
+	@Test
+	public void name2() {
+		Map<String, Object> map = new HashMap<>();
+		map.put("m1", "m1Value");
+		map.put("m2", 2);
+		map.put("m3", 2.0);
+		mapper.testPost(JSON.toJSONString(map));
+	}
+
+	@Test
+	public void name3() {
+		Map<String, Object> map = new HashMap<>();
+		map.put("m1", "m1Value");
+		map.put("m2", 2);
+		map.put("m3", 2.0);
+		mapper.testPut(map);
+	}
+
+	@Test
+	public void name4() {
+		mapper.testDel(1);
+	}
+
+
 }

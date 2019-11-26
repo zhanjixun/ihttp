@@ -24,11 +24,20 @@ public interface TestMapper {
 
 	@POST
 	@URL("/home")
-	@RequestParam(name = "key", value = "value")
-	Response testPost();
+	Response testPost(@RequestBody String body);
+
+	@PUT
+	@URL("/home")
+	Response testPut(@RequestBody Map<String, Object> body);
 
 	@POST
 	@URL("/upload")
+	@UserAgent("zhanjixun@qq.com")
 	Response upload(@RequestPart(name = "file") File file);
+
+
+	@DELETE
+	@URL("/user/#{userId}")
+	Response testDel(@Placeholder("userId") int userId);
 
 }

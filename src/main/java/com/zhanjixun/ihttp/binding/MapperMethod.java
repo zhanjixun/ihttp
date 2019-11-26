@@ -48,7 +48,6 @@ public class MapperMethod {
 
 	private Boolean followRedirects;
 
-	//GET,POST,PUT,DELETE
 	private String requestMethod;
 
 	private List<Header> requestHeaders;
@@ -89,7 +88,23 @@ public class MapperMethod {
 	private Request buildRequest(Object... args) {
 		Request request = new Request();
 		request.setName(name);
+
 		//1.绑定固定内容
+		bingConstValue(request);
+
+		//2.生成实时内容
+		bingGenerateValue(request);
+
+		//3.绑定运行参数
+		for (MapperParameter mapperParameter : parameters) {
+			bingParameterValue(request, mapperParameter, args[mapperParameter.getIndex()]);
+		}
+
+		return request;
+	}
+
+	//绑定固定内容
+	private void bingConstValue(Request request) {
 		request.setUrl(buildUrl(mapper.getUrl(), getUrl()));
 		request.setMethod(getRequestMethod());
 
@@ -104,7 +119,12 @@ public class MapperMethod {
 			request.getHeaders().addAll(mapper.getRequestHeaders());
 		}
 		if (getRequestHeaders() != null) {
-			request.getHeaders().addAll(getRequestHeaders());
+			List<Header> requestHeaders = getRequestHeaders();
+			for (Header requestHeader : requestHeaders) {
+				//同时定义在接口和方法上 只使用方法上
+				request.getHeaders().removeIf(h -> requestHeader.getName().equals(h.getName()));
+			}
+			request.getHeaders().addAll(requestHeaders);
 		}
 
 		request.setParams(new ArrayList<>());
@@ -112,10 +132,24 @@ public class MapperMethod {
 			request.getParams().addAll(mapper.getRequestParams());
 		}
 		if (getRequestParams() != null) {
-			request.getParams().addAll(getRequestParams());
+			List<Param> requestParams = getRequestParams();
+			for (Param requestParam : requestParams) {
+				//同时定义在接口和方法上 只使用方法上
+				request.getParams().removeIf(p -> p.getName().equals(requestParam.getName()));
+			}
+			request.getParams().addAll(requestParams);
 		}
 
-		//2.生成实时内容
+		request.setFileParts(new ArrayList<>());
+		if (getRequestMultiParts() != null) {
+			for (FormDatas requestMultiPart : getRequestMultiParts()) {
+				request.getFileParts().add(requestMultiPart);
+			}
+		}
+	}
+
+	//绑定生成类的值
+	private void bingGenerateValue(Request request) {
 		if (mapper.getRandomGeneratorParams() != null) {
 			for (RandomGenerator generatorParam : mapper.getRandomGeneratorParams()) {
 				String value = generatorRandomValue(generatorParam, request.getCharset());
@@ -166,68 +200,75 @@ public class MapperMethod {
 				replacePlaceholder(request, generator.getName(), replacement);
 			}
 		}
+	}
 
-		//3.绑定运行参数
-		for (MapperParameter mapperParameter : parameters) {
-			Object arg = args[mapperParameter.getIndex()];
-			Class<?> parameterType = mapperParameter.getParameterType();
-			if (mapperParameter.isURLAnnotated()) {
-				request.setUrl(buildUrl(request.getUrl(), (String) arg));
-			}
-			if (Util.isNotEmpty(mapperParameter.getRequestParamNames())) {
-				for (EncodableString requestParamName : mapperParameter.getRequestParamNames()) {
-					//基本类型及其封装类
-					if (ReflectUtils.isPrimitive(arg) || parameterType == String.class) {
-						String value = requestParamName.encode() ? StrUtils.URLEncoder(arg.toString(), request.getCharset()) : arg.toString();
-						request.getParams().add(new Param(requestParamName.getName(), value));
-						continue;
-					}
-					//支持序列化的对象 通常是Map<String,Object>或者实体类
-					String suffix = Util.isNotEmpty(requestParamName.getName()) ? requestParamName.getName() + "." : "";
-					JSONObject jsonObject = (JSONObject) JSON.toJSON(arg);
-					for (Map.Entry<String, Object> entry : jsonObject.entrySet()) {
-						request.getParams().add(new Param(suffix + entry.getKey(), String.valueOf(entry.getValue())));
-					}
+	//绑定运行参数
+	private void bingParameterValue(Request request, MapperParameter mapperParameter, Object arg) {
+		Class<?> parameterType = mapperParameter.getParameterType();
+		if (mapperParameter.isURLAnnotated()) {
+			request.setUrl(buildUrl(request.getUrl(), (String) arg));
+		}
+
+		if (Util.isNotEmpty(mapperParameter.getRequestParamNames())) {
+			for (EncodableString requestParamName : mapperParameter.getRequestParamNames()) {
+				//基本类型及其封装类
+				if (ReflectUtils.isPrimitive(arg) || parameterType == String.class) {
+					String value = requestParamName.encode() ? StrUtils.URLEncoder(arg.toString(), request.getCharset()) : arg.toString();
+					request.getParams().add(new Param(requestParamName.getName(), value));
+					continue;
 				}
-			}
-			if (Util.isNotEmpty(mapperParameter.getRequestHeaderNames())) {
-				for (String headerName : mapperParameter.getRequestHeaderNames()) {
-					request.getHeaders().add(new Header(headerName, (String) arg));
+				//支持序列化的对象 通常是Map<String,Object>或者实体类
+				String suffix = Util.isNotEmpty(requestParamName.getName()) ? requestParamName.getName() + "." : "";
+				JSONObject jsonObject = (JSONObject) JSON.toJSON(arg);
+				for (Map.Entry<String, Object> entry : jsonObject.entrySet()) {
+					request.getParams().add(new Param(suffix + entry.getKey(), String.valueOf(entry.getValue())));
 				}
-			}
-			if (Util.isNotEmpty(mapperParameter.getRequestMultiPartNames())) {
-				List<FormDatas> formDatas = new ArrayList<>();
-				for (String multiPartName : mapperParameter.getRequestMultiPartNames()) {
-					if (arg instanceof String) {
-						formDatas.add(new FormDatas(multiPartName, FormData.create(new File((String) arg))));
-					} else if (arg instanceof File) {
-						formDatas.add(new FormDatas(multiPartName, FormData.create((File) arg)));
-					} else if (arg instanceof FormData) {
-						formDatas.add(new FormDatas(multiPartName, (FormData) arg));
-					} else {
-						throw new IllegalArgumentException(RequestPart.class.getName() + "不支持类型：" + parameterType.getName());
-					}
-				}
-				request.setFileParts(formDatas);
-			}
-			if (mapperParameter.getRequestBody() != null) {
-				EncodableObject requestBody = mapperParameter.getRequestBody();
-				if (arg instanceof String) {
-					request.setBody(requestBody.encode() ? StrUtils.URLEncoder((String) arg, request.getCharset()) : (String) arg);
-				} else {
-					String jsonBody = JSON.toJSONString(arg);
-					request.setBody(requestBody.encode() ? StrUtils.URLEncoder(jsonBody, request.getCharset()) : jsonBody);
-				}
-			}
-			if (mapperParameter.getPlaceholder() != null) {
-				EncodableString placeholder = mapperParameter.getPlaceholder();
-				replacePlaceholder(request, placeholder.getName(), arg.toString());
 			}
 		}
 
-		return request;
+		if (Util.isNotEmpty(mapperParameter.getRequestHeaderNames())) {
+			for (String headerName : mapperParameter.getRequestHeaderNames()) {
+				//同时定义在方法上和参数上 只使用参数的
+				request.getHeaders().removeIf(h -> h.getName().equals(headerName));
+				request.getHeaders().add(new Header(headerName, (String) arg));
+			}
+		}
+
+		if (Util.isNotEmpty(mapperParameter.getRequestMultiPartNames())) {
+			for (String multiPartName : mapperParameter.getRequestMultiPartNames()) {
+				if (arg instanceof String) {
+					request.getFileParts().add(new FormDatas(multiPartName, FormData.create(new File((String) arg))));
+					continue;
+				}
+				if (arg instanceof File) {
+					request.getFileParts().add(new FormDatas(multiPartName, FormData.create((File) arg)));
+					continue;
+				}
+				if (arg instanceof FormData) {
+					request.getFileParts().add(new FormDatas(multiPartName, (FormData) arg));
+					continue;
+				}
+				throw new IllegalArgumentException(RequestPart.class.getName() + "不支持类型：" + parameterType.getName());
+			}
+		}
+
+		if (mapperParameter.getRequestBody() != null) {
+			EncodableObject requestBody = mapperParameter.getRequestBody();
+			if (arg instanceof String) {
+				request.setBody(requestBody.encode() ? StrUtils.URLEncoder((String) arg, request.getCharset()) : (String) arg);
+			} else {
+				String jsonBody = JSON.toJSONString(arg);
+				request.setBody(requestBody.encode() ? StrUtils.URLEncoder(jsonBody, request.getCharset()) : jsonBody);
+			}
+		}
+
+		if (mapperParameter.getPlaceholder() != null) {
+			EncodableString placeholder = mapperParameter.getPlaceholder();
+			replacePlaceholder(request, placeholder.getName(), arg.toString());
+		}
 	}
 
+	//替换占位符
 	private void replacePlaceholder(Request request, String placeholder, String replacement) {
 		placeholder = "#{" + placeholder + "}";
 		//替换URL
@@ -263,12 +304,14 @@ public class MapperMethod {
 		return timestampGenerator.getUnit().convert(System.currentTimeMillis(), TimeUnit.MILLISECONDS) + "";
 	}
 
+	//拼接URL
 	private String buildUrl(String a, String b) {
 		a = Util.isEmpty(a) ? "" : a;
 		b = Util.isEmpty(b) ? "" : b;
 		return b.startsWith("http") ? b : a + b;
 	}
 
+	//可重试的运行
 	private Response executeRetryable(Request request) throws Exception {
 		if (retryable == null && mapper.getRetryable() == null) {
 			return mapper.getExecutor().execute(request);
