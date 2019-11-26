@@ -8,6 +8,8 @@ import org.junit.Test;
 
 import java.io.File;
 import java.net.URL;
+import java.util.HashMap;
+import java.util.Map;
 
 /**
  * @author :zhanjixun
@@ -31,7 +33,12 @@ public class SysTest {
 
 	@Test
 	public void name() {
-		Response index = mapper.index();
+		Map<String, Object> map = new HashMap<>();
+		map.put("m1", "m1Value");
+		map.put("m2", 2);
+		map.put("m3", 2.0);
+		Student beanParam = new Student("中文测试", 23, "JK1132");
+		Response response = mapper.testGet("value3", 4, map, beanParam);
 	}
 
 	@Test

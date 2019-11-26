@@ -3,6 +3,8 @@ package com.zhanjixun.ihttp.executor;
 import com.zhanjixun.ihttp.CookiesStore;
 import com.zhanjixun.ihttp.Request;
 import com.zhanjixun.ihttp.Response;
+import com.zhanjixun.ihttp.domain.FormData;
+import com.zhanjixun.ihttp.domain.FormDatas;
 import com.zhanjixun.ihttp.domain.Header;
 import com.zhanjixun.ihttp.parsing.Configuration;
 import com.zhanjixun.ihttp.parsing.HttpProxy;
@@ -137,11 +139,11 @@ public class ComponentsHttpClientExecutor extends BaseExecutor {
 			MultipartEntityBuilder builder = MultipartEntityBuilder.create();
 			request.getParams().forEach(p -> builder.addTextBody(p.getName(), p.getValue()));
 
-//            for (FormData parts : request.getFileParts()) {
-//                ContentType type = (parts.getContentType() != null) ? ContentType.create(parts.getContentType()) : ContentType.DEFAULT_BINARY;
-//
-//                builder.addBinaryBody(paramString, parts.getData(), type, parts.getFileName());
-//            }
+			for (FormDatas parts : request.getFileParts()) {
+				FormData formData = parts.getFormData();
+				ContentType type = (formData.getContentType() != null) ? ContentType.create(formData.getContentType()) : ContentType.DEFAULT_BINARY;
+				builder.addBinaryBody(parts.getName(), formData.getData(), type, formData.getFileName());
+			}
 
 			method.setEntity(builder.build());
 		}

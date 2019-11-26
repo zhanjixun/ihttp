@@ -4,6 +4,7 @@ import com.zhanjixun.ihttp.Response;
 import com.zhanjixun.ihttp.annotations.*;
 
 import java.io.File;
+import java.util.Map;
 
 
 @URL("http://localhost:8088")
@@ -12,7 +13,19 @@ public interface TestMapper {
 
 	@GET
 	@URL("/index")
-	Response index();
+	@RequestParam(name = "key1", value = "value1")
+	@RequestParam(name = "key2", value = "value2")
+	Response testGet(
+			@RequestParam(name = "key3") String value3,
+			@RequestParam(name = "key4") int value4,
+			@RequestParam Map<String, Object> mapParam,
+			@RequestParam(name = "bean") Student beanParam
+	);
+
+	@POST
+	@URL("/home")
+	@RequestParam(name = "key", value = "value")
+	Response testPost();
 
 	@POST
 	@URL("/upload")

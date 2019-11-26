@@ -1,6 +1,7 @@
 package com.zhanjixun.ihttp.binding;
 
 import com.alibaba.fastjson.JSON;
+import com.alibaba.fastjson.JSONObject;
 import com.zhanjixun.ihttp.Request;
 import com.zhanjixun.ihttp.Response;
 import com.zhanjixun.ihttp.RetryPolicy;
@@ -13,6 +14,7 @@ import com.zhanjixun.ihttp.domain.Param;
 import com.zhanjixun.ihttp.handler.DefaultResponseHandler;
 import com.zhanjixun.ihttp.handler.ResponseHandler;
 import com.zhanjixun.ihttp.parsing.*;
+import com.zhanjixun.ihttp.utils.ReflectUtils;
 import com.zhanjixun.ihttp.utils.StrUtils;
 import com.zhanjixun.ihttp.utils.Util;
 import lombok.Data;
@@ -174,18 +176,17 @@ public class MapperMethod {
 			}
 			if (Util.isNotEmpty(mapperParameter.getRequestParamNames())) {
 				for (EncodableString requestParamName : mapperParameter.getRequestParamNames()) {
-					if (parameterType == String.class) {
-						String value = requestParamName.encode() ? StrUtils.URLEncoder((String) arg, request.getCharset()) : (String) arg;
+					//基本类型及其封装类
+					if (ReflectUtils.isPrimitive(arg) || parameterType == String.class) {
+						String value = requestParamName.encode() ? StrUtils.URLEncoder(arg.toString(), request.getCharset()) : arg.toString();
 						request.getParams().add(new Param(requestParamName.getName(), value));
-					} else if (parameterType == Map.class) {
-						@SuppressWarnings("unchecked")
-						Map<String, Object> map = (Map<String, Object>) arg;
-						String suffix = Util.isNotEmpty(requestParamName.getName()) ? requestParamName.getName() + "." : "";
-						for (Map.Entry<String, Object> entry : map.entrySet()) {
-							request.getParams().add(new Param(suffix + entry.getKey(), String.valueOf(entry.getValue())));
-						}
-					} else {
-						//todo 内省
+						continue;
+					}
+					//支持序列化的对象 通常是Map<String,Object>或者实体类
+					String suffix = Util.isNotEmpty(requestParamName.getName()) ? requestParamName.getName() + "." : "";
+					JSONObject jsonObject = (JSONObject) JSON.toJSON(arg);
+					for (Map.Entry<String, Object> entry : jsonObject.entrySet()) {
+						request.getParams().add(new Param(suffix + entry.getKey(), String.valueOf(entry.getValue())));
 					}
 				}
 			}

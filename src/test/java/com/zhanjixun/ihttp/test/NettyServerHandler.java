@@ -17,13 +17,9 @@ public class NettyServerHandler extends ChannelInboundHandlerAdapter {
 	public void channelRead(ChannelHandlerContext handlerContext, Object msg) throws Exception {
 		FullHttpRequest request = (FullHttpRequest) msg;
 		try {
-			String result = "ok";
-			String path = request.uri();
-			String body = request.content().toString(CharsetUtil.UTF_8);
-			HttpMethod method = request.method();
-			HttpHeaders headers = request.headers();
+			System.out.println(HttpMessageUtil.appendFullRequest(new StringBuilder(), request).toString());
 
-			send(handlerContext, result, HttpResponseStatus.OK);
+			send(handlerContext, "ok", HttpResponseStatus.OK);
 		} finally {
 			request.release();
 		}
