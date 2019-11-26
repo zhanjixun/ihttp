@@ -4,7 +4,9 @@ import com.alibaba.fastjson.JSON;
 import com.zhanjixun.ihttp.Request;
 import com.zhanjixun.ihttp.Response;
 import com.zhanjixun.ihttp.RetryPolicy;
+import com.zhanjixun.ihttp.annotations.RequestPart;
 import com.zhanjixun.ihttp.context.ApplicationContext;
+import com.zhanjixun.ihttp.domain.FormData;
 import com.zhanjixun.ihttp.domain.FormDatas;
 import com.zhanjixun.ihttp.domain.Header;
 import com.zhanjixun.ihttp.domain.Param;
@@ -16,6 +18,7 @@ import com.zhanjixun.ihttp.utils.Util;
 import lombok.Data;
 import lombok.extern.slf4j.Slf4j;
 
+import java.io.File;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -165,12 +168,12 @@ public class MapperMethod {
 		//3.绑定运行参数
 		for (MapperParameter mapperParameter : parameters) {
 			Object arg = args[mapperParameter.getIndex()];
+			Class<?> parameterType = mapperParameter.getParameterType();
 			if (mapperParameter.isURLAnnotated()) {
 				request.setUrl(buildUrl(request.getUrl(), (String) arg));
 			}
 			if (Util.isNotEmpty(mapperParameter.getRequestParamNames())) {
 				for (EncodableString requestParamName : mapperParameter.getRequestParamNames()) {
-					Class<?> parameterType = mapperParameter.getParameterType();
 					if (parameterType == String.class) {
 						String value = requestParamName.encode() ? StrUtils.URLEncoder((String) arg, request.getCharset()) : (String) arg;
 						request.getParams().add(new Param(requestParamName.getName(), value));
@@ -192,15 +195,19 @@ public class MapperMethod {
 				}
 			}
 			if (Util.isNotEmpty(mapperParameter.getRequestMultiPartNames())) {
-//                for (String multiPartName : mapperParameter.getRequestMultiPartNames()) {
-//                    if (arg instanceof String) {
-//                        request.getFileParts().add(new FormData(multiPartName, new File((String) arg)));
-//                    } else if (arg instanceof File) {
-//                        request.getFileParts().add(new FormData(multiPartName, (File) arg));
-//                    } else {
-//                        throw new IllegalArgumentException("在方法的参数中使用" + RequestPart.class.getName() + "时，被注解的参数类型必须为java.lang.String或者java.io.File");
-//                    }
-//                }
+				List<FormDatas> formDatas = new ArrayList<>();
+				for (String multiPartName : mapperParameter.getRequestMultiPartNames()) {
+					if (arg instanceof String) {
+						formDatas.add(new FormDatas(multiPartName, FormData.create(new File((String) arg))));
+					} else if (arg instanceof File) {
+						formDatas.add(new FormDatas(multiPartName, FormData.create((File) arg)));
+					} else if (arg instanceof FormData) {
+						formDatas.add(new FormDatas(multiPartName, (FormData) arg));
+					} else {
+						throw new IllegalArgumentException(RequestPart.class.getName() + "不支持类型：" + parameterType.getName());
+					}
+				}
+				request.setFileParts(formDatas);
 			}
 			if (mapperParameter.getRequestBody() != null) {
 				EncodableObject requestBody = mapperParameter.getRequestBody();

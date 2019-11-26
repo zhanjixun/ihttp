@@ -15,22 +15,15 @@ public class NettyServerHandler extends ChannelInboundHandlerAdapter {
 
 	@Override
 	public void channelRead(ChannelHandlerContext handlerContext, Object msg) throws Exception {
-		String result = "ok";
-		if (!(msg instanceof FullHttpRequest)) {
-			result = "未知请求!";
-			send(handlerContext, result, HttpResponseStatus.BAD_REQUEST);
-			return;
-		}
 		FullHttpRequest request = (FullHttpRequest) msg;
 		try {
+			String result = "ok";
 			String path = request.uri();
 			String body = request.content().toString(CharsetUtil.UTF_8);
 			HttpMethod method = request.method();
 			HttpHeaders headers = request.headers();
 
 			send(handlerContext, result, HttpResponseStatus.OK);
-		} catch (Exception e) {
-			e.printStackTrace();
 		} finally {
 			request.release();
 		}

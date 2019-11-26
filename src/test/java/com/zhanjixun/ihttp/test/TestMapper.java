@@ -1,9 +1,9 @@
 package com.zhanjixun.ihttp.test;
 
 import com.zhanjixun.ihttp.Response;
-import com.zhanjixun.ihttp.annotations.GET;
-import com.zhanjixun.ihttp.annotations.URL;
-import com.zhanjixun.ihttp.annotations.UserAgent;
+import com.zhanjixun.ihttp.annotations.*;
+
+import java.io.File;
 
 
 @URL("http://localhost:8088")
@@ -11,7 +11,11 @@ import com.zhanjixun.ihttp.annotations.UserAgent;
 public interface TestMapper {
 
 	@GET
-	@URL("/index.html")
+	@URL("/index")
 	Response index();
+
+	@POST
+	@URL("/upload")
+	Response upload(@RequestPart(name = "file") File file);
 
 }
