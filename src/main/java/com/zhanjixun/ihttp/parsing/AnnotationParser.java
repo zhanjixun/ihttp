@@ -71,7 +71,7 @@ public class AnnotationParser implements Parser {
 		//配置类注解
 		ReflectUtils.ifPresent(target, DisableCookie.class, e -> mapper.setDisableCookie(true));
 		ReflectUtils.ifPresent(target, ResponseCharset.class, e -> mapper.setResponseCharset(e.value()));
-		ReflectUtils.ifPresent(target, CookieShare.class, e -> mapper.setCookieJar(e.value()));
+		ReflectUtils.ifPresent(target, CookieJar.class, e -> mapper.setCookieJar(e.value()));
 		ReflectUtils.ifPresent(target, HttpExecutor.class, e -> mapper.setHttpExecutor(e.value()));
 		ReflectUtils.ifPresent(target, Retryable.class, e -> mapper.setRetryable(new com.zhanjixun.ihttp.parsing.Retryable(e.throwable(), e.policy(), e.maxAttempts(), e.delay(), e.multiplier())));
 		ReflectUtils.ifPresent(target, Proxy.class, e -> mapper.setHttpProxy(new HttpProxy(e.hostName(), e.port(), e.trustSSL())));
