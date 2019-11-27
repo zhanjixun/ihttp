@@ -1,10 +1,7 @@
 package com.zhanjixun.ihttp.spring;
 
 import com.zhanjixun.ihttp.IHTTP;
-import com.zhanjixun.ihttp.annotations.DELETE;
-import com.zhanjixun.ihttp.annotations.GET;
-import com.zhanjixun.ihttp.annotations.POST;
-import com.zhanjixun.ihttp.annotations.PUT;
+import com.zhanjixun.ihttp.annotations.*;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
@@ -115,7 +112,7 @@ public class MapperScanner implements BeanDefinitionRegistryPostProcessor, Appli
 	}
 
 	private boolean isMapper(Class<?> mapperClass) {
-		Class[] httpMethod = new Class[]{GET.class, POST.class, PUT.class, DELETE.class};
+		Class[] httpMethod = new Class[]{GET.class, POST.class, PUT.class, DELETE.class, HEAD.class, OPTIONS.class, PATCH.class, TRACE.class};
 		for (Method method : mapperClass.getDeclaredMethods()) {
 			for (Class httpMethodClazz : httpMethod) {
 				if (method.isAnnotationPresent(httpMethodClazz)) {
