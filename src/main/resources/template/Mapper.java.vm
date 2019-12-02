@@ -18,7 +18,10 @@ public class ${className} {
 
 #end
 
-#foreach($item in ${mapper.methods})
-	public 
+#foreach($method in ${mapper.methods})
+	public ${method.returnType.simpleName} ${method.name}(#foreach($param in ${method.parameters})${param.parameterType.simpleName} ${param.name}#if($foreach.hasNext),#end#end){
+
+	}
+
 #end
 }
