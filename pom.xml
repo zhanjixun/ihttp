@@ -115,6 +115,12 @@
             <version>4.1.17.Final</version>
             <scope>test</scope>
         </dependency>
+        <dependency>
+            <artifactId>velocity</artifactId>
+            <groupId>org.apache.velocity</groupId>
+            <version>1.7</version>
+            <optional>true</optional>
+        </dependency>
     </dependencies>
 
     <build>
@@ -127,6 +133,10 @@
                     <source>${java.source.version}</source>
                     <target>${java.target.version}</target>
                     <encoding>${project.build.sourceEncoding}</encoding>
+                    <compilerArgs>
+                        <!--java8支持参数名称-->
+                        <arg>-parameters</arg>
+                    </compilerArgs>
                 </configuration>
             </plugin>
             <plugin>

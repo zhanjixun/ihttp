@@ -1,0 +1,24 @@
+package ${packageName};
+
+public class ${className} {
+
+#if(${mapper.url})
+	private String commonURL = "${mapper.url}";
+#end
+
+#if(${mapper.responseCharset})
+	private String responseCharset = "${mapper.responseCharset}";
+#end
+
+#foreach($item in ${mapper.requestHeaders})
+
+#end
+
+#foreach($item in ${mapper.requestParams})
+
+#end
+
+#foreach($item in ${mapper.methods})
+
+#end
+}
