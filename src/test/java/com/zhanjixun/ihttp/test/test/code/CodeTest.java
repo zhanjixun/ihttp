@@ -29,7 +29,7 @@ public class CodeTest {
 
 		StringWriter writer = new StringWriter();
 
-		Template template = Velocity.getTemplate("src/test/resources/template/Mapper.java.vm", "utf-8");
+		Template template = Velocity.getTemplate("src/main/resources/template/Mapper.java.vm", "utf-8");
 		template.merge(velocityContext, writer);
 
 		System.out.println(writer.toString());

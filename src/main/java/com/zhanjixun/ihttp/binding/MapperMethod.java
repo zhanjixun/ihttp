@@ -40,6 +40,8 @@ public class MapperMethod {
 
 	private String name;
 
+	private Class<?> returnType;
+
 	private String url;
 
 	private String requestCharset;

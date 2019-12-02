@@ -19,6 +19,6 @@ public class ${className} {
 #end
 
 #foreach($item in ${mapper.methods})
-
+	public 
 #end
 }

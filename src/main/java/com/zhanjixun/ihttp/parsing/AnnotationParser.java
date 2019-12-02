@@ -41,6 +41,7 @@ public class AnnotationParser implements Parser {
 		List<MapperMethod> mapperMethods = new ArrayList<>();
 		for (Method method : target.getDeclaredMethods()) {
 			MapperMethod mapperMethod = new MapperMethod(method.getName());
+			mapperMethod.setReturnType(method.getReturnType());
 			//1.解析方法上的注解
 			handleMethodAnnotation(method, mapperMethod);
 
