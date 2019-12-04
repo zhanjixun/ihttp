@@ -163,7 +163,7 @@ public class ComponentsHttpClientExecutor extends BaseExecutor {
                     if (lastIndexOf == -1 || lastIndexOf == contentType.get().length() - "charset=".length()) {
                         charset = "UTF-8";
                     } else {
-                        charset = contentType.get().substring(lastIndexOf);
+                        charset = contentType.get().substring(lastIndexOf + "charset=".length());
                     }
                 }
             }
