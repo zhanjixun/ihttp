@@ -9,19 +9,39 @@ public class ${className} {
 #if(${mapper.responseCharset})
 	private String responseCharset = "${mapper.responseCharset}";
 #end
+	private Map<String,String> commonHeaders = new HashMap<>();
 
+	private Map<String,String> commonParams = new HashMap<>();
+	
+	public ${className}(){
 #foreach($item in ${mapper.requestHeaders})
-
+		commonHeaders.put("${item.name}","${item.value}");
 #end
-
 #foreach($item in ${mapper.requestParams})
-
+		commonParams.put("${item.name}","${item.value}");
 #end
-
-#foreach($method in ${mapper.methods})
-	public ${method.returnType.simpleName} ${method.name}(#foreach($param in ${method.parameters})${param.parameterType.simpleName} ${param.name}#if($foreach.hasNext),#end#end){
-
 	}
 
+#foreach($method in ${mapper.methods})
+	public ${method.returnType.simpleName} ${method.name}(#foreach($param in ${method.parameters})${param.parameterType.simpleName} ${param.name}#if($foreach.hasNext) , #end#end){
+#if(${method.requestMethod} == 'GET')
+		HttpRequest request = new HttpGet();
+#elseif(${method.requestMethod} == 'POST')
+		HttpRequest request = new HttpPost();
+#elseif(${method.requestMethod} == 'PUT')
+		HttpRequest request = new HttpPut();
+#elseif(${method.requestMethod} == 'DELETE')
+		HttpRequest request = new HttpDelete();
+#elseif(${method.requestMethod} == 'HEAD')
+		HttpRequest request = new HttpHead();
+#elseif(${method.requestMethod} == 'OPTIONS')
+		HttpRequest request = new HttpOptions();
+#elseif(${method.requestMethod} == 'PATCH')
+		HttpRequest request = new HttpPatch();
+#elseif(${method.requestMethod} == 'TRACE')
+		HttpRequest request = new HttpTrace();
 #end
+	}
+#end
+
 }
