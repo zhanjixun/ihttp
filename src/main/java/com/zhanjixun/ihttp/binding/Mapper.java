@@ -1,7 +1,6 @@
 package com.zhanjixun.ihttp.binding;
 
 import com.zhanjixun.ihttp.domain.Header;
-import com.zhanjixun.ihttp.domain.Param;
 import com.zhanjixun.ihttp.executor.Executor;
 import com.zhanjixun.ihttp.parsing.HttpProxy;
 import com.zhanjixun.ihttp.parsing.RandomGenerator;
@@ -27,11 +26,11 @@ public class Mapper {
 
     private Executor executor;
 
+    //实体内容
+
     private String url;
 
     private List<Header> requestHeaders;
-
-    private List<Param> requestParams;
 
     private String cookieJar;
 

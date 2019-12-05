@@ -3,8 +3,6 @@ package com.zhanjixun.ihttp.handler;
 import com.zhanjixun.ihttp.Response;
 import com.zhanjixun.ihttp.binding.MapperMethod;
 
-import java.lang.reflect.Method;
-
 /**
  * 返回处理：适配返回值类型
  *
@@ -14,6 +12,6 @@ import java.lang.reflect.Method;
 public interface ResponseHandler {
 
 
-    Object handle(Method method, MapperMethod mapperMethod, Response response);
+    Object handle(MapperMethod mapperMethod, Response response);
 
 }

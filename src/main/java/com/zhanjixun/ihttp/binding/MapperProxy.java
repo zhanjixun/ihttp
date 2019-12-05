@@ -48,7 +48,7 @@ public class MapperProxy implements InvocationHandler {
             }
         }
 
-        return mapperMethod.getResponseHandler().handle(method, mapperMethod, response);
+        return mapperMethod.getResponseHandler().handle(mapperMethod, response);
     }
 
 }

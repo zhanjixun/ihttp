@@ -3,8 +3,6 @@ package com.zhanjixun.ihttp.handler;
 import com.zhanjixun.ihttp.Response;
 import com.zhanjixun.ihttp.binding.MapperMethod;
 
-import java.lang.reflect.Method;
-
 /**
  * @author :zhanjixun
  * @date : 2019/11/26 11:05
@@ -12,18 +10,19 @@ import java.lang.reflect.Method;
  */
 public class DefaultResponseHandler implements ResponseHandler {
 
-	@Override
-	public Object handle(Method method, MapperMethod mapperMethod, Response response) {
-		Class<?> returnType = method.getReturnType();
-		if (returnType.getName().equals("void")) {
-			return null;
-		}
+    @Override
+    public Object handle(MapperMethod mapperMethod, Response response) {
+        Class<?> returnType = mapperMethod.getReturnType();
+        if (returnType.getName().equals("void")) {
+            return null;
+        }
 
-		if (returnType == Response.class) {
-			return response;
-		}
+        if (returnType == Response.class) {
+            return response;
+        }
+        //TODO 处理返回值类型
 
-		return response;
-	}
+        return response;
+    }
 
 }
