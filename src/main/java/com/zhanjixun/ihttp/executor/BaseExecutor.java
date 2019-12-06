@@ -56,7 +56,7 @@ public abstract class BaseExecutor implements Executor {
 		}
 		long endTime = System.currentTimeMillis();
 
-		log.debug(request.getMethod() + " " + response.getStatus() + " [" + (endTime - startTime) + "s] " + request.getUrl());
+		log.debug(request.getMethod() + " " + response.getStatus() + " [" + (endTime - startTime) + "ms] " + request.getUrl());
 		return response;
 	}
 
