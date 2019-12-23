@@ -14,41 +14,41 @@ import java.lang.annotation.*;
 @Retention(RetentionPolicy.RUNTIME)
 @Repeatable(RandomRequestParam.List.class)
 public @interface RandomRequestParam {
-	/**
-	 * 参数名
-	 *
-	 * @return
-	 */
-	String name();
+    /**
+     * 参数名
+     *
+     * @return
+     */
+    String name();
 
-	/**
-	 * 长度
-	 *
-	 * @return
-	 */
-	int length();
+    /**
+     * 长度
+     *
+     * @return
+     */
+    int length();
 
-	/**
-	 * 字符范围
-	 *
-	 * @return
-	 */
-	String chars() default "abcdefghijklnmopqrstuvwxyzABCDEFGHIJKLNMOPQRSTUVWXYZ0123456789";
+    /**
+     * 字符范围
+     *
+     * @return
+     */
+    String chars() default "abcdefghijklnmopqrstuvwxyzABCDEFGHIJKLNMOPQRSTUVWXYZ0123456789";
 
-	/**
-	 * 是否进行编码
-	 *
-	 * @return
-	 * @see GET#charset()
-	 * @see POST#charset()
-	 */
-	boolean encode() default false;
+    /**
+     * 是否进行编码
+     *
+     * @return
+     * @see GET#charset()
+     * @see POST#charset()
+     */
+    boolean encode() default false;
 
-	//指定多个时使用
-	@Target({ElementType.METHOD})
-	@Retention(RetentionPolicy.RUNTIME)
-	@Documented
-	@interface List {
-		RandomRequestParam[] value();
-	}
+    //指定多个时使用
+    @Target({ElementType.TYPE, ElementType.METHOD})
+    @Retention(RetentionPolicy.RUNTIME)
+    @Documented
+    @interface List {
+        RandomRequestParam[] value();
+    }
 }

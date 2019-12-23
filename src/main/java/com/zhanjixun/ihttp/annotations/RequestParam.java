@@ -18,24 +18,24 @@ import java.lang.annotation.*;
 @Repeatable(RequestParam.List.class)
 public @interface RequestParam {
 
-	String name() default "";
+    String name() default "";
 
-	String value() default "";
+    String value() default "";
 
-	/**
-	 * 是否进行编码
-	 *
-	 * @return
-	 * @see GET#charset()
-	 * @see POST#charset()
-	 */
-	boolean encode() default false;
+    /**
+     * 是否进行编码
+     *
+     * @return
+     * @see GET#charset()
+     * @see POST#charset()
+     */
+    boolean encode() default false;
 
-	//指定多个时使用
-	@Target({ElementType.METHOD})
-	@Retention(RetentionPolicy.RUNTIME)
-	@Documented
-	@interface List {
-		RequestParam[] value();
-	}
+    //指定多个时使用
+    @Target({ElementType.METHOD})
+    @Retention(RetentionPolicy.RUNTIME)
+    @Documented
+    @interface List {
+        RequestParam[] value();
+    }
 }

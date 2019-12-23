@@ -14,38 +14,38 @@ import java.lang.annotation.*;
 @Retention(RetentionPolicy.RUNTIME)
 @Repeatable(RandomPlaceholder.List.class)
 public @interface RandomPlaceholder {
-	/**
-	 * 占位符
-	 *
-	 * @return
-	 */
-	String name();
+    /**
+     * 占位符
+     *
+     * @return
+     */
+    String name();
 
-	/**
-	 * 长度
-	 *
-	 * @return
-	 */
-	int length();
+    /**
+     * 长度
+     *
+     * @return
+     */
+    int length();
 
-	/**
-	 * 字符范围
-	 *
-	 * @return
-	 */
-	String chars() default "abcdefghijklnmopqrstuvwxyzABCDEFGHIJKLNMOPQRSTUVWXYZ0123456789";
+    /**
+     * 字符范围
+     *
+     * @return
+     */
+    String chars() default "abcdefghijklnmopqrstuvwxyzABCDEFGHIJKLNMOPQRSTUVWXYZ0123456789";
 
-	/**
-	 * 是否进行编码
-	 */
-	boolean encode() default false;
+    /**
+     * 是否进行编码
+     */
+    boolean encode() default false;
 
-	//指定多个时使用
-	@Target({ElementType.METHOD})
-	@Retention(RetentionPolicy.RUNTIME)
-	@Documented
-	@interface List {
-		RandomPlaceholder[] value();
-	}
+    //指定多个时使用
+    @Target({ElementType.TYPE, ElementType.METHOD})
+    @Retention(RetentionPolicy.RUNTIME)
+    @Documented
+    @interface List {
+        RandomPlaceholder[] value();
+    }
 
 }
