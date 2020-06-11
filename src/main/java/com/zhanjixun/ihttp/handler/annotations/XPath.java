@@ -12,6 +12,12 @@ import java.lang.annotation.*;
 @Target({ElementType.METHOD})
 @Retention(RetentionPolicy.RUNTIME)
 public @interface XPath {
+    /**
+     * 状态码
+     *
+     * @return
+     */
+    int[] status() default {200};
 
     String path();
 }

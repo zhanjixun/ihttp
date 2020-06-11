@@ -46,12 +46,22 @@ public class ReflectUtils {
      * @param obj
      * @return
      */
-    public static boolean isPrimitive(Object obj) {
+    public static boolean isPrimitiveWrapper(Class<?> obj) {
         try {
-            return ((Class<?>) obj.getClass().getField("TYPE").get(null)).isPrimitive();
+            return ((Class<?>) obj.getField("TYPE").get(null)).isPrimitive();
         } catch (Exception e) {
             return false;
         }
+    }
+
+    /**
+     * 判断类型是不是基本类型
+     *
+     * @param obj
+     * @return
+     */
+    public static boolean isPrimitive(Class<?> obj) {
+        return obj.isPrimitive();
     }
 
     /**
@@ -61,18 +71,7 @@ public class ReflectUtils {
      * @return
      */
     public static boolean isStringOrPrimitive(Class<?> type) {
-        try {
-            return type == String.class || ((Class<?>) type.getField("TYPE").get(null)).isPrimitive();
-        } catch (Exception e) {
-            return false;
-        }
+        return type == String.class || isPrimitive(type) || isPrimitiveWrapper(type);
     }
 
-    public static Object invokeAnnotationMethod(Annotation annotation, String method) {
-        try {
-            return annotation.annotationType().getMethod(method).invoke(annotation);
-        } catch (Exception e) {
-            throw new RuntimeException("Could not invoke " + method + " method.  Cause: " + e, e);
-        }
-    }
 }

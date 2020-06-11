@@ -211,7 +211,7 @@ public class MapperMethod {
         if (Util.isNotEmpty(mapperParameter.getRequestParamNames())) {
             for (EncodableString requestParamName : mapperParameter.getRequestParamNames()) {
                 //基本类型及其封装类
-                if (ReflectUtils.isPrimitive(arg) || parameterType == String.class) {
+                if (ReflectUtils.isStringOrPrimitive(parameterType)) {
                     String value = requestParamName.encode() ? StrUtils.URLEncoder(arg.toString(), request.getCharset()) : arg.toString();
                     request.getParams().add(new Param(requestParamName.getName(), value));
                     continue;

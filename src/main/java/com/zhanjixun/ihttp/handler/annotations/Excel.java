@@ -24,6 +24,6 @@ public @interface Excel {
      *
      * @return
      */
-    String sheet() default "sheet1";
+    int sheet() default 0;
 
 }
