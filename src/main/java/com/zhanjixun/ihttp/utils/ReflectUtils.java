@@ -54,6 +54,20 @@ public class ReflectUtils {
         }
     }
 
+    /**
+     * 判断一个类型是不是string或者基本类型及其封装类
+     *
+     * @param type
+     * @return
+     */
+    public static boolean isStringOrPrimitive(Class<?> type) {
+        try {
+            return type == String.class || ((Class<?>) type.getField("TYPE").get(null)).isPrimitive();
+        } catch (Exception e) {
+            return false;
+        }
+    }
+
     public static Object invokeAnnotationMethod(Annotation annotation, String method) {
         try {
             return annotation.annotationType().getMethod(method).invoke(annotation);

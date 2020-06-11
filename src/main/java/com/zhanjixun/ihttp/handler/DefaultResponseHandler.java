@@ -2,6 +2,12 @@ package com.zhanjixun.ihttp.handler;
 
 import com.zhanjixun.ihttp.Response;
 import com.zhanjixun.ihttp.binding.MapperMethod;
+import com.zhanjixun.ihttp.domain.Header;
+import com.zhanjixun.ihttp.handler.annotations.CSSSelector;
+import com.zhanjixun.ihttp.handler.annotations.JsonPath;
+
+import java.awt.*;
+import java.lang.reflect.Method;
 
 /**
  * @author :zhanjixun
@@ -11,18 +17,32 @@ import com.zhanjixun.ihttp.binding.MapperMethod;
 public class DefaultResponseHandler implements ResponseHandler {
 
     @Override
-    public Object handle(MapperMethod mapperMethod, Response response) {
+    public Object handle(Method method, MapperMethod mapperMethod, Response response) {
         Class<?> returnType = mapperMethod.getReturnType();
+        String contentType = response.getHeaders().stream().filter(h -> "Content-Type".equals(h.getName()))
+                .map(Header::getValue).findFirst().orElse("");
+
         if (returnType.getName().equals("void")) {
             return null;
         }
-
-        if (returnType == Response.class) {
+        //如果是Response类型 直接返回
+        if (Response.class.isAssignableFrom(returnType)) {
             return response;
         }
-        //TODO 处理返回值类型
-
+        //解析图片类型
+        if (Image.class.isAssignableFrom(returnType)) {
+            return new ImageResponseHandler().handle(method, mapperMethod, response);
+        }
+        //含有JsonPath注解 或者内容为json 将被认为是json解析
+        if (method.isAnnotationPresent(JsonPath.class) || contentType.contains("json")) {
+            return new JsonResponseHandler().handle(method, mapperMethod, response);
+        }
+        //含有CSSSelector注解 或者内容为html 将被认为是html解析
+        if (method.isAnnotationPresent(CSSSelector.class) || contentType.contains("html")) {
+            return new HtmlResponseHandler().handle(method, mapperMethod, response);
+        }
         return response;
     }
+
 
 }
