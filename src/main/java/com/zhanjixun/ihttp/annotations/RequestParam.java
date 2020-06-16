@@ -8,7 +8,7 @@ import java.lang.annotation.*;
  * 2.标记在形式参数上时 参数类型可为
  * 2.1 String 类型 按 name=value 添加http参数
  * 2.2 Map<String,Object> 类型 遍历取name.key=value(map的value) name为空则没有.
- * 2.3 实体类   类型  遍历取所有字段 name.field=value(字段的值) name为空则没有.
+ * 2.3 实体类   类型  遍历取所有字段 name.field=value(字段的值) name为空则没有,需要给字段取别名的用fastJson的@JSONField
  *
  * @author zhanjixun
  */
