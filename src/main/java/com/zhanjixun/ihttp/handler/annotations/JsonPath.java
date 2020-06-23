@@ -14,13 +14,6 @@ import java.lang.annotation.*;
 @Retention(RetentionPolicy.RUNTIME)
 public @interface JsonPath {
     /**
-     * 状态码
-     *
-     * @return
-     */
-    int[] status() default {200};
-
-    /**
      * 路径
      *
      * @return

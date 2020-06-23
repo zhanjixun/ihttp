@@ -13,13 +13,6 @@ import java.lang.annotation.*;
 @Retention(RetentionPolicy.RUNTIME)
 public @interface Excel {
     /**
-     * 状态码
-     *
-     * @return
-     */
-    int[] status() default {200};
-
-    /**
      * 解析的sheet 默认是第一个sheet
      *
      * @return

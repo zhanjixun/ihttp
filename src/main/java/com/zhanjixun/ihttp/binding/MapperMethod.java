@@ -263,7 +263,8 @@ public class MapperMethod {
 
         if (mapperParameter.getPlaceholder() != null) {
             EncodableString placeholder = mapperParameter.getPlaceholder();
-            replacePlaceholder(request, placeholder.getName(), arg.toString());
+            String value = placeholder.isEncode() ? StrUtils.URLEncoder(arg.toString(), request.getCharset()) : arg.toString();
+            replacePlaceholder(request, placeholder.getName(), value);
         }
     }
 
