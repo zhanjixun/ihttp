@@ -163,7 +163,7 @@ public class AnnotationParser implements Parser {
         ReflectUtils.ifPresentMulti(method, RandomRequestParam.class, e -> mapperMethod.setRandomGeneratorParams(Arrays.stream(e).map(a -> new RandomGenerator(a.name(), a.length(), a.chars(), a.encode())).collect(Collectors.toList())));
         ReflectUtils.ifPresentMulti(method, RandomPlaceholder.class, e -> mapperMethod.setRandomGeneratorPlaceholders(Arrays.stream(e).map(a -> new RandomGenerator(a.name(), a.length(), a.chars(), a.encode())).collect(Collectors.toList())));
         ReflectUtils.ifPresentMulti(method, TimestampRequestParam.class, e -> mapperMethod.setTimestampGeneratorParams(Arrays.stream(e).map(a -> new TimestampGenerator(a.name(), a.unit())).collect(Collectors.toList())));
-        ReflectUtils.ifPresentMulti(method, TimestampPlaceholder.class, e -> mapperMethod.setTimestampGeneratorParams(Arrays.stream(e).map(a -> new TimestampGenerator(a.name(), a.unit())).collect(Collectors.toList())));
+        ReflectUtils.ifPresentMulti(method, TimestampPlaceholder.class, e -> mapperMethod.setTimestampGeneratorPlaceholders(Arrays.stream(e).map(a -> new TimestampGenerator(a.name(), a.unit())).collect(Collectors.toList())));
     }
 
     private void handleParameterAnnotation(Parameter parameter, MapperParameter mapperParameter) {
