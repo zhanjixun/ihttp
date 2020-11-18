@@ -74,10 +74,8 @@ public class NettyServer extends Thread {
                 System.out.println(appendFullRequest(request));
                 Function<FullHttpRequest, FullHttpResponse> requestHandler = controller.get(request.uri().split("\\?")[0]);
                 if (requestHandler == null) {
-                    ByteBuf byteBuf = Unpooled.copiedBuffer("page not found", CharsetUtil.UTF_8);
-                    FullHttpResponse response = new DefaultFullHttpResponse(HttpVersion.HTTP_1_1, HttpResponseStatus.NOT_FOUND, byteBuf);
-                    response.headers().set(HttpHeaderNames.CONTENT_TYPE, "text/plain; charset=UTF-8");
-                    handlerContext.writeAndFlush(response).addListener(ChannelFutureListener.CLOSE);
+                    FullHttpResponse pageNotFound = write(HttpResponseStatus.NOT_FOUND, "page not found", "text/plain; charset=UTF-8");
+                    handlerContext.writeAndFlush(pageNotFound).addListener(ChannelFutureListener.CLOSE);
                     return;
                 }
                 FullHttpResponse response = requestHandler.apply(request);
@@ -124,24 +122,30 @@ public class NettyServer extends Thread {
 
     }
 
-    public static FullHttpResponse writeHtml(String text) {
+    /**
+     * 写返回值
+     *
+     * @param status      状态码
+     * @param text        文本
+     * @param contentType 内容类型
+     * @return
+     */
+    public static FullHttpResponse write(HttpResponseStatus status, String text, String contentType) {
         ByteBuf byteBuf = Unpooled.copiedBuffer(text, CharsetUtil.UTF_8);
-        FullHttpResponse response = new DefaultFullHttpResponse(HttpVersion.HTTP_1_1, HttpResponseStatus.OK, byteBuf);
-        response.headers().set(HttpHeaderNames.CONTENT_TYPE, "text/html; charset=UTF-8");
+        FullHttpResponse response = new DefaultFullHttpResponse(HttpVersion.HTTP_1_1, status, byteBuf);
+        response.headers().set(HttpHeaderNames.CONTENT_TYPE, contentType);
         return response;
+    }
+
+    public static FullHttpResponse writeHtml(String text) {
+        return write(HttpResponseStatus.OK, text, "text/html; charset=UTF-8");
     }
 
     public static FullHttpResponse writeText(String text) {
-        ByteBuf byteBuf = Unpooled.copiedBuffer(text, CharsetUtil.UTF_8);
-        FullHttpResponse response = new DefaultFullHttpResponse(HttpVersion.HTTP_1_1, HttpResponseStatus.OK, byteBuf);
-        response.headers().set(HttpHeaderNames.CONTENT_TYPE, "text/plain; charset=UTF-8");
-        return response;
+        return write(HttpResponseStatus.OK, text, "text/plain; charset=UTF-8");
     }
 
     public static FullHttpResponse writeJson(Object obj) {
-        ByteBuf byteBuf = Unpooled.copiedBuffer(JSON.toJSONString(obj), CharsetUtil.UTF_8);
-        FullHttpResponse response = new DefaultFullHttpResponse(HttpVersion.HTTP_1_1, HttpResponseStatus.OK, byteBuf);
-        response.headers().set(HttpHeaderNames.CONTENT_TYPE, "application/json; charset=UTF-8");
-        return response;
+        return write(HttpResponseStatus.OK, JSON.toJSONString(obj), "application/json; charset=UTF-8");
     }
 }
