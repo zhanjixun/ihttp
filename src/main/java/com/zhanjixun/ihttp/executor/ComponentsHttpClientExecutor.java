@@ -33,11 +33,9 @@ import java.net.URI;
 import java.security.KeyManagementException;
 import java.security.KeyStoreException;
 import java.security.NoSuchAlgorithmException;
-import java.util.Arrays;
-import java.util.Date;
-import java.util.List;
-import java.util.Optional;
+import java.util.*;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 /**
  * @author :zhanjixun
@@ -153,18 +151,20 @@ public class ComponentsHttpClientExecutor extends BaseExecutor {
         HttpResponse httpResponse = null;
         try {
             httpResponse = httpClient.execute(method);
-            List<Header> headers = Arrays.stream(httpResponse.getAllHeaders()).map(h -> new Header(h.getName(), h.getValue())).collect(Collectors.toList());
+            
+            Map<String, List<String>> headers = Arrays.stream(httpResponse.getAllHeaders()).map(h -> new Header(h.getName(), h.getValue()))
+                    .collect(Collectors.toMap(Header::getName, h -> Collections.singletonList(h.getValue()),
+                            (a, b) -> Stream.concat(a.stream(), b.stream()).collect(Collectors.toList())));
 
             String charset = request.getResponseCharset();
-            if (charset == null) {
-                Optional<String> contentType = headers.stream().filter(h -> "Content-Type".equalsIgnoreCase(h.getName())).map(Header::getValue).findFirst();
-                if (contentType.isPresent()) {
-                    int lastIndexOf = contentType.get().lastIndexOf("charset=");
-                    if (lastIndexOf == -1 || lastIndexOf == contentType.get().length() - "charset=".length()) {
-                        charset = "UTF-8";
-                    } else {
-                        charset = contentType.get().substring(lastIndexOf + "charset=".length());
-                    }
+
+            String contentType = headers.get("Content-Type") == null ? null : headers.get("Content-Type").get(0);
+            if (charset == null && contentType != null) {
+                int lastIndexOf = contentType.lastIndexOf("charset=");
+                if (lastIndexOf == -1 || lastIndexOf == contentType.length() - "charset=".length()) {
+                    charset = "UTF-8";
+                } else {
+                    charset = contentType.substring(lastIndexOf + "charset=".length());
                 }
             }
 
@@ -174,6 +174,8 @@ public class ComponentsHttpClientExecutor extends BaseExecutor {
             response.setStatus(httpResponse.getStatusLine().getStatusCode());
             response.setBody(Okio.buffer(Okio.source(httpResponse.getEntity().getContent())).readByteArray());
             response.setHeaders(headers);
+            response.setContentType(contentType);
+            response.setLocation(headers.get("Location") == null ? null : headers.get("Location").get(0));
             return response;
         } finally {
             if (httpResponse != null && httpResponse.getEntity() != null) {
