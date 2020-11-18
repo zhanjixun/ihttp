@@ -23,6 +23,20 @@ public @interface TimestampRequestParam {
     String name();
 
     /**
+     * 前缀
+     *
+     * @return
+     */
+    String prefix() default "";
+
+    /**
+     * 尾缀
+     *
+     * @return
+     */
+    String postfix() default "";
+
+    /**
      * 时间单位
      *
      * @return

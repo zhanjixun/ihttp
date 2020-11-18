@@ -36,6 +36,20 @@ public @interface RandomRequestParam {
     String chars() default "abcdefghijklnmopqrstuvwxyzABCDEFGHIJKLNMOPQRSTUVWXYZ0123456789";
 
     /**
+     * 前缀
+     *
+     * @return
+     */
+    String prefix() default "";
+
+    /**
+     * 尾缀
+     *
+     * @return
+     */
+    String postfix() default "";
+
+    /**
      * 是否进行编码
      *
      * @return

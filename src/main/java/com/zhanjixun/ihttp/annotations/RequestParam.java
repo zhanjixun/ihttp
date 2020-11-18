@@ -11,6 +11,8 @@ import java.lang.annotation.*;
  * 2.3 实体类   类型  遍历取所有字段 name.field=value(字段的值) name为空则没有,需要给字段取别名的用fastJson的@JSONField
  *
  * @author zhanjixun
+ * @see RandomRequestParam
+ * @see TimestampRequestParam
  */
 @Documented
 @Target({ElementType.METHOD, ElementType.PARAMETER})
