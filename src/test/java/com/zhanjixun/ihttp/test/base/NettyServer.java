@@ -14,7 +14,10 @@ import io.netty.util.internal.StringUtil;
 import lombok.extern.slf4j.Slf4j;
 
 import java.net.InetAddress;
+import java.util.Arrays;
+import java.util.HashMap;
 import java.util.Map;
+import java.util.Optional;
 import java.util.function.Function;
 
 @Slf4j
@@ -63,6 +66,7 @@ public class NettyServer extends Thread {
         }
     }
 
+    @Slf4j
     static class NettyServerHandler extends ChannelInboundHandlerAdapter {
 
         private final Map<String, Function<FullHttpRequest, FullHttpResponse>> controller = new Controller().getController();
@@ -71,7 +75,7 @@ public class NettyServer extends Thread {
         public void channelRead(ChannelHandlerContext handlerContext, Object msg) throws Exception {
             FullHttpRequest request = (FullHttpRequest) msg;
             try {
-                System.out.println(appendFullRequest(request));
+
                 Function<FullHttpRequest, FullHttpResponse> requestHandler = controller.get(request.uri().split("\\?")[0]);
                 if (requestHandler == null) {
                     FullHttpResponse pageNotFound = write(HttpResponseStatus.NOT_FOUND, "page not found", "text/plain; charset=UTF-8");
@@ -79,10 +83,26 @@ public class NettyServer extends Thread {
                     return;
                 }
                 FullHttpResponse response = requestHandler.apply(request);
+                //请求 返回 日志
+                Arrays.stream(fullLog(request, response).split(StringUtil.NEWLINE)).forEach(log::info);
                 handlerContext.writeAndFlush(response).addListener(ChannelFutureListener.CLOSE);
             } finally {
                 request.release();
             }
+        }
+
+        private String fullLog(FullHttpRequest request, FullHttpResponse response) {
+            return appendFullRequest(request) + StringUtil.NEWLINE + StringUtil.NEWLINE + appendFullResponse(response);
+        }
+
+        private String appendFullResponse(FullHttpResponse response) {
+            StringBuilder builder = new StringBuilder();
+            appendInitialLine(builder, response);
+            appendHeaders(builder, response.headers());
+            appendHeaders(builder, response.trailingHeaders());
+            builder.append(StringUtil.NEWLINE);
+            builder.append(response.content().toString(CharsetUtil.UTF_8));
+            return builder.toString();
         }
 
         @Override
@@ -111,6 +131,13 @@ public class NettyServer extends Thread {
             builder.append(StringUtil.NEWLINE);
         }
 
+        private static void appendInitialLine(StringBuilder buf, HttpResponse res) {
+            buf.append(res.protocolVersion());
+            buf.append(' ');
+            buf.append(res.status());
+            buf.append(StringUtil.NEWLINE);
+        }
+
         private void appendHeaders(StringBuilder builder, HttpHeaders headers) {
             for (Map.Entry<String, String> e : headers) {
                 builder.append(e.getKey());
@@ -122,18 +149,27 @@ public class NettyServer extends Thread {
 
     }
 
+
+    public static FullHttpResponse write(HttpResponseStatus status, String text, String contentType) {
+        return write(status, text, contentType, new HashMap<>());
+    }
+
     /**
      * 写返回值
      *
      * @param status      状态码
      * @param text        文本
      * @param contentType 内容类型
+     * @param headers     返回头
      * @return
      */
-    public static FullHttpResponse write(HttpResponseStatus status, String text, String contentType) {
+    public static FullHttpResponse write(HttpResponseStatus status, String text, String contentType, Map<String, String> headers) {
         ByteBuf byteBuf = Unpooled.copiedBuffer(text, CharsetUtil.UTF_8);
         FullHttpResponse response = new DefaultFullHttpResponse(HttpVersion.HTTP_1_1, status, byteBuf);
         response.headers().set(HttpHeaderNames.CONTENT_TYPE, contentType);
+        for (Map.Entry<String, String> entry : Optional.ofNullable(headers).orElse(new HashMap<>()).entrySet()) {
+            response.headers().set(entry.getKey(), entry.getValue());
+        }
         return response;
     }
 

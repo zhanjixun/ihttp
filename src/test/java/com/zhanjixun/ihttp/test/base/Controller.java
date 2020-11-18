@@ -22,8 +22,9 @@ public class Controller {
     private final Map<String, Function<FullHttpRequest, FullHttpResponse>> controller = new HashMap<>();
 
     public Controller() {
-        controller.putIfAbsent("/index", (request) -> NettyServer.writeText("ok"));
+        controller.putIfAbsent("/index", (request) -> NettyServer.writeHtml("<!DOCTYPE HTML><html><body>hello</body></html>"));
         controller.putIfAbsent("/home", (request) -> NettyServer.writeHtml("<!DOCTYPE HTML><html><body>hello</body></html>"));
+        controller.putIfAbsent("/update", (request) -> NettyServer.writeJson(ImmutableMap.of("status", 200, "msg", "ok")));
         controller.putIfAbsent("/upload", (request) -> NettyServer.writeJson(ImmutableMap.of("status", 200, "msg", "ok")));
         controller.putIfAbsent("/student", (request) -> NettyServer.writeJson(new Student("中文测试", 23, "JK1132")));
     }
