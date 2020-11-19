@@ -166,7 +166,7 @@ public class NettyServer extends Thread {
     public static FullHttpResponse write(HttpResponseStatus status, String text, String contentType, Map<String, String> headers) {
         ByteBuf byteBuf = Unpooled.copiedBuffer(text, CharsetUtil.UTF_8);
         FullHttpResponse response = new DefaultFullHttpResponse(HttpVersion.HTTP_1_1, status, byteBuf);
-        response.headers().set(HttpHeaderNames.CONTENT_TYPE, contentType);
+        response.headers().set("Content-Type", contentType);
         for (Map.Entry<String, String> entry : Optional.ofNullable(headers).orElse(new HashMap<>()).entrySet()) {
             response.headers().set(entry.getKey(), entry.getValue());
         }

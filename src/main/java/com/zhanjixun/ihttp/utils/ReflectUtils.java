@@ -65,6 +65,16 @@ public class ReflectUtils {
     }
 
     /**
+     * 判断类型是不是基本类型及其封装类
+     *
+     * @param obj
+     * @return
+     */
+    public static boolean isPrimitiveOrItsWrapper(Class<?> obj) {
+        return obj.isPrimitive() || isPrimitiveWrapper(obj);
+    }
+
+    /**
      * 判断一个类型是不是string或者基本类型及其封装类
      *
      * @param type

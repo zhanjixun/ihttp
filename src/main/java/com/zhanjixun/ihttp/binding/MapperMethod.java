@@ -11,7 +11,6 @@ import com.zhanjixun.ihttp.domain.FormData;
 import com.zhanjixun.ihttp.domain.FormDatas;
 import com.zhanjixun.ihttp.domain.Header;
 import com.zhanjixun.ihttp.domain.Param;
-import com.zhanjixun.ihttp.handler.DefaultResponseHandler;
 import com.zhanjixun.ihttp.handler.ResponseHandler;
 import com.zhanjixun.ihttp.parsing.*;
 import com.zhanjixun.ihttp.utils.ReflectUtils;
@@ -76,7 +75,7 @@ public class MapperMethod {
 
     private MapperParameter[] parameters;
 
-    private ResponseHandler responseHandler = new DefaultResponseHandler();
+    private ResponseHandler responseHandler = new ResponseHandler();
 
     public MapperMethod(String name) {
         this.name = name;
@@ -89,8 +88,7 @@ public class MapperMethod {
 
     private Request buildRequest(Object... args) {
         Request request = new Request();
-        request.setName(name);
-
+        
         //1.绑定固定内容
         bingConstValue(request);
 

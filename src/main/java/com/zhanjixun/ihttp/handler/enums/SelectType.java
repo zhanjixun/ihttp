@@ -1,4 +1,4 @@
-package com.zhanjixun.ihttp.handler.data;
+package com.zhanjixun.ihttp.handler.enums;
 
 /**
  * 代表一个节点的某个部分
