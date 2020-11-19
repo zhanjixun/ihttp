@@ -2,7 +2,6 @@ package com.zhanjixun.ihttp.handler;
 
 import com.zhanjixun.ihttp.Response;
 import com.zhanjixun.ihttp.binding.MapperMethod;
-import com.zhanjixun.ihttp.domain.Header;
 import com.zhanjixun.ihttp.handler.annotations.CSSSelector;
 import com.zhanjixun.ihttp.handler.annotations.JsonPath;
 
@@ -19,8 +18,7 @@ public class DefaultResponseHandler implements ResponseHandler {
     @Override
     public Object handle(Method method, MapperMethod mapperMethod, Response response) {
         Class<?> returnType = mapperMethod.getReturnType();
-        String contentType = response.getHeaders().stream().filter(h -> "Content-Type".equals(h.getName()))
-                .map(Header::getValue).findFirst().orElse("");
+        String contentType = response.getContentType();
 
         if (returnType.getName().equals("void")) {
             return null;
