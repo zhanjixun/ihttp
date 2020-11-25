@@ -9,6 +9,9 @@ import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 
+import java.io.File;
+import java.net.URL;
+
 /**
  * @author :zhanjixun
  * @date : 2018/11/26 14:13
@@ -46,6 +49,13 @@ public class SystemTest {
 
     @Test
     public void name3() {
+        URL resource = SystemTest.class.getClassLoader().getResource("file.txt");
+        File file = new File(resource.getFile());
+        Response response = mapper.testPostFile(file);
+    }
+
+    @Test
+    public void name4() {
         Response response = mapper.testJsonHandler();
         assert response.getStatus() == 200;
         TestMapper.Student student = response.getData();

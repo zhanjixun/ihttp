@@ -10,6 +10,7 @@ import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+import java.io.File;
 import java.util.Map;
 
 
@@ -28,6 +29,11 @@ public interface TestMapper {
                      @RequestParam(name = "k4") int value4,
                      @RequestParam(name = "map") Map<String, Object> mapParam,
                      @RequestParam(name = "bean") Student beanParam);
+
+    @POST
+    @URL("/postFile")
+    @RequestParam(name = "paramKey", value = "paramVal")
+    Response testPostFile(@RequestPart(name = "file") File file);
 
     @POST
     @URL("/update")
