@@ -19,4 +19,18 @@ public @interface Excel {
      */
     int sheet() default 0;
 
+    /**
+     * 起始数据行 默认第一行是标题 从第二行开始
+     *
+     * @return
+     */
+    int dataLine() default 1;
+
+    /**
+     * 类型
+     *
+     * @return
+     */
+    Class<?> returnType();
 }
+
