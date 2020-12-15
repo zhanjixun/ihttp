@@ -2,6 +2,7 @@ package com.zhanjixun.ihttp.utils;
 
 import java.lang.annotation.Annotation;
 import java.lang.reflect.AnnotatedElement;
+import java.lang.reflect.Method;
 import java.util.function.Consumer;
 
 /**
@@ -9,6 +10,22 @@ import java.util.function.Consumer;
  * @date : 2018/11/26 14:35
  */
 public class ReflectUtils {
+    /**
+     * 如果method有直接则直接获取
+     * 若无则获取class上 若也无 则返回null
+     *
+     * @param method
+     * @param annotationClass
+     * @param <T>
+     * @return
+     */
+    public static <T extends Annotation> T getAnnotationFromMethodOrClass(Method method, Class<T> annotationClass) {
+        T targetAnnotation = method.getAnnotation(annotationClass);
+        if (targetAnnotation != null) {
+            return targetAnnotation;
+        }
+        return method.getDeclaringClass().getAnnotation(annotationClass);
+    }
 
     /**
      * 如果有这个注解，则调用消费者

@@ -9,10 +9,10 @@ import java.lang.annotation.*;
  * @date : 2018/10/26 11:50
  */
 @Documented
-@Target({ElementType.METHOD})
+@Target({ElementType.TYPE, ElementType.METHOD})
 @Retention(RetentionPolicy.RUNTIME)
 public @interface AssertStatusCode {
 
-	int[] value();
+    int[] value();
 
 }

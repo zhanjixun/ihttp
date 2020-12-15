@@ -56,9 +56,7 @@ public class MapperMethod {
     private List<Param> requestParams;
 
     private List<FormDatas> requestMultiParts;
-
-    private int[] assertStatusCode;
-
+    
     private Boolean disableCookie;
 
     private List<RandomGenerator> randomGeneratorParams;
@@ -88,18 +86,14 @@ public class MapperMethod {
 
     private Request buildRequest(Object... args) {
         Request request = new Request();
-        
         //1.绑定固定内容
         bingConstValue(request);
-
         //2.生成实时内容
         bingGenerateValue(request);
-
         //3.绑定运行参数
         for (MapperParameter mapperParameter : parameters) {
             bingParameterValue(request, mapperParameter, args[mapperParameter.getIndex()]);
         }
-
         return request;
     }
 
