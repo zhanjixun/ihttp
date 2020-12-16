@@ -38,10 +38,6 @@ public class Request implements Serializable {
      */
     private String charset;
     /**
-     * 指定响应字符编码
-     */
-    private String responseCharset;
-    /**
      * 请求头
      */
     private List<Header> headers;

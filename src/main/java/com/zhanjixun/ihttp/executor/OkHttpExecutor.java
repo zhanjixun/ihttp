@@ -15,7 +15,6 @@ import java.net.InetSocketAddress;
 import java.net.Proxy;
 import java.util.Date;
 import java.util.List;
-import java.util.Map;
 import java.util.Optional;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
@@ -112,16 +111,11 @@ public class OkHttpExecutor extends BaseExecutor {
     private Response executeMethod(Request request, okhttp3.Request okRequest) throws IOException {
         okhttp3.Response execute = okHttpClient.newCall(okRequest).execute();
 
-        Map<String, List<String>> headers = execute.headers().toMultimap();
-
         Response response = new Response();
         response.setRequest(request);
-        response.setCharset(request.getResponseCharset());
         response.setStatus(execute.code());
         response.setBody(execute.body().bytes());
-        response.setHeaders(headers);
-        response.setContentType(headers.get("Content-Type") == null ? null : headers.get("Content-Type").get(0));
-        response.setLocation(headers.get("Location") == null ? null : headers.get("Location").get(0));
+        response.setHeaders(execute.headers().toMultimap());
         return response;
     }
 

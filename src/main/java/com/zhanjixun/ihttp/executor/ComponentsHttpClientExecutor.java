@@ -151,15 +151,14 @@ public class ComponentsHttpClientExecutor extends BaseExecutor {
         HttpResponse httpResponse = null;
         try {
             httpResponse = httpClient.execute(method);
-            
+
             Map<String, List<String>> headers = Arrays.stream(httpResponse.getAllHeaders()).map(h -> new Header(h.getName(), h.getValue()))
                     .collect(Collectors.toMap(Header::getName, h -> Collections.singletonList(h.getValue()),
                             (a, b) -> Stream.concat(a.stream(), b.stream()).collect(Collectors.toList())));
 
-            String charset = request.getResponseCharset();
-
+            String charset = null;
             String contentType = headers.get("Content-Type") == null ? null : headers.get("Content-Type").get(0);
-            if (charset == null && contentType != null) {
+            if (contentType != null) {
                 int lastIndexOf = contentType.lastIndexOf("charset=");
                 if (lastIndexOf == -1 || lastIndexOf == contentType.length() - "charset=".length()) {
                     charset = "UTF-8";
@@ -175,7 +174,6 @@ public class ComponentsHttpClientExecutor extends BaseExecutor {
             response.setBody(Okio.buffer(Okio.source(httpResponse.getEntity().getContent())).readByteArray());
             response.setHeaders(headers);
             response.setContentType(contentType);
-            response.setLocation(headers.get("Location") == null ? null : headers.get("Location").get(0));
             return response;
         } finally {
             if (httpResponse != null && httpResponse.getEntity() != null) {

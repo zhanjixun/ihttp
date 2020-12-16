@@ -7,6 +7,7 @@ import java.io.Serializable;
 import java.io.UnsupportedEncodingException;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.function.Supplier;
 
 /**
@@ -59,6 +60,13 @@ public class Response implements Serializable {
      * 处理结果
      */
     private Supplier<Object> handleSupplier;
+
+    public void setHeaders(Map<String, List<String>> headers) {
+        this.headers = headers;
+        //抽取出一些常用的请求头
+        contentType = Optional.ofNullable(headers.get("Content-Type")).map(hs -> hs.get(0)).orElse(null);
+        location = Optional.ofNullable(headers.get("Location")).map(hs -> hs.get(0)).orElse(null);
+    }
 
     public String getText() {
         if (text == null) {
