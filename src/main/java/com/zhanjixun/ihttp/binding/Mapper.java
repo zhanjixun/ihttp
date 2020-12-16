@@ -4,7 +4,6 @@ import com.zhanjixun.ihttp.domain.Header;
 import com.zhanjixun.ihttp.executor.Executor;
 import com.zhanjixun.ihttp.parsing.HttpProxy;
 import com.zhanjixun.ihttp.parsing.RandomGenerator;
-import com.zhanjixun.ihttp.parsing.Retryable;
 import com.zhanjixun.ihttp.parsing.TimestampGenerator;
 import lombok.Data;
 
@@ -45,9 +44,7 @@ public class Mapper {
     private List<RandomGenerator> randomGeneratorPlaceholders;
 
     private String responseCharset;
-
-    private Retryable retryable;
-
+    
     private List<TimestampGenerator> timestampGeneratorParams;
 
     private List<TimestampGenerator> timestampGeneratorPlaceholders;

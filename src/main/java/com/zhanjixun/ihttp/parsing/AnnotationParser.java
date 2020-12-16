@@ -1,6 +1,5 @@
 package com.zhanjixun.ihttp.parsing;
 
-import com.zhanjixun.ihttp.annotations.Retryable;
 import com.zhanjixun.ihttp.annotations.*;
 import com.zhanjixun.ihttp.binding.Mapper;
 import com.zhanjixun.ihttp.binding.MapperMethod;
@@ -74,7 +73,6 @@ public class AnnotationParser implements Parser {
         ReflectUtils.ifPresent(target, ResponseCharset.class, e -> mapper.setResponseCharset(e.value()));
         ReflectUtils.ifPresent(target, CookieJar.class, e -> mapper.setCookieJar(e.value()));
         ReflectUtils.ifPresent(target, HttpExecutor.class, e -> mapper.setHttpExecutor(e.value()));
-        ReflectUtils.ifPresent(target, Retryable.class, e -> mapper.setRetryable(new com.zhanjixun.ihttp.parsing.Retryable(e.throwable(), e.policy(), e.maxAttempts(), e.delay(), e.multiplier())));
         ReflectUtils.ifPresent(target, Proxy.class, e -> mapper.setHttpProxy(new HttpProxy(e.hostName(), e.port(), e.trustSSL())));
 
         //请求头类注解
@@ -156,7 +154,6 @@ public class AnnotationParser implements Parser {
         //配置类注解
         ReflectUtils.ifPresent(method, DisableCookie.class, e -> mapperMethod.setDisableCookie(true));
         ReflectUtils.ifPresent(method, ResponseCharset.class, e -> mapperMethod.setResponseCharset(e.value()));
-        ReflectUtils.ifPresent(method, Retryable.class, e -> mapperMethod.setRetryable(new com.zhanjixun.ihttp.parsing.Retryable(e.throwable(), e.policy(), e.maxAttempts(), e.delay(), e.multiplier())));
         
         //生成类注解
         ReflectUtils.ifPresentMulti(method, RandomRequestParam.class, e -> mapperMethod.setRandomGeneratorParams(Arrays.stream(e).map(a -> new RandomGenerator(a.name(), a.length(), a.chars(), a.encode())).collect(Collectors.toList())));

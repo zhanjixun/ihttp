@@ -4,15 +4,16 @@ import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONObject;
 import com.zhanjixun.ihttp.Request;
 import com.zhanjixun.ihttp.Response;
-import com.zhanjixun.ihttp.RetryPolicy;
 import com.zhanjixun.ihttp.annotations.RequestPart;
-import com.zhanjixun.ihttp.context.ApplicationContext;
 import com.zhanjixun.ihttp.domain.FormData;
 import com.zhanjixun.ihttp.domain.FormDatas;
 import com.zhanjixun.ihttp.domain.Header;
 import com.zhanjixun.ihttp.domain.Param;
 import com.zhanjixun.ihttp.handler.ResponseHandler;
-import com.zhanjixun.ihttp.parsing.*;
+import com.zhanjixun.ihttp.parsing.EncodableObject;
+import com.zhanjixun.ihttp.parsing.EncodableString;
+import com.zhanjixun.ihttp.parsing.RandomGenerator;
+import com.zhanjixun.ihttp.parsing.TimestampGenerator;
 import com.zhanjixun.ihttp.utils.ReflectUtils;
 import com.zhanjixun.ihttp.utils.StrUtils;
 import com.zhanjixun.ihttp.utils.Util;
@@ -21,7 +22,6 @@ import lombok.extern.slf4j.Slf4j;
 
 import java.io.File;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.TimeUnit;
@@ -56,7 +56,7 @@ public class MapperMethod {
     private List<Param> requestParams;
 
     private List<FormDatas> requestMultiParts;
-    
+
     private Boolean disableCookie;
 
     private List<RandomGenerator> randomGeneratorParams;
@@ -69,8 +69,6 @@ public class MapperMethod {
 
     private String requestBody;
 
-    private Retryable retryable;
-
     private MapperParameter[] parameters;
 
     private ResponseHandler responseHandler = new ResponseHandler();
@@ -81,7 +79,7 @@ public class MapperMethod {
 
     public Response execute(Object... args) throws Exception {
         Request request = buildRequest(args);
-        return executeRetryable(request);
+        return mapper.getExecutor().execute(request);
     }
 
     private Request buildRequest(Object... args) {
@@ -301,60 +299,6 @@ public class MapperMethod {
         a = Util.isEmpty(a) ? "" : a;
         b = Util.isEmpty(b) ? "" : b;
         return b.startsWith("http") ? b : a + b;
-    }
-
-    //可重试的运行
-    private Response executeRetryable(Request request) throws Exception {
-        if (retryable == null && mapper.getRetryable() == null) {
-            return mapper.getExecutor().execute(request);
-        }
-        Retryable retry = retryable == null ? mapper.getRetryable() : retryable;
-        Response response = null;
-        Exception exception = null;
-
-        Class<? extends Throwable>[] throwable = retry.getThrowable();
-        Class<? extends RetryPolicy>[] policy = retry.getPolicy();
-
-        long delay = retry.getDelay();
-        long multiplier = retry.getMultiplier();
-
-        for (int i = 0; i < retry.getMaxAttempts(); i++) {
-            try {
-                response = mapper.getExecutor().execute(request);
-            } catch (Exception e) {
-                exception = e;
-            }
-            long delayMillis = multiplier > 0 ? (delay * (int) Math.pow(multiplier, i)) : (delay > 0 ? delay : 0);
-
-            //发生异常情况
-            if (exception != null) {
-                Exception finalException = exception;
-                if (throwable != null && Arrays.stream(throwable).anyMatch(t -> t.isAssignableFrom(finalException.getClass()))) {
-                    log.debug("发送http请求发生异常,正在准备第" + (i + 1) + "次重试,延迟" + delayMillis + "毫秒...");
-                    if (delayMillis > 0) {
-                        Thread.sleep(delayMillis);
-                    }
-                    continue;
-                }
-                throw new RuntimeException(exception);
-            }
-
-            //触发策略情况
-            if (policy != null) {
-                Response finalResponse = response;
-                if (Arrays.stream(policy).anyMatch(p -> ApplicationContext.getInstance().getBeanOrCreate(p).needRetry(finalResponse))) {
-                    log.debug("发送http请求触发策略重试,正在准备第" + (i + 1) + "次重试,延迟" + delayMillis + "毫秒...");
-                    if (delayMillis > 0) {
-                        Thread.sleep(delayMillis);
-                    }
-                    continue;
-                }
-            }
-
-            //不触发重试
-            break;
-        }
-        return response;
     }
 
     @Override
