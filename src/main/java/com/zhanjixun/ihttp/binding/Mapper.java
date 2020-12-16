@@ -31,8 +31,6 @@ public class Mapper {
 
     private List<Header> requestHeaders;
 
-    private String cookieJar;
-
     private Boolean disableCookie;
 
     private Class<? extends Executor> httpExecutor;
@@ -43,8 +41,6 @@ public class Mapper {
 
     private List<RandomGenerator> randomGeneratorPlaceholders;
 
-    private String responseCharset;
-    
     private List<TimestampGenerator> timestampGeneratorParams;
 
     private List<TimestampGenerator> timestampGeneratorPlaceholders;

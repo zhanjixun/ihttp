@@ -45,8 +45,6 @@ public class MapperMethod {
 
     private String requestCharset;
 
-    private String responseCharset;
-
     private Boolean followRedirects;
 
     private String requestMethod;

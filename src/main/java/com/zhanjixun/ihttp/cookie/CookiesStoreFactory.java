@@ -1,6 +1,8 @@
 package com.zhanjixun.ihttp.cookie;
 
 import com.zhanjixun.ihttp.CookiesStore;
+import com.zhanjixun.ihttp.annotations.CookieJar;
+import com.zhanjixun.ihttp.annotations.DisableCookie;
 import lombok.extern.slf4j.Slf4j;
 
 import java.util.Map;
@@ -14,16 +16,15 @@ import java.util.concurrent.ConcurrentHashMap;
 @Slf4j
 public class CookiesStoreFactory {
 
-	//这里存放系统中所有的CookiesStore
-	private final static Map<String, CookiesStore> cookiesStoreMap = new ConcurrentHashMap<>();
+    //这里存放系统中所有的CookiesStore
+    private final static Map<String, CookiesStore> cookiesStoreMap = new ConcurrentHashMap<>();
 
-	public CookiesStore createCookiesStore(Class<?> mapperType, String cookieJarId) {
-		String key = cookieJarId == null ? "sys:" + mapperType.getName() : "common:" + cookieJarId;
-		CookiesStore cookiesStore = cookiesStoreMap.get(key);
-		if (cookiesStore == null) {
-			cookiesStore = new CookiesStoreImpl();
-			cookiesStoreMap.put(key, cookiesStore);
-		}
-		return cookiesStore;
-	}
+    public CookiesStore createCookiesStore(Class<?> mapperType) {
+        if (mapperType.isAnnotationPresent(DisableCookie.class)) {
+            return new DisableCookiesStoreImpl();
+        }
+        CookieJar cookieJar = mapperType.getAnnotation(CookieJar.class);
+        String key = cookieJar == null ? "PublicCookiesStore:" + mapperType.getName() : "PrivateCookiesStore:" + cookieJar.value();
+        return cookiesStoreMap.computeIfAbsent(key, k -> new CookiesStoreImpl());
+    }
 }
