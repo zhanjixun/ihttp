@@ -35,12 +35,12 @@ public class ResponseHandler {
                 return null;
             }
             //含有JsonPath注解或者内容为json 将被认为是json解析
-            if (method.isAnnotationPresent(JsonPath.class) || contentType.contains("json")) {
+            if (method.isAnnotationPresent(JsonPath.class) || (contentType != null && contentType.contains("json"))) {
                 response.setHandleSupplier(() -> handleJsonResult(method.getAnnotation(JsonPath.class), response));
                 return response;
             }
             //含有CSSSelector注解或者内容为html 将被认为是html解析
-            if (method.isAnnotationPresent(CSSSelector.class) || contentType.contains("html")) {
+            if (method.isAnnotationPresent(CSSSelector.class) || (contentType != null && contentType.contains("html"))) {
                 response.setHandleSupplier(() -> handleHtmlResult(method.getAnnotation(CSSSelector.class), response));
                 return response;
             }
