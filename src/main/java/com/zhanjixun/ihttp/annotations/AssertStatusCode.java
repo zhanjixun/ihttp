@@ -1,5 +1,7 @@
 package com.zhanjixun.ihttp.annotations;
 
+import com.zhanjixun.ihttp.exception.AssertStatusCodeException;
+
 import java.lang.annotation.*;
 
 /**
@@ -9,10 +11,16 @@ import java.lang.annotation.*;
  * @date : 2018/10/26 11:50
  */
 @Documented
-@Target({ElementType.METHOD})
+@Target({ElementType.TYPE, ElementType.METHOD})
 @Retention(RetentionPolicy.RUNTIME)
 public @interface AssertStatusCode {
-
-	int[] value();
+    /**
+     * 指定能接受的所有状态码
+     * 若接口返回状态码不在这个范围则抛出异常
+     *
+     * @return
+     * @see AssertStatusCodeException
+     */
+    int[] value();
 
 }

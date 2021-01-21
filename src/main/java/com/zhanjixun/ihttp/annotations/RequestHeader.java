@@ -8,15 +8,15 @@ import java.lang.annotation.*;
 @Repeatable(RequestHeader.List.class)
 public @interface RequestHeader {
 
-	String name();
+    String name();
 
-	String value() default "";
+    String value() default "";
 
-	//指定多个时使用
-	@Target({ElementType.METHOD})
-	@Retention(RetentionPolicy.RUNTIME)
-	@Documented
-	@interface List {
-		RequestHeader[] value();
-	}
+    //指定多个时使用
+    @Target({ElementType.TYPE, ElementType.METHOD})
+    @Retention(RetentionPolicy.RUNTIME)
+    @Documented
+    @interface List {
+        RequestHeader[] value();
+    }
 }

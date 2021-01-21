@@ -9,14 +9,13 @@ import com.zhanjixun.ihttp.binding.MapperProxyFactory;
  */
 public class IHTTP {
 
-	@SuppressWarnings("unchecked")
-	public static <T> T getMapper(Class<T> mapperInterface) {
-		try {
-			MapperProxyFactory<T> mapperProxyFactory = new MapperProxyFactory(mapperInterface);
-			return mapperProxyFactory.newInstance();
-		} catch (Exception e) {
-			throw new RuntimeException("Error getting mapper instance. Cause: " + e, e);
-		}
-	}
+    public static <T> T getMapper(Class<T> mapperInterface) {
+        try {
+            MapperProxyFactory<T> mapperProxyFactory = new MapperProxyFactory<>(mapperInterface);
+            return mapperProxyFactory.newInstance();
+        } catch (Exception e) {
+            throw new RuntimeException("Error getting mapper instance. Cause: " + e, e);
+        }
+    }
 
 }

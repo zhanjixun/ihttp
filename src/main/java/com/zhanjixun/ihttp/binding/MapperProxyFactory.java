@@ -19,51 +19,50 @@ import java.util.Map;
  */
 public class MapperProxyFactory<T> {
 
-	@Getter
-	private final Class<T> mapperInterface;
+    @Getter
+    private final Class<T> mapperInterface;
 
-	private final Map<Class<T>, Mapper> mapperCache = new HashMap<>();
+    private final Map<Class<T>, Mapper> mapperCache = new HashMap<>();
 
-	public MapperProxyFactory(Class<T> mapperInterface) {
-		this.mapperInterface = mapperInterface;
-	}
+    public MapperProxyFactory(Class<T> mapperInterface) {
+        this.mapperInterface = mapperInterface;
+    }
 
-	public T newInstance() {
-		Mapper mapper = cachedMapper(mapperInterface);
-		try {
-			Configuration configuration = Configuration.getDefault();
-			if (mapper.getHttpExecutor() != null) {
-				configuration.setExecutor(mapper.getHttpExecutor());
-			}
-			if (mapper.getHttpProxy() != null) {
-				configuration.setProxy(mapper.getHttpProxy());
-			}
-			if (mapper.getDisableCookie() != null) {
-				configuration.setCookieEnable(mapper.getDisableCookie());
-			}
-			CookiesStore cookiesStore = new CookiesStoreFactory().createCookiesStore(mapperInterface, mapper.getCookieJar());
-			Executor executor = configuration.getExecutor().getConstructor(Configuration.class, CookiesStore.class).newInstance(configuration, cookiesStore);
-			mapper.setExecutor(executor);
+    public T newInstance() {
+        Mapper mapper = cachedMapper(mapperInterface);
+        try {
+            Configuration configuration = Configuration.getDefault();
+            if (mapper.getHttpExecutor() != null) {
+                configuration.setExecutor(mapper.getHttpExecutor());
+            }
+            if (mapper.getHttpProxy() != null) {
+                configuration.setProxy(mapper.getHttpProxy());
+            }
+            if (mapper.getDisableCookie() != null) {
+                configuration.setCookieEnable(mapper.getDisableCookie());
+            }
+            CookiesStore cookiesStore = new CookiesStoreFactory().createCookiesStore(mapperInterface);
+            Executor executor = configuration.getExecutor().getConstructor(Configuration.class, CookiesStore.class).newInstance(configuration, cookiesStore);
+            mapper.setExecutor(executor);
 
-			MapperProxy mapperProxy = new MapperProxy(mapper);
-			return newInstance(mapperProxy);
-		} catch (Exception e) {
-			throw new RuntimeException(e);
-		}
-	}
+            MapperProxy mapperProxy = new MapperProxy(mapper);
+            return newInstance(mapperProxy);
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        }
+    }
 
-	private Mapper cachedMapper(Class<T> mapperInterface) {
-		Mapper mapper = mapperCache.get(mapperInterface);
-		if (mapper == null) {
-			mapper = new AnnotationParser(mapperInterface).parse();
-			mapperCache.put(mapperInterface, mapper);
-		}
-		return mapper;
-	}
+    private Mapper cachedMapper(Class<T> mapperInterface) {
+        Mapper mapper = mapperCache.get(mapperInterface);
+        if (mapper == null) {
+            mapper = new AnnotationParser(mapperInterface).parse();
+            mapperCache.put(mapperInterface, mapper);
+        }
+        return mapper;
+    }
 
-	@SuppressWarnings("unchecked")
-	protected T newInstance(MapperProxy mapperProxy) {
-		return (T) Proxy.newProxyInstance(mapperInterface.getClassLoader(), new Class[]{mapperInterface}, mapperProxy);
-	}
+    protected T newInstance(MapperProxy mapperProxy) {
+        return (T) Proxy.newProxyInstance(mapperInterface.getClassLoader(), new Class[]{mapperInterface}, mapperProxy);
+    }
 
 }

@@ -17,10 +17,22 @@ import java.lang.annotation.*;
 @Retention(RetentionPolicy.RUNTIME)
 public @interface RequestBody {
 
-	String value() default "";
+    /**
+     * 内容类型
+     *
+     * @return
+     */
+    String contentType() default "application/json;charset=UTF-8";
 
-	/**
-	 * 是否进行编码
-	 */
-	boolean encode() default false;
+    /**
+     * 值
+     *
+     * @return
+     */
+    String value() default "";
+
+    /**
+     * 是否进行编码
+     */
+    boolean encode() default false;
 }

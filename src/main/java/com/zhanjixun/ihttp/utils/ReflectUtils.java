@@ -2,6 +2,7 @@ package com.zhanjixun.ihttp.utils;
 
 import java.lang.annotation.Annotation;
 import java.lang.reflect.AnnotatedElement;
+import java.lang.reflect.Method;
 import java.util.function.Consumer;
 
 /**
@@ -9,6 +10,22 @@ import java.util.function.Consumer;
  * @date : 2018/11/26 14:35
  */
 public class ReflectUtils {
+    /**
+     * 如果method有直接则直接获取
+     * 若无则获取class上 若也无 则返回null
+     *
+     * @param method
+     * @param annotationClass
+     * @param <T>
+     * @return
+     */
+    public static <T extends Annotation> T getAnnotationFromMethodOrClass(Method method, Class<T> annotationClass) {
+        T targetAnnotation = method.getAnnotation(annotationClass);
+        if (targetAnnotation != null) {
+            return targetAnnotation;
+        }
+        return method.getDeclaringClass().getAnnotation(annotationClass);
+    }
 
     /**
      * 如果有这个注解，则调用消费者
@@ -46,19 +63,42 @@ public class ReflectUtils {
      * @param obj
      * @return
      */
-    public static boolean isPrimitive(Object obj) {
+    public static boolean isPrimitiveWrapper(Class<?> obj) {
         try {
-            return ((Class<?>) obj.getClass().getField("TYPE").get(null)).isPrimitive();
+            return ((Class<?>) obj.getField("TYPE").get(null)).isPrimitive();
         } catch (Exception e) {
             return false;
         }
     }
 
-    public static Object invokeAnnotationMethod(Annotation annotation, String method) {
-        try {
-            return annotation.annotationType().getMethod(method).invoke(annotation);
-        } catch (Exception e) {
-            throw new RuntimeException("Could not invoke " + method + " method.  Cause: " + e, e);
-        }
+    /**
+     * 判断类型是不是基本类型
+     *
+     * @param obj
+     * @return
+     */
+    public static boolean isPrimitive(Class<?> obj) {
+        return obj.isPrimitive();
     }
+
+    /**
+     * 判断类型是不是基本类型及其封装类
+     *
+     * @param obj
+     * @return
+     */
+    public static boolean isPrimitiveOrItsWrapper(Class<?> obj) {
+        return obj.isPrimitive() || isPrimitiveWrapper(obj);
+    }
+
+    /**
+     * 判断一个类型是不是string或者基本类型及其封装类
+     *
+     * @param type
+     * @return
+     */
+    public static boolean isStringOrPrimitive(Class<?> type) {
+        return type == String.class || isPrimitive(type) || isPrimitiveWrapper(type);
+    }
+
 }

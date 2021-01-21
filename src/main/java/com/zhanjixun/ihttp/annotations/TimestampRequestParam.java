@@ -15,25 +15,39 @@ import java.util.concurrent.TimeUnit;
 @Retention(RetentionPolicy.RUNTIME)
 @Repeatable(TimestampRequestParam.List.class)
 public @interface TimestampRequestParam {
-	/**
-	 * 参数名称
-	 *
-	 * @return
-	 */
-	String name();
+    /**
+     * 参数名称
+     *
+     * @return
+     */
+    String name();
 
-	/**
-	 * 时间单位
-	 *
-	 * @return
-	 */
-	TimeUnit unit() default TimeUnit.MILLISECONDS;
+    /**
+     * 前缀
+     *
+     * @return
+     */
+    String prefix() default "";
 
-	//指定多个时使用
-	@Target({ElementType.METHOD})
-	@Retention(RetentionPolicy.RUNTIME)
-	@Documented
-	@interface List {
-		TimestampRequestParam[] value();
-	}
+    /**
+     * 尾缀
+     *
+     * @return
+     */
+    String postfix() default "";
+
+    /**
+     * 时间单位
+     *
+     * @return
+     */
+    TimeUnit unit() default TimeUnit.MILLISECONDS;
+
+    //指定多个时使用
+    @Target({ElementType.METHOD, ElementType.TYPE})
+    @Retention(RetentionPolicy.RUNTIME)
+    @Documented
+    @interface List {
+        TimestampRequestParam[] value();
+    }
 }

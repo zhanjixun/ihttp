@@ -17,25 +17,37 @@ import java.util.List;
 public class Request implements Serializable {
 
     private static final long serialVersionUID = 3720684088323984812L;
-
-    private String name;
-    //请求地址
+    /**
+     * 请求地址
+     */
     private String url;
-    //请求编码
+    /**
+     * 请求编码
+     */
     private String method;
-    //跟随重定向
+    /**
+     * 跟随重定向
+     */
     private Boolean followRedirects;
-    //请求体
+    /**
+     * 请求体
+     */
     private String body;
-    //请求字符编码
+    /**
+     * 请求字符编码
+     */
     private String charset;
-    //指定响应字符编码
-    private String responseCharset;
-    //请求头
+    /**
+     * 请求头
+     */
     private List<Header> headers;
-    //请求参数
+    /**
+     * 请求参数
+     */
     private List<Param> params;
-    //文件
+    /**
+     * 文件
+     */
     private List<FormDatas> fileParts;
 
     @Override
