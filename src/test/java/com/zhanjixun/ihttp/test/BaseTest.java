@@ -1,6 +1,6 @@
 package com.zhanjixun.ihttp.test;
 
-import com.zhanjixun.ihttp.test.base.NettyServer;
+import com.zhanjixun.ihttp.test.server.NettyServer;
 import org.junit.After;
 import org.junit.Before;
 import org.springframework.util.StopWatch;
@@ -17,7 +17,7 @@ public class BaseTest {
 
     private final StopWatch stopWatch = new StopWatch();
 
-    private final NettyServer nettyServer = new NettyServer(8088);
+    private final NettyServer nettyServer = new NettyServer(8088, "com.zhanjixun.ihttp.test.server.controller");
 
     @Before
     public void startServer() {
