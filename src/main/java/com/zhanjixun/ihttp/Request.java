@@ -4,6 +4,7 @@ import com.zhanjixun.ihttp.domain.FormDatas;
 import com.zhanjixun.ihttp.domain.Header;
 import com.zhanjixun.ihttp.domain.Param;
 import lombok.Data;
+import org.springframework.beans.BeanUtils;
 
 import java.io.Serializable;
 import java.util.List;
@@ -14,7 +15,7 @@ import java.util.List;
  * @author zhanjixun
  */
 @Data
-public class Request implements Serializable {
+public class Request implements Serializable, Cloneable {
 
     private static final long serialVersionUID = 3720684088323984812L;
     /**
@@ -55,4 +56,10 @@ public class Request implements Serializable {
         return getMethod() + " " + getUrl();
     }
 
+    @Override
+    public Request clone() {
+        Request target = new Request();
+        BeanUtils.copyProperties(this, target);
+        return target;
+    }
 }
