@@ -4,9 +4,6 @@ import com.alibaba.fastjson.JSON;
 import com.google.common.collect.ImmutableMap;
 import com.zhanjixun.ihttp.IHTTP;
 import com.zhanjixun.ihttp.Response;
-import com.zhanjixun.ihttp.test.base.NettyServer;
-import org.junit.After;
-import org.junit.Before;
 import org.junit.Test;
 
 import java.io.File;
@@ -16,21 +13,9 @@ import java.net.URL;
  * @author :zhanjixun
  * @date : 2018/11/26 14:13
  */
-public class SystemTest {
+public class SystemTest extends BaseTest {
 
     private final TestMapper mapper = IHTTP.getMapper(TestMapper.class);
-
-    private final NettyServer nettyServer = new NettyServer(8088);
-
-    @Before
-    public void startServer() {
-        nettyServer.start();
-    }
-
-    @After
-    public void shutdownServer() {
-        nettyServer.shutdownGracefully();
-    }
 
     @Test
     public void name() {

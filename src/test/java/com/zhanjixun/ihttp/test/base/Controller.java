@@ -22,7 +22,11 @@ public class Controller {
     private final Map<String, Function<FullHttpRequest, FullHttpResponse>> controller = new HashMap<>();
 
     public Controller() {
-        controller.putIfAbsent("/index", (request) -> NettyServer.writeHtml("<!DOCTYPE HTML><html><body>hello</body></html>"));
+        
+        controller.putIfAbsent("/echo", (request) -> {
+            return NettyServer.writeHtml("<!DOCTYPE HTML><html><body>hello</body></html>");
+        });
+
         controller.putIfAbsent("/postFile", (request) -> NettyServer.writeJson(ImmutableMap.of("status", "ok")));
         controller.putIfAbsent("/home", (request) -> NettyServer.writeHtml("<!DOCTYPE HTML><html><body><div id='val' class='tips' data-val='3284'>hello1</div><div class='tips' data-val='3284'>hello2</div></body></html>"));
         controller.putIfAbsent("/update", (request) -> NettyServer.writeJson(ImmutableMap.of("status", 200, "msg", "ok")));

@@ -19,7 +19,7 @@ import java.util.Map;
 public interface TestMapper {
 
     @GET
-    @URL("/index")
+    @URL("/echo")
     @RequestParam(name = "k1", value = "v1")
     @RequestParam(name = "k2", value = "v2")
     @RequestHeader(name = "token", value = "#{token}")
