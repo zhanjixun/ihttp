@@ -1,8 +1,11 @@
 package com.zhanjixun.ihttp.test.server;
 
+import org.junit.Test;
+
 import java.io.File;
 import java.net.URL;
 import java.util.ArrayList;
+import java.util.LinkedList;
 import java.util.List;
 
 /**
@@ -31,16 +34,26 @@ public class PackageUtils {
     }
 
     private static List<File> listFile(File baseFile) {
-        List<File> list = new ArrayList<>();
-        for (File file : baseFile.listFiles()) {
-            if (file.isDirectory()) {
-                list.addAll(listFile(file));
-            }
-            if (file.isFile() && file.getName().endsWith(".class") && !file.getName().contains("$")) {
-                list.add(file);
+        List<File> result = new ArrayList<>();
+        LinkedList<File> dir = new LinkedList<>();
+        dir.add(baseFile);
+        while (!dir.isEmpty()) {
+            for (File file : dir.removeFirst().listFiles()) {
+                if (file.isDirectory()) {
+                    dir.add(file);
+                }
+                if (file.isFile() && file.getName().endsWith(".class") && !file.getName().contains("$")) {
+                    result.add(file);
+                }
             }
         }
-        return list;
+        return result;
+    }
+
+    @Test
+    public void name() {
+        List<Class<?>> list = listType("com.zhanjixun.ihttp.test");
+        System.out.println();
     }
 }
 
