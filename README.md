@@ -1,4 +1,4 @@
-# ihttp - 基于注解的Java网络编程
+# ihttp - 轻量级HTTP客户端框架
 
 [ihttp]( https://github.com/zhanjixun/ihttp ) 使用注解方式配置Java网络编程，避免大量编写构造请求的代码，更优雅的编码。
 

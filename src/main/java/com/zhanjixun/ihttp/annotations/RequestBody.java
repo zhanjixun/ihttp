@@ -21,6 +21,7 @@ public @interface RequestBody {
      * 内容类型
      *
      * @return
+     * @see ContentType#value()
      */
     String contentType() default "application/json;charset=UTF-8";
 

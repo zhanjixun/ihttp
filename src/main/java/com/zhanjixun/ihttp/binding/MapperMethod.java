@@ -207,7 +207,10 @@ public class MapperMethod {
                 String suffix = Util.isNotEmpty(requestParamName.getName()) ? requestParamName.getName() + "." : "";
                 JSONObject jsonObject = (JSONObject) JSON.toJSON(arg);
                 for (Map.Entry<String, Object> entry : jsonObject.entrySet()) {
-                    request.getParams().add(new Param(suffix + entry.getKey(), String.valueOf(entry.getValue())));
+                    //过滤null
+                    if (entry.getValue() != null) {
+                        request.getParams().add(new Param(suffix + entry.getKey(), String.valueOf(entry.getValue())));
+                    }
                 }
             }
         }

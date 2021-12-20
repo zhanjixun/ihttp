@@ -1,0 +1,16 @@
+GET https://www.baidu.com/ HTTP/1.1
+Host: www.baidu.com
+Connection: keep-alive
+Upgrade-Insecure-Requests: 1
+User-Agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/90.0.4430.72 Safari/537.36
+Accept: text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.9
+Sec-Fetch-Site: none
+Sec-Fetch-Mode: navigate
+Sec-Fetch-User: ?1
+Sec-Fetch-Dest: document
+sec-ch-ua: " Not A;Brand";v="99", "Chromium";v="90", "Google Chrome";v="90"
+sec-ch-ua-mobile: ?0
+Accept-Encoding: gzip, deflate, br
+Accept-Language: zh-CN,zh;q=0.9
+Cookie: BIDUPSID=0B5CCA36592A11BFAA3E57C63710710E; PSTM=1618564366; BAIDUID=0B5CCA36592A11BF3DC36C458D321186:FG=1; BD_UPN=12314753; BDORZ=B490B5EBF6F3CD402E515D22BCDA1598; BAIDUID_BFESS=A44CFC04B33224A81595AB0DE1D22152:FG=1; COOKIE_SESSION=1118_0_2_0_10_0_1_0_2_0_0_0_1109_0_2_0_1618797876_0_1618797874%7C5%230_0_1618797874%7C1; BA_HECTOR=ah2g24a5a42g210h7o1g7pqnc0q
+

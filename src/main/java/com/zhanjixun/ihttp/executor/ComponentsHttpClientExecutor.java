@@ -12,7 +12,6 @@ import com.zhanjixun.ihttp.parsing.HttpProxy;
 import com.zhanjixun.ihttp.utils.StrUtils;
 import com.zhanjixun.ihttp.utils.Util;
 import lombok.extern.slf4j.Slf4j;
-import okio.Okio;
 import org.apache.http.HttpHost;
 import org.apache.http.HttpResponse;
 import org.apache.http.client.CookieStore;
@@ -26,6 +25,7 @@ import org.apache.http.impl.client.HttpClientBuilder;
 import org.apache.http.impl.client.HttpClients;
 import org.apache.http.impl.cookie.BasicClientCookie;
 import org.apache.http.ssl.SSLContextBuilder;
+import org.apache.http.util.EntityUtils;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -171,7 +171,7 @@ public class ComponentsHttpClientExecutor extends BaseExecutor {
             response.setRequest(request);
             response.setCharset(charset);
             response.setStatus(httpResponse.getStatusLine().getStatusCode());
-            response.setBody(Okio.buffer(Okio.source(httpResponse.getEntity().getContent())).readByteArray());
+            response.setBody(EntityUtils.toByteArray(httpResponse.getEntity()));
             response.setHeaders(headers);
             response.setContentType(contentType);
             return response;
