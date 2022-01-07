@@ -14,6 +14,7 @@ import java.net.InetAddress;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 @Slf4j
@@ -64,15 +65,20 @@ public class NettyServer extends Thread {
 
     @Slf4j
     static class NettyServerHandler extends ChannelInboundHandlerAdapter {
-
+        /**
+         * controller 类名-示例 map
+         */
         private final Map<String, Object> controller;
-
+        /**
+         * url-方法 map
+         */
         private final Map<String, Method> dispatcherMap;
 
         public NettyServerHandler(String basePath) {
             List<Class<?>> list = PackageUtils.listType(basePath).stream()
-                    .filter(t -> t.isAnnotationPresent(Controller.class)).collect(Collectors.toList());
-            controller = list.stream().collect(Collectors.toMap(d -> d.getName(), d -> {
+                    .filter(t -> Arrays.stream(t.getDeclaredMethods()).anyMatch(m -> m.isAnnotationPresent(RequestMapping.class)))
+                    .collect(Collectors.toList());
+            controller = list.stream().collect(Collectors.toMap(Class::getName, d -> {
                 try {
                     return d.newInstance();
                 } catch (Exception e) {
@@ -80,24 +86,31 @@ public class NettyServer extends Thread {
                 }
                 return null;
             }));
-            dispatcherMap = list.stream().flatMap(t -> Arrays.stream(t.getDeclaredMethods()))
-                    .filter(m -> m.isAnnotationPresent(RequestMapping.class)).collect(Collectors.toMap(m -> {
-                        RequestMapping requestMapping = m.getDeclaringClass().getAnnotation(RequestMapping.class);
-                        return requestMapping != null ? requestMapping.value() : "" + m.getAnnotation(RequestMapping.class).value();
-                    }, m -> m));
+            dispatcherMap = list.stream().flatMap(t -> Arrays.stream(t.getDeclaredMethods())).filter(m -> m.isAnnotationPresent(RequestMapping.class))
+                    .collect(Collectors.toMap(m -> Optional.ofNullable(m.getDeclaringClass().getAnnotation(RequestMapping.class)).map(RequestMapping::value).orElse("") +
+                            m.getAnnotation(RequestMapping.class).value(), m -> m));
         }
-
 
         @Override
         public void channelRead(ChannelHandlerContext handlerContext, Object msg) {
             FullHttpRequest request = (FullHttpRequest) msg;
             try {
                 Method requestHandler = dispatcherMap.get(request.uri().split("\\?")[0]);
+                //url找不到
                 if (requestHandler == null) {
                     FullHttpResponse pageNotFound = MsgUtils.write(404, "page not found", "text/plain; charset=UTF-8");
                     handlerContext.writeAndFlush(pageNotFound).addListener(ChannelFutureListener.CLOSE);
                     return;
                 }
+                //请求方法不匹配
+                String[] method = requestHandler.getAnnotation(RequestMapping.class).method();
+                String httpRequestMethod = request.method().name();
+                if (Arrays.stream(method).noneMatch(d -> d.equalsIgnoreCase(httpRequestMethod))) {
+                    FullHttpResponse pageNotFound = MsgUtils.write(404, "page not found", "text/plain; charset=UTF-8");
+                    handlerContext.writeAndFlush(pageNotFound).addListener(ChannelFutureListener.CLOSE);
+                    return;
+                }
+                //调用Controller接口方法
                 Object obj = controller.get(requestHandler.getDeclaringClass().getName());
                 FullHttpResponse response = (FullHttpResponse) requestHandler.invoke(obj, request);
                 //请求 返回 日志

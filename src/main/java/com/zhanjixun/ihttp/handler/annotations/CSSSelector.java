@@ -1,6 +1,5 @@
 package com.zhanjixun.ihttp.handler.annotations;
 
-import com.zhanjixun.ihttp.handler.enums.ElementType;
 import com.zhanjixun.ihttp.handler.enums.SelectType;
 
 import java.lang.annotation.Documented;
@@ -45,11 +44,4 @@ public @interface CSSSelector {
      * @return
      */
     Class<?> returnType();
-
-    /**
-     * 解析对象类型 对象（单个对象） 数组（集合）
-     *
-     * @return
-     */
-    ElementType elementType() default ElementType.OBJECT;
 }

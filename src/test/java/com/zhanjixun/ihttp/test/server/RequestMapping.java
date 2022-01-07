@@ -15,6 +15,13 @@ import java.lang.annotation.Target;
 @Retention(RetentionPolicy.RUNTIME)
 public @interface RequestMapping {
     /**
+     * 请求方法
+     *
+     * @return
+     */
+    String[] method() default {"GET", "POST"};
+
+    /**
      * 派发路径
      *
      * @return

@@ -7,7 +7,6 @@ import com.zhanjixun.ihttp.binding.MapperMethod;
 import com.zhanjixun.ihttp.exception.ResponseHandleException;
 import com.zhanjixun.ihttp.handler.annotations.CSSSelector;
 import com.zhanjixun.ihttp.handler.annotations.JsonPath;
-import com.zhanjixun.ihttp.handler.enums.ElementType;
 import com.zhanjixun.ihttp.handler.enums.SelectType;
 import com.zhanjixun.ihttp.utils.ReflectUtils;
 import org.jsoup.Jsoup;
@@ -103,20 +102,14 @@ public class ResponseHandler {
             return null;
         }
         Class<?> returnType = jsonPath.returnType();
-        ElementType elementType = jsonPath.elementType();
         Object obj = JSONPath.read(response.getText(), jsonPath.path());
         //string及基本类型
         if (ReflectUtils.isStringOrPrimitive(returnType)) {
             return obj;
         }
-        //解析对象类型
-        if (elementType == ElementType.OBJECT) {
-            return JSON.parseObject(JSON.toJSONString(obj), returnType);
-        }
-        //解析数组类型
-        if (elementType == ElementType.ARRAY) {
+        if (obj instanceof Collection) {
             return JSON.parseArray(JSON.toJSONString(obj), returnType);
         }
-        return null;
+        return JSON.parseObject(JSON.toJSONString(obj), returnType);
     }
 }

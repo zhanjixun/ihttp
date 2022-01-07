@@ -1,7 +1,5 @@
 package com.zhanjixun.ihttp.test.server;
 
-import org.junit.Test;
-
 import java.io.File;
 import java.net.URL;
 import java.util.ArrayList;
@@ -48,12 +46,6 @@ public class PackageUtils {
             }
         }
         return result;
-    }
-
-    @Test
-    public void name() {
-        List<Class<?>> list = listType("com.zhanjixun.ihttp.test");
-        System.out.println();
     }
 }
 
