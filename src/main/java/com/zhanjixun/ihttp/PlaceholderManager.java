@@ -10,23 +10,23 @@ public interface PlaceholderManager {
     /**
      * 获取占位符的值
      *
-     * @param key
+     * @param name
      * @return
      */
-    Object getValue(String key);
+    Object getPlaceholderValue(String name);
 
     /**
      * 设置占位符
      *
-     * @param key
+     * @param name
      * @param value
      */
-    void setValue(String key, Object value);
+    void setPlaceholderValue(String name, Object value);
 
     /**
      * 获取所有占位符的键
      *
      * @return
      */
-    String[] getKeys();
+    String[] getPlaceholderNames();
 }

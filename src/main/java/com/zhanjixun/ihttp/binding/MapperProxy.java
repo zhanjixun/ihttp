@@ -1,6 +1,7 @@
 package com.zhanjixun.ihttp.binding;
 
 import com.zhanjixun.ihttp.CookiesStore;
+import com.zhanjixun.ihttp.PlaceholderManager;
 import com.zhanjixun.ihttp.Response;
 import com.zhanjixun.ihttp.annotations.ResponseCharset;
 import com.zhanjixun.ihttp.handler.ResponseHandler;
@@ -38,6 +39,10 @@ public class MapperProxy implements InvocationHandler {
         if (CookiesStore.class.equals(method.getDeclaringClass())) {
             return method.invoke(mapper.getExecutor().getCookiesStore(), args);
         }
+        //PlaceholderManager方法执行
+        if (PlaceholderManager.class.equals(method.getDeclaringClass())) {
+            return method.invoke(mapper.getPlaceholderManager(), args);
+        }
 
         MapperMethod mapperMethod = mapper.getMapperMethod(method.getName());
         Response response = mapperMethod.execute(args);
@@ -47,7 +52,7 @@ public class MapperProxy implements InvocationHandler {
         if (responseCharset != null) {
             response.setCharset(responseCharset.value());
         }
-        
+
         return responseHandler.handle(method, mapperMethod, response);
     }
 

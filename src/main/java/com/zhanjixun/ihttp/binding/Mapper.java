@@ -1,5 +1,6 @@
 package com.zhanjixun.ihttp.binding;
 
+import com.zhanjixun.ihttp.PlaceholderManager;
 import com.zhanjixun.ihttp.domain.Header;
 import com.zhanjixun.ihttp.executor.Executor;
 import com.zhanjixun.ihttp.parsing.HttpProxy;
@@ -7,7 +8,9 @@ import com.zhanjixun.ihttp.parsing.RandomGenerator;
 import com.zhanjixun.ihttp.parsing.TimestampGenerator;
 import lombok.Data;
 
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.stream.Collectors;
 
 /**
@@ -24,6 +27,26 @@ public class Mapper {
     private final List<MapperMethod> methods;
 
     private Executor executor;
+
+    private PlaceholderManager placeholderManager = new PlaceholderManager() {
+
+        private final Map<String, Object> placeholderMap = new HashMap<>();
+
+        @Override
+        public Object getPlaceholderValue(String key) {
+            return placeholderMap.get(key);
+        }
+
+        @Override
+        public void setPlaceholderValue(String key, Object value) {
+            placeholderMap.put(key, value);
+        }
+
+        @Override
+        public String[] getPlaceholderNames() {
+            return placeholderMap.keySet().toArray(new String[0]);
+        }
+    };
 
     //实体内容
 
@@ -52,6 +75,10 @@ public class Mapper {
 
     public MapperMethod getMapperMethod(String name) {
         return methods.stream().collect(Collectors.toMap(MapperMethod::getName, d -> d)).get(name);
+    }
+
+    public PlaceholderManager getPlaceholderManager() {
+        return placeholderManager;
     }
 
     @Override

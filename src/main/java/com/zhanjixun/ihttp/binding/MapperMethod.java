@@ -90,6 +90,10 @@ public class MapperMethod {
         for (MapperParameter mapperParameter : parameters) {
             bingParameterValue(request, mapperParameter, args[mapperParameter.getIndex()]);
         }
+        //4.绑定全局参数
+        for (String key : getMapper().getPlaceholderManager().getPlaceholderNames()) {
+            replacePlaceholder(request, key, getMapper().getPlaceholderManager().getPlaceholderValue(key).toString());
+        }
         return request;
     }
 
