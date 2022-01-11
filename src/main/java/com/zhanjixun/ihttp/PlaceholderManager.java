@@ -24,6 +24,18 @@ public interface PlaceholderManager {
     void setPlaceholderValue(String name, Object value);
 
     /**
+     * 移除占位符
+     *
+     * @param name
+     */
+    void removePlaceholder(String name);
+
+    /**
+     * 清空占位符
+     */
+    void clearPlaceholder();
+
+    /**
      * 获取所有占位符的键
      *
      * @return

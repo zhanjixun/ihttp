@@ -43,6 +43,16 @@ public class Mapper {
         }
 
         @Override
+        public void removePlaceholder(String name) {
+            placeholderMap.remove(name);
+        }
+
+        @Override
+        public void clearPlaceholder() {
+            placeholderMap.clear();
+        }
+
+        @Override
         public String[] getPlaceholderNames() {
             return placeholderMap.keySet().toArray(new String[0]);
         }
