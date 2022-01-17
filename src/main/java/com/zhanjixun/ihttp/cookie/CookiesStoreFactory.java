@@ -24,7 +24,7 @@ public class CookiesStoreFactory {
             return new DisableCookiesStoreImpl();
         }
         CookieJar cookieJar = mapperType.getAnnotation(CookieJar.class);
-        String key = cookieJar == null ? "PublicCookiesStore:" + mapperType.getName() : "PrivateCookiesStore:" + cookieJar.value();
+        String key = cookieJar == null ? "PUBLIC_COOKIES_STORE:" + mapperType.getName() : "PRIVATE_COOKIES_STORE:" + cookieJar.value();
         return cookiesStoreMap.computeIfAbsent(key, k -> new CookiesStoreImpl());
     }
 }

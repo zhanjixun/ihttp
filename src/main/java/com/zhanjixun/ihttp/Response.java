@@ -63,7 +63,7 @@ public class Response implements Serializable {
 
     public void setHeaders(Map<String, List<String>> headers) {
         this.headers = headers;
-        //抽取出一些常用的请求头
+        //提取出一些常用的请求头
         contentType = Optional.ofNullable(headers.get("Content-Type")).map(hs -> hs.get(0)).orElse(null);
         location = Optional.ofNullable(headers.get("Location")).map(hs -> hs.get(0)).orElse(null);
     }

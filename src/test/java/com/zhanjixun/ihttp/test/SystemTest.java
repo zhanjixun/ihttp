@@ -6,10 +6,7 @@ import com.zhanjixun.ihttp.Response;
 import com.zhanjixun.ihttp.annotations.GET;
 import com.zhanjixun.ihttp.annotations.URL;
 import com.zhanjixun.ihttp.annotations.UserAgent;
-import com.zhanjixun.ihttp.cookie.Cookie;
 import org.junit.Test;
-
-import java.util.List;
 
 /**
  * @author :zhanjixun
@@ -31,11 +28,8 @@ public class SystemTest extends BaseTest {
 
     @Test
     public void name() {
-        Response response = mapper.testGet();
-        assert response.getStatus() == 200;
-        System.out.println(response.getText());
-        List<Cookie> cookies = mapper.getCookies();
-        System.out.println();
+        System.out.println(mapper.testGet().getText());
+        System.out.println(mapper.testGet().getText());
     }
 
 }

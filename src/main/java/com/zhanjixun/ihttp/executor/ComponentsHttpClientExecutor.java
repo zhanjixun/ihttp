@@ -7,6 +7,7 @@ import com.zhanjixun.ihttp.cookie.Cookie;
 import com.zhanjixun.ihttp.domain.FormData;
 import com.zhanjixun.ihttp.domain.FormDatas;
 import com.zhanjixun.ihttp.domain.Header;
+import com.zhanjixun.ihttp.domain.Param;
 import com.zhanjixun.ihttp.parsing.Configuration;
 import com.zhanjixun.ihttp.parsing.HttpProxy;
 import com.zhanjixun.ihttp.utils.StrUtils;
@@ -17,7 +18,9 @@ import org.apache.http.HttpResponse;
 import org.apache.http.client.CookieStore;
 import org.apache.http.client.HttpClient;
 import org.apache.http.client.config.RequestConfig;
-import org.apache.http.client.methods.*;
+import org.apache.http.client.methods.HttpEntityEnclosingRequestBase;
+import org.apache.http.client.methods.HttpPost;
+import org.apache.http.client.methods.HttpRequestBase;
 import org.apache.http.entity.ContentType;
 import org.apache.http.entity.StringEntity;
 import org.apache.http.entity.mime.MultipartEntityBuilder;
@@ -65,43 +68,15 @@ public class ComponentsHttpClientExecutor extends BaseExecutor {
     }
 
     @Override
-    protected Response doGetMethod(Request request) throws IOException {
-        return executeMethod(buildRequestBase(request, new HttpGet()), request);
-    }
-
-    @Override
-    protected Response doPostMethod(Request request) throws IOException {
-        return executeMethod(buildEntityRequest(request, new HttpPost()), request);
-    }
-
-    @Override
-    protected Response doDeleteMethod(Request request) throws IOException {
-        return executeMethod(buildRequestBase(request, new HttpDelete()), request);
-    }
-
-    @Override
-    protected Response doPutMethod(Request request) throws IOException {
-        return executeMethod(buildEntityRequest(request, new HttpPut()), request);
-    }
-
-    @Override
-    protected Response doPatchMethod(Request request) throws IOException {
-        return executeMethod(buildEntityRequest(request, new HttpPatch()), request);
-    }
-
-    @Override
-    protected Response doTraceMethod(Request request) throws IOException {
-        return executeMethod(buildRequestBase(request, new HttpTrace()), request);
-    }
-
-    @Override
-    protected Response doOptionsMethod(Request request) throws IOException {
-        return executeMethod(buildRequestBase(request, new HttpOptions()), request);
-    }
-
-    @Override
-    protected Response doHeadMethod(Request request) throws IOException {
-        return executeMethod(buildRequestBase(request, new HttpHead()), request);
+    protected Response executeRequest(Request request) throws IOException {
+        String method = request.getMethod();
+        if (Arrays.asList(new String[]{"POST", "PUT", "PATCH"}).contains(method)) {
+            return executeMethod(buildEntityRequest(request, new HttpPost()), request);
+        }
+        if (Arrays.asList(new String[]{"GET", "DELETE", "TRACE", "OPTIONS", "HEAD"}).contains(method)) {
+            return executeMethod(buildRequestBase(request, new HttpPost()), request);
+        }
+        return null;
     }
 
     private HttpRequestBase buildRequestBase(Request request, HttpRequestBase method) {
@@ -117,14 +92,14 @@ public class ComponentsHttpClientExecutor extends BaseExecutor {
     private HttpEntityEnclosingRequestBase buildEntityRequest(Request request, HttpEntityEnclosingRequestBase method) {
         method.setURI(URI.create(request.getUrl()));
         request.getHeaders().forEach(h -> method.addHeader(h.getName(), h.getValue()));
+
         String charset = Optional.ofNullable(request.getCharset()).orElse("UTF-8");
         String contentType = Optional.ofNullable(method.getFirstHeader("Content-Type")).map(org.apache.http.NameValuePair::getValue).orElse(null);
-
         //带参数
         String paramString = request.getParams().stream().map(p -> p.getName() + "=" + p.getValue()).collect(Collectors.joining("&"));
         if (Util.isNotBlank(paramString)) {
             ContentType contentTypeDefault = ContentType.create("application/x-www-form-urlencoded", charset);
-            method.setEntity(new StringEntity(paramString, contentType != null ? ContentType.create(contentType) : contentTypeDefault));
+            method.setEntity(new StringEntity(paramString, Optional.ofNullable(contentType).map(ContentType::create).orElse(contentTypeDefault)));
         }
         //直接请求体
         if (Util.isNotBlank(request.getBody())) {
@@ -134,14 +109,14 @@ public class ComponentsHttpClientExecutor extends BaseExecutor {
         //带文件
         if (Util.isNotEmpty(request.getFileParts())) {
             MultipartEntityBuilder builder = MultipartEntityBuilder.create();
-            request.getParams().forEach(p -> builder.addTextBody(p.getName(), p.getValue()));
-
+            for (Param param : request.getParams()) {
+                builder.addTextBody(param.getName(), param.getValue());
+            }
             for (FormDatas parts : request.getFileParts()) {
                 FormData formData = parts.getFormData();
                 ContentType type = (formData.getContentType() != null) ? ContentType.create(formData.getContentType()) : ContentType.DEFAULT_BINARY;
                 builder.addBinaryBody(parts.getName(), formData.getData(), type, formData.getFileName());
             }
-
             method.setEntity(builder.build());
         }
         return method;
@@ -156,24 +131,12 @@ public class ComponentsHttpClientExecutor extends BaseExecutor {
                     .collect(Collectors.toMap(Header::getName, h -> Collections.singletonList(h.getValue()),
                             (a, b) -> Stream.concat(a.stream(), b.stream()).collect(Collectors.toList())));
 
-            String charset = null;
-            String contentType = headers.get("Content-Type") == null ? null : headers.get("Content-Type").get(0);
-            if (contentType != null) {
-                int lastIndexOf = contentType.lastIndexOf("charset=");
-                if (lastIndexOf == -1 || lastIndexOf == contentType.length() - "charset=".length()) {
-                    charset = "UTF-8";
-                } else {
-                    charset = contentType.substring(lastIndexOf + "charset=".length());
-                }
-            }
-
             Response response = new Response();
             response.setRequest(request);
-            response.setCharset(charset);
+            response.setCharset(headers.getOrDefault("Content-Type", new ArrayList<>()).stream().filter(h -> h.contains("charset=") && !h.endsWith("charset=")).map(h -> h.substring(h.lastIndexOf("charset=") + "charset=".length())).findFirst().orElse("UTF-8"));
             response.setStatus(httpResponse.getStatusLine().getStatusCode());
             response.setBody(EntityUtils.toByteArray(httpResponse.getEntity()));
             response.setHeaders(headers);
-            response.setContentType(contentType);
             return response;
         } finally {
             if (httpResponse != null && httpResponse.getEntity() != null) {
@@ -189,7 +152,6 @@ public class ComponentsHttpClientExecutor extends BaseExecutor {
             }
         }
     }
-
 
     static class MyCookieStore implements CookieStore {
 

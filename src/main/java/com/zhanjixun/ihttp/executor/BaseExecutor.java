@@ -23,55 +23,19 @@ public abstract class BaseExecutor implements Executor {
 
     @Override
     public final Response execute(Request request) throws IOException {
-        Response response;
         long startTime = System.currentTimeMillis();
-        switch (request.getMethod()) {
-            case "GET":
-                response = doGetMethod(request);
-                break;
-            case "POST":
-                response = doPostMethod(request);
-                break;
-            case "DELETE":
-                response = doDeleteMethod(request);
-                break;
-            case "PUT":
-                response = doPutMethod(request);
-                break;
-            case "HEAD":
-                response = doHeadMethod(request);
-                break;
-            case "OPTIONS":
-                response = doOptionsMethod(request);
-                break;
-            case "TRACE":
-                response = doTraceMethod(request);
-                break;
-            case "PATCH":
-                response = doPatchMethod(request);
-                break;
-            default:
-                throw new RuntimeException("未能识别的HTTP请求方法：" + request.getMethod());
-        }
+        Response response = executeRequest(request);
         long endTime = System.currentTimeMillis();
         log.debug(String.format("%s %d [%dms] %s", request.getMethod(), response.getStatus(), (endTime - startTime), request.getUrl()));
         return response;
     }
 
-    protected abstract Response doGetMethod(Request request) throws IOException;
-
-    protected abstract Response doPostMethod(Request request) throws IOException;
-
-    protected abstract Response doDeleteMethod(Request request) throws IOException;
-
-    protected abstract Response doPutMethod(Request request) throws IOException;
-
-    protected abstract Response doPatchMethod(Request request) throws IOException;
-
-    protected abstract Response doTraceMethod(Request request) throws IOException;
-
-    protected abstract Response doOptionsMethod(Request request) throws IOException;
-
-    protected abstract Response doHeadMethod(Request request) throws IOException;
+    /**
+     * 执行请求
+     *
+     * @param request
+     * @return
+     */
+    protected abstract Response executeRequest(Request request) throws IOException;
 
 }
