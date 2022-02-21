@@ -79,6 +79,14 @@ public class Response implements Serializable {
         return text;
     }
 
+    public String getText(String charsetName) {
+        try {
+            return new String(body, charsetName);
+        } catch (UnsupportedEncodingException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
     /**
      * 获取处理后的结果
      *
