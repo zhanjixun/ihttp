@@ -20,9 +20,14 @@ import java.lang.annotation.*;
 @Retention(RetentionPolicy.RUNTIME)
 @Repeatable(RequestPart.List.class)
 public @interface RequestPart {
-
+    /**
+     * @return
+     */
     String name();
 
+    /**
+     * @return
+     */
     String value() default "";
 
     //指定多个时使用

@@ -70,7 +70,6 @@ public class AnnotationParser implements Parser {
 
         //配置类注解
         ReflectUtils.ifPresent(target, DisableCookie.class, e -> mapper.setDisableCookie(true));
-        ReflectUtils.ifPresent(target, HttpExecutor.class, e -> mapper.setHttpExecutor(e.value()));
         ReflectUtils.ifPresent(target, Proxy.class, e -> mapper.setHttpProxy(new HttpProxy(e.hostName(), e.port(), e.trustSSL())));
 
         //请求头类注解
@@ -89,7 +88,6 @@ public class AnnotationParser implements Parser {
         }
 
         //HTTP方法类注解
-
         ReflectUtils.ifPresent(method, GET.class, e -> {
             mapperMethod.setRequestMethod(e.annotationType().getSimpleName());
             mapperMethod.setFollowRedirects(e.followRedirects());
@@ -148,10 +146,8 @@ public class AnnotationParser implements Parser {
         }
 
         ReflectUtils.ifPresent(method, RequestBody.class, e -> mapperMethod.setRequestBody(e.value()));
-
         //配置类注解
         ReflectUtils.ifPresent(method, DisableCookie.class, e -> mapperMethod.setDisableCookie(true));
-        
         //生成类注解
         ReflectUtils.ifPresentMulti(method, RandomRequestParam.class, e -> mapperMethod.setRandomGeneratorParams(Arrays.stream(e).map(a -> new RandomGenerator(a.name(), a.length(), a.chars(), a.encode())).collect(Collectors.toList())));
         ReflectUtils.ifPresentMulti(method, RandomPlaceholder.class, e -> mapperMethod.setRandomGeneratorPlaceholders(Arrays.stream(e).map(a -> new RandomGenerator(a.name(), a.length(), a.chars(), a.encode())).collect(Collectors.toList())));
@@ -174,13 +170,6 @@ public class AnnotationParser implements Parser {
 
     private List<Header> handlerRequestHeader(AnnotatedElement annotatedElement) {
         List<Header> headers = new ArrayList<>();
-        ReflectUtils.ifPresent(annotatedElement, Accept.class, e -> headers.add(new Header("Accept", e.value())));
-        ReflectUtils.ifPresent(annotatedElement, AcceptEncoding.class, e -> headers.add(new Header("Accept-Encoding", e.value())));
-        ReflectUtils.ifPresent(annotatedElement, AcceptLanguage.class, e -> headers.add(new Header("Accept-Language", e.value())));
-        ReflectUtils.ifPresent(annotatedElement, ContentType.class, e -> headers.add(new Header("Content-Type", e.value())));
-        ReflectUtils.ifPresent(annotatedElement, Origin.class, e -> headers.add(new Header("Origin", e.value())));
-        ReflectUtils.ifPresent(annotatedElement, Referer.class, e -> headers.add(new Header("Referer", e.value())));
-        ReflectUtils.ifPresent(annotatedElement, UserAgent.class, e -> headers.add(new Header("User-Agent", e.value())));
         ReflectUtils.ifPresentMulti(annotatedElement, RequestHeader.class, e -> Arrays.stream(e).forEach(a -> headers.add(new Header(a.name(), a.value()))));
         return headers;
     }

@@ -19,9 +19,14 @@ import java.lang.annotation.*;
 @Retention(RetentionPolicy.RUNTIME)
 @Repeatable(RequestParam.List.class)
 public @interface RequestParam {
-
+    /**
+     * @return
+     */
     String name() default "";
 
+    /**
+     * @return
+     */
     String value() default "";
 
     /**

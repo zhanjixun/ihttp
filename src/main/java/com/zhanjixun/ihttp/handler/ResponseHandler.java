@@ -4,7 +4,6 @@ import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONPath;
 import com.zhanjixun.ihttp.Response;
 import com.zhanjixun.ihttp.binding.MapperMethod;
-import com.zhanjixun.ihttp.exception.ResponseHandleException;
 import com.zhanjixun.ihttp.handler.annotations.CSSSelector;
 import com.zhanjixun.ihttp.handler.annotations.JsonPath;
 import com.zhanjixun.ihttp.handler.enums.SelectType;
@@ -25,7 +24,7 @@ import java.util.Collection;
  */
 public class ResponseHandler {
 
-    public Object handle(Method method, MapperMethod mapperMethod, Response response) throws ResponseHandleException {
+    public Object handle(Method method, MapperMethod mapperMethod, Response response) {
         Class<?> returnType = mapperMethod.getReturnType();
         String contentType = response.getContentType();
 
@@ -45,7 +44,7 @@ public class ResponseHandler {
             }
             return response;
         } catch (Exception e) {
-            throw new ResponseHandleException(e);
+            throw new RuntimeException(e);
         }
     }
 
