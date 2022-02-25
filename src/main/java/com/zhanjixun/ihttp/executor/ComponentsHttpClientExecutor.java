@@ -4,9 +4,9 @@ import com.zhanjixun.ihttp.CookiesStore;
 import com.zhanjixun.ihttp.Request;
 import com.zhanjixun.ihttp.Response;
 import com.zhanjixun.ihttp.cookie.Cookie;
-import com.zhanjixun.ihttp.domain.FormData;
 import com.zhanjixun.ihttp.domain.FormDatas;
 import com.zhanjixun.ihttp.domain.Header;
+import com.zhanjixun.ihttp.domain.MultipartFile;
 import com.zhanjixun.ihttp.domain.Param;
 import com.zhanjixun.ihttp.parsing.Configuration;
 import com.zhanjixun.ihttp.parsing.HttpProxy;
@@ -113,7 +113,7 @@ public class ComponentsHttpClientExecutor extends BaseExecutor {
                 builder.addTextBody(param.getName(), param.getValue());
             }
             for (FormDatas parts : request.getFileParts()) {
-                FormData formData = parts.getFormData();
+                MultipartFile formData = parts.getFormData();
                 ContentType type = (formData.getContentType() != null) ? ContentType.create(formData.getContentType()) : ContentType.DEFAULT_BINARY;
                 builder.addBinaryBody(parts.getName(), formData.getData(), type, formData.getFileName());
             }

@@ -117,6 +117,7 @@ public class NettyServer extends Thread {
                 Arrays.stream(FullLogUtils.fullLog(request, response).split(StringUtil.NEWLINE)).forEach(log::info);
                 handlerContext.writeAndFlush(response).addListener(ChannelFutureListener.CLOSE);
             } catch (Exception e) {
+                e.printStackTrace();
                 FullHttpResponse serverError = MsgUtils.write(500, "server error: " + e.getMessage(), "text/plain; charset=UTF-8");
                 handlerContext.writeAndFlush(serverError).addListener(ChannelFutureListener.CLOSE);
             } finally {

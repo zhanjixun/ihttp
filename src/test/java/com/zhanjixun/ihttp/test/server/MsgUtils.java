@@ -54,4 +54,8 @@ public class MsgUtils {
         return write(200, JSON.toJSONString(obj), "application/json; charset=UTF-8");
     }
 
+    public static FullHttpResponse writeJson(Object obj, Map<String, String> headers) {
+        return write(200, JSON.toJSONString(obj), "application/json; charset=UTF-8", headers);
+    }
+
 }

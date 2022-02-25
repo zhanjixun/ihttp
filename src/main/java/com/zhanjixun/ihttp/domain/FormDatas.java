@@ -15,6 +15,6 @@ public class FormDatas {
 
     private String name;
 
-    private FormData formData;
+    private MultipartFile formData;
 
 }

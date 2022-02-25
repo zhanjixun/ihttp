@@ -46,16 +46,16 @@ public class MultipartFile {
     /**
      * 分片上传文件
      *
-     * @param file 文件
-     * @param from 分片开始
-     * @param to   分片结束
+     * @param file   文件
+     * @param from   分片开始
+     * @param length 长度
      * @return
      */
-    public static MultipartFile create(File file, int from, int to) {
+    public static MultipartFile create(File file, int from, int length) {
         try {
             String mimeType = new MimetypesFileTypeMap().getContentType(file.getName());
             byte[] bytes = Okio.buffer(Okio.source(file)).readByteArray();
-            byte[] chunkData = Arrays.copyOfRange(bytes, from, to);
+            byte[] chunkData = Arrays.copyOfRange(bytes, from, from + length);
             return new MultipartFile(mimeType, file.getName(), chunkData);
         } catch (IOException e) {
             throw new RuntimeException(e);

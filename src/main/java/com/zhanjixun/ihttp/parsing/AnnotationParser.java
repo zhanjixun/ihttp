@@ -4,9 +4,9 @@ import com.zhanjixun.ihttp.annotations.*;
 import com.zhanjixun.ihttp.binding.Mapper;
 import com.zhanjixun.ihttp.binding.MapperMethod;
 import com.zhanjixun.ihttp.binding.MapperParameter;
-import com.zhanjixun.ihttp.domain.FormData;
 import com.zhanjixun.ihttp.domain.FormDatas;
 import com.zhanjixun.ihttp.domain.Header;
+import com.zhanjixun.ihttp.domain.MultipartFile;
 import com.zhanjixun.ihttp.domain.Param;
 import com.zhanjixun.ihttp.utils.ReflectUtils;
 import com.zhanjixun.ihttp.utils.StrUtils;
@@ -140,7 +140,7 @@ public class AnnotationParser implements Parser {
             List<FormDatas> requestMultiParts = new ArrayList<>();
             for (RequestPart requestPart : method.getAnnotationsByType(RequestPart.class)) {
                 File file = new File(requestPart.value());
-                requestMultiParts.add(new FormDatas(requestPart.name(), FormData.create(file)));
+                requestMultiParts.add(new FormDatas(requestPart.name(), MultipartFile.create(file)));
             }
             mapperMethod.setRequestMultiParts(requestMultiParts);
         }

@@ -5,9 +5,9 @@ import com.alibaba.fastjson.JSONObject;
 import com.zhanjixun.ihttp.Request;
 import com.zhanjixun.ihttp.Response;
 import com.zhanjixun.ihttp.annotations.RequestPart;
-import com.zhanjixun.ihttp.domain.FormData;
 import com.zhanjixun.ihttp.domain.FormDatas;
 import com.zhanjixun.ihttp.domain.Header;
+import com.zhanjixun.ihttp.domain.MultipartFile;
 import com.zhanjixun.ihttp.domain.Param;
 import com.zhanjixun.ihttp.handler.ResponseHandler;
 import com.zhanjixun.ihttp.parsing.EncodableObject;
@@ -230,15 +230,15 @@ public class MapperMethod {
         if (Util.isNotEmpty(mapperParameter.getRequestMultiPartNames())) {
             for (String multiPartName : mapperParameter.getRequestMultiPartNames()) {
                 if (arg instanceof String) {
-                    request.getFileParts().add(new FormDatas(multiPartName, FormData.create(new File((String) arg))));
+                    request.getFileParts().add(new FormDatas(multiPartName, MultipartFile.create(new File((String) arg))));
                     continue;
                 }
                 if (arg instanceof File) {
-                    request.getFileParts().add(new FormDatas(multiPartName, FormData.create((File) arg)));
+                    request.getFileParts().add(new FormDatas(multiPartName, MultipartFile.create((File) arg)));
                     continue;
                 }
-                if (arg instanceof FormData) {
-                    request.getFileParts().add(new FormDatas(multiPartName, (FormData) arg));
+                if (arg instanceof MultipartFile) {
+                    request.getFileParts().add(new FormDatas(multiPartName, (MultipartFile) arg));
                     continue;
                 }
                 throw new IllegalArgumentException(RequestPart.class.getName() + "不支持类型：" + parameterType.getName());
