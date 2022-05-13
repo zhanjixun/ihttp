@@ -32,6 +32,10 @@ public class Cookie {
     private boolean httpOnly;
 
     public boolean isExpired() {
-        return expiryDate != null && expiryDate.before(new Date());
+        return isExpired(new Date());
+    }
+
+    public boolean isExpired(Date date) {
+        return expiryDate != null && expiryDate.before(date);
     }
 }
