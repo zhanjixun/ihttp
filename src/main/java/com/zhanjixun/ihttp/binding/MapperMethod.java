@@ -25,6 +25,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.TimeUnit;
+import java.util.stream.Collectors;
 
 /**
  * 对应一个Mapper中定义的方法
@@ -101,9 +102,7 @@ public class MapperMethod {
     private void bingConstValue(Request request) {
         request.setUrl(buildUrl(mapper.getUrl(), getUrl()));
         request.setMethod(getRequestMethod());
-
         request.setCharset(getRequestCharset());
-
         request.setFollowRedirects(Util.defaultIfNull(getFollowRedirects(), false));
         request.setBody(getRequestBody());
 
@@ -117,9 +116,8 @@ public class MapperMethod {
                 //同时定义在接口和方法上 只使用方法上
                 request.getHeaders().removeIf(h -> requestHeader.getName().equals(h.getName()));
             }
-            request.getHeaders().addAll(requestHeaders);
+            request.getHeaders().addAll(requestHeaders.stream().map(d -> new Header(d.getName(), d.getValue())).collect(Collectors.toList()));
         }
-
         request.setParams(new ArrayList<>());
         if (getRequestParams() != null) {
             List<Param> requestParams = getRequestParams();
@@ -127,7 +125,7 @@ public class MapperMethod {
                 //同时定义在接口和方法上 只使用方法上
                 request.getParams().removeIf(p -> p.getName().equals(requestParam.getName()));
             }
-            request.getParams().addAll(requestParams);
+            request.getParams().addAll(requestParams.stream().map(d -> new Param(d.getName(), d.getValue())).collect(Collectors.toList()));
         }
 
         request.setFileParts(new ArrayList<>());
