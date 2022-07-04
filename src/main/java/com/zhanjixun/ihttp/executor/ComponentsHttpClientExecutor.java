@@ -19,6 +19,7 @@ import org.apache.http.client.CookieStore;
 import org.apache.http.client.HttpClient;
 import org.apache.http.client.config.RequestConfig;
 import org.apache.http.client.methods.HttpEntityEnclosingRequestBase;
+import org.apache.http.client.methods.HttpGet;
 import org.apache.http.client.methods.HttpPost;
 import org.apache.http.client.methods.HttpRequestBase;
 import org.apache.http.entity.ContentType;
@@ -74,7 +75,7 @@ public class ComponentsHttpClientExecutor extends BaseExecutor {
             return executeMethod(buildEntityRequest(request, new HttpPost()), request);
         }
         if (Arrays.asList(new String[]{"GET", "DELETE", "TRACE", "OPTIONS", "HEAD"}).contains(method)) {
-            return executeMethod(buildRequestBase(request, new HttpPost()), request);
+            return executeMethod(buildRequestBase(request, new HttpGet()), request);
         }
         return null;
     }

@@ -192,6 +192,9 @@ public class MapperMethod {
 
     //绑定运行参数
     private void bingParameterValue(Request request, MapperParameter mapperParameter, Object arg) {
+        if (arg == null) {
+            return;
+        }
         Class<?> parameterType = mapperParameter.getParameterType();
         if (mapperParameter.isURLAnnotated()) {
             request.setUrl(buildUrl(request.getUrl(), (String) arg));
@@ -221,7 +224,7 @@ public class MapperMethod {
             for (String headerName : mapperParameter.getRequestHeaderNames()) {
                 //同时定义在方法上和参数上 只使用参数的
                 request.getHeaders().removeIf(h -> h.getName().equals(headerName));
-                request.getHeaders().add(new Header(headerName, (String) arg));
+                request.getHeaders().add(new Header(headerName, arg.toString()));
             }
         }
 

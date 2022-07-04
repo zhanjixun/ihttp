@@ -1,6 +1,5 @@
 package com.zhanjixun.ihttp.test;
 
-import com.zhanjixun.ihttp.test.server.NettyServer;
 import lombok.extern.slf4j.Slf4j;
 import org.junit.After;
 import org.junit.Before;
@@ -19,17 +18,13 @@ public class BaseTest {
 
     private final StopWatch stopWatch = new StopWatch();
 
-    private final NettyServer nettyServer = new NettyServer(8088, "com.zhanjixun.ihttp.test.server.controller");
-
     @Before
     public void startServer() {
         stopWatch.start();
-        nettyServer.start();
     }
 
     @After
     public void shutdownServer() {
-        nettyServer.shutdownGracefully();
         stopWatch.stop();
         long duration = stopWatch.getTotalTimeMillis() - TimeZone.getDefault().getRawOffset();
         String format = new SimpleDateFormat("HH:mm:ss.SSS").format(new Date(duration));
