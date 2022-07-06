@@ -3,7 +3,6 @@ package com.zhanjixun.ihttp.cookie;
 import com.alibaba.fastjson.JSON;
 import com.zhanjixun.ihttp.CookiesStore;
 import com.zhanjixun.ihttp.utils.Util;
-import lombok.extern.slf4j.Slf4j;
 import okio.Okio;
 
 import java.io.File;
@@ -20,7 +19,6 @@ import java.util.stream.Collectors;
  * @date : 2019/04/13 11:24
  * @contact :zhanjixun@qq.com
  */
-@Slf4j
 public class CookiesStoreImpl implements CookiesStore {
 
     private final Set<Cookie> cookies = new TreeSet<>((c1, c2) -> {

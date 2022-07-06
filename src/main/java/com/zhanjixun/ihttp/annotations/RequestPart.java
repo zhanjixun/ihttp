@@ -1,7 +1,5 @@
 package com.zhanjixun.ihttp.annotations;
 
-import com.zhanjixun.ihttp.domain.MultipartFile;
-
 import java.lang.annotation.*;
 
 /**
@@ -13,7 +11,6 @@ import java.lang.annotation.*;
  * 2.3 MultipartFile 类型 绑定文件信息 分片上传可用此类型
  *
  * @author zhanjixun
- * @see MultipartFile
  */
 @Documented
 @Target({ElementType.METHOD, ElementType.PARAMETER})

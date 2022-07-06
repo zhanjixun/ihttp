@@ -1,16 +1,7 @@
 package com.zhanjixun.ihttp.cookie;
 
-import lombok.AllArgsConstructor;
-import lombok.Builder;
-import lombok.Data;
-import lombok.NoArgsConstructor;
-
 import java.util.Date;
 
-@Data
-@Builder
-@NoArgsConstructor
-@AllArgsConstructor
 public class Cookie {
 
     private String name;
@@ -30,6 +21,42 @@ public class Cookie {
     private int version;
 
     private boolean httpOnly;
+
+    public String getName() {
+        return name;
+    }
+
+    public String getValue() {
+        return value;
+    }
+
+    public String getDomain() {
+        return domain;
+    }
+
+    public String getPath() {
+        return path;
+    }
+
+    public Date getExpiryDate() {
+        return expiryDate;
+    }
+
+    public String getComment() {
+        return comment;
+    }
+
+    public boolean isSecure() {
+        return isSecure;
+    }
+
+    public int getVersion() {
+        return version;
+    }
+
+    public boolean isHttpOnly() {
+        return httpOnly;
+    }
 
     public boolean isExpired() {
         return isExpired(new Date());

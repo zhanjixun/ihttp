@@ -13,15 +13,15 @@ import java.lang.annotation.*;
 @Documented
 @Target({ElementType.PARAMETER})
 @Retention(RetentionPolicy.RUNTIME)
-public @interface Placeholder {
-	/**
-	 * 占位符
-	 */
-	String value();
+public @interface Param {
+    /**
+     * 占位符
+     */
+    String value();
 
-	/**
-	 * 是否进行编码
-	 */
-	boolean encode() default false;
+    /**
+     * 是否进行编码
+     */
+    boolean encode() default false;
 
 }

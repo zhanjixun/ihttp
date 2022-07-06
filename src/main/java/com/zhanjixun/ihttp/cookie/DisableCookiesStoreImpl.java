@@ -1,7 +1,6 @@
 package com.zhanjixun.ihttp.cookie;
 
 import com.zhanjixun.ihttp.CookiesStore;
-import lombok.extern.slf4j.Slf4j;
 
 import java.io.File;
 import java.util.Collections;
@@ -14,7 +13,6 @@ import java.util.List;
  * @author zhanjixun
  * @date 2020-12-15 14:30:51
  */
-@Slf4j
 public class DisableCookiesStoreImpl implements CookiesStore {
 
     @Override

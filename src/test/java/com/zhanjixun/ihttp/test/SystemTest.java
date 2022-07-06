@@ -30,23 +30,23 @@ public class SystemTest extends BaseTest {
         @URL("/testGet")
         @RequestHeader(name = "headerName", value = "headerValue")
         @RequestHeader(name = "headerName1", value = "headerValue1")
-        Response testGet(@Placeholder("url") String url);
+        Response testGet(@Param("url") String url);
 
         @GET(followRedirects = false)
         @URL("/followRedirects")
-        Response followRedirects(@Placeholder("url") String url);
+        Response followRedirects(@Param("url") String url);
 
         @POST
         @URL("/testPost")
-        Response testPost(@Placeholder("url") String url);
+        Response testPost(@Param("url") String url);
 
         @PUT
         @URL("/testPut")
-        Response testPut(@Placeholder("url") String url);
+        Response testPut(@Param("url") String url);
 
         @DELETE
         @URL("/testDelete")
-        Response testDelete(@Placeholder("url") String url);
+        Response testDelete(@Param("url") String url);
     }
 
     @Test

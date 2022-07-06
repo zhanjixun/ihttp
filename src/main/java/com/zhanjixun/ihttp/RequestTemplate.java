@@ -1,11 +1,8 @@
 package com.zhanjixun.ihttp;
 
 /**
- * http请求结果
- *
  * @author zhanjixun
+ * @date 2022-07-06 11:11
  */
-public final class Response {
-
-
+public class RequestTemplate {
 }
